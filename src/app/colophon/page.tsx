@@ -15,7 +15,7 @@ const stack = [
   ],
   [
     "React 19 with the compiler",
-    "No useMemo, useCallback, or React.memo written for performance anywhere in the codebase. The compiler owns memoization.",
+    "Manual memoization is absent by default. React Compiler handles the common cases; profiling determines whether an explicit escape hatch is needed.",
   ],
   [
     "Zero client components",

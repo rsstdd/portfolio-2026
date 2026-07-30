@@ -8,6 +8,7 @@ const config: NextConfig = {
   reactCompiler: true,
   images: { formats: ["image/avif", "image/webp"] },
   pageExtensions: ["ts", "tsx", "mdx"],
+  transpilePackages: ["next-mdx-remote"],
 };
 
 const withMDX = createMDX({
