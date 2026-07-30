@@ -28,8 +28,9 @@ export default function ProjectsPage() {
         <p className="font-mono text-overline uppercase text-muted">Projects</p>
         <h1 className="mt-2 font-display text-display font-semibold text-balance">Selected work</h1>
         <p className="mt-4 text-body-lg text-muted">
-          Every claim on these pages traces to source. Where something is unfinished or
-          unverifiable, I indicate it rather than rounding up.
+          Every project is documented with evidence, technical decisions, and
+          measurable outcomes. Where work is incomplete or claims cannot be
+          verified, that is stated explicitly.
         </p>
       </header>
 
@@ -63,8 +64,8 @@ export default function ProjectsPage() {
         ))}
       </ul>
       <p className="mt-8 max-w-prose font-mono text-caption text-muted">
-        Not everything I have written is here. Some repositories are private, and some are practice.
-        Neither is evidence.
+        Not everything I have written is included. Some repositories are private,
+        and some are practice.
       </p>
     </main>
   );
