@@ -1,0 +1,36 @@
+---
+title: Photography
+summary: A static Astro photography site with build-time image processing, EXIF-derived captions, and a near-zero JavaScript budget.
+role: Sole author
+stack: ["Astro", "React 19", "TypeScript", "Sharp"]
+repo: https://github.com/rsstdd/photography
+featured: false
+date: 2026-09-01
+verified: false
+---
+
+> **Status: in active development.**
+
+A static photography site built around a strict JavaScript budget. Gallery pages ship no JavaScript. Only the lightbox hydrates.
+
+## Rendering model
+
+The gallery grid renders as static HTML. A single React island provides the lightbox and keyboard navigation, and it hydrates lazily when the gallery enters the viewport. Any JavaScript delivered before that point indicates that the island boundary has expanded beyond the interaction that requires it.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Use Astro instead of a React SPA or Next.js | The gallery is static content. Astro renders it without shipping a React runtime and reserves React for the lightbox. |
+| Use build content collections | Astro live collections do not support the `image()` schema helper. Build collections preserve build-time image processing and validation. |
+| Require alt text in the schema | The build fails when a photograph lacks alt text instead of relying on a manual review step. |
+| Extract EXIF data from source files | Build-time extraction keeps technical captions aligned with the image metadata. |
+| Keep content in files | One author can add photographs and metadata through git without a CMS. |
+
+## Image protection
+
+The site uses layered mitigation because any image rendered by a browser can be captured. Delivered variants have capped resolution. Originals remain outside the repository. The build re-embeds IPTC creator and copyright fields, removes location data, adds ownership metadata, and blocks hotlinking at the CDN. Right-click blocking is omitted because it provides no meaningful protection.
+
+## Honest limits
+
+The site is not yet built. The architecture, JavaScript budget, and image-processing path remain unverified until implementation.

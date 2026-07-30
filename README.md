@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio
 
-## Getting Started
+My portfolio site. Next.js 16 App Router, statically generated, content as MDX files in git, zero database.
 
-First, run the development server:
+<!-- Screenshot of the projects page here once the design settles. -->
+<!-- Live at: add URL once deployed. -->
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> **Status: in active development (July 2026).**
+>
+
+## The constraint that shapes the codebase
+
+Server Components are the default and every `"use client"` directive must be defensible in one sentence, written as a
+comment above the directive. At the time of writing the site has one client island. If that number grows, each addition
+carries its justification with it. This constraint exists because the RSC boundary is the hardest part of the App Router
+to reason about, and a small site is the right place to practice being strict about it.
+
+## How content works
+
+There is no CMS. Content is MDX files in git, parsed by roughly forty lines of code I own outright:
+
+```
+content/
+  projects/*.mdx     one file per portfolio piece, frontmatter validated by Zod
+  posts/*.mdx        writing, when it exists
+  cv.mdx             single source for the CV page, so the page and the PDF never disagree
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Frontmatter is parsed with `gray-matter` and validated against a Zod schema at build time. A malformed file fails the
+build, because a portfolio that renders blank cards is worse than one that refuses to compile. Content libraries
+(Contentlayer and its successors) would save those forty lines and cost the understanding of the build; at this scale,
+owning the code is the correct trade.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The project schema includes a `verified` flag. Anything I cannot substantiate from source code I either mark accordingly
+or leave out, because a portfolio is a claims document and claims should be checkable.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key decisions
 
-## Learn More
+| Decision                                       | Reasoning                                                                                                                                                                                                   |
+|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Next.js 16, App Router, static-first           | SEO, link previews, and crawlability are the actual product requirements of a portfolio, and static generation serves all three at zero runtime cost. Dynamic rendering requires a stated reason per route. |
+| React Compiler enabled (`reactCompiler: true`) | Stable in Next 16. Slower builds, accepted, because the point is writing post-compiler React everywhere.                                                                                                    |
+| Social cards rendered at build                 | `opengraph-image.tsx` generates OG images from JSX per page, so every project link unfurls with its own card and nothing is hand-exported from a design tool.                                               |
+| No database, no CMS                            | One author, content in version control, review via diff. Infrastructure would be cosplay.                                                                                                                   |
+| Biome + minimal ESLint, Vitest, Playwright     | Same baseline as my other projects; the tooling is boring on purpose. Server Components are covered by the Playwright smoke suite because unit-testing them through a mock pipeline tests the mock.         |
 
-To learn more about Next.js, take a look at the following resources:
+## Running locally
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Requires Node 22+ and pnpm.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm install
+pnpm dev            # localhost:3000
+pnpm verify         # lint, typecheck, test, build
+```
 
-## Deploy on Vercel
+The production build is fully static except where a route states its reason not to be. It deploys to anything that
+serves a Next build; no platform-specific features are used, deliberately, because the site should outlive any
+particular host.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Author
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ross Todd, senior software engineer in Munich.
+
+- [GitHub](https://github.com/rsstdd)
+- [LinkedIn](https://linkedin.com/in/rsstdd)
+
+## License
+
+MIT for the code. Written content and images are not licensed for reuse.

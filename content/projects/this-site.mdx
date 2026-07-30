@@ -1,0 +1,31 @@
+---
+title: This portfolio site
+summary: A statically generated Next.js 16 portfolio with MDX content in git and no client components.
+role: Sole author
+stack: ["Next.js 16", "React 19", "TypeScript", "MDX"]
+repo: https://github.com/rsstdd/portfolio
+featured: false
+date: 2026-07-29
+verified: false
+---
+
+> **Status: in active development.**
+
+This portfolio is statically generated from MDX files in git. The [colophon](/colophon) documents the implementation in detail.
+
+## The constraint
+
+Server Components are the default. Every `"use client"` directive must include a one-sentence justification above it. The current count is zero. A small static site provides a controlled place to enforce the React Server Component boundary.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Static first; dynamic only with a stated reason | The site needs crawlable pages, link previews, and predictable delivery. Static generation meets those requirements without runtime rendering. |
+| A small custom MDX loader | The loader is about forty lines and remains easy to inspect. A content library would remove little code while adding another abstraction. |
+| A `verified` field in the content schema | Project claims are marked as verified or unverified in the same source file that contains the copy. Unsupported claims are marked or removed. |
+| No database or CMS | One author edits content as files and reviews changes as diffs. The site does not need another persistence layer. |
+
+## Honest limits
+
+The site is still in development. Colophon measurements remain marked as unmeasured until the deployed build produces them.

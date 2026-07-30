@@ -1,0 +1,32 @@
+---
+title: Aquaponic IoT system
+summary: A Raspberry Pi and Arduino monitoring prototype that streams sensor readings to a browser and sends threshold alerts by SMS.
+role: Sole author
+stack: ["JavaScript", "Node.js", "Johnny-Five", "Socket.io", "React", "Twilio"]
+repo: https://github.com/rsstdd/aquaponic_IoT_system
+featured: false
+date: 2017-09-01
+verified: true
+---
+
+A working aquaponics monitoring prototype built on Raspberry Pi and Arduino hardware. It streams environmental readings to a browser and sends SMS alerts when a value crosses its configured threshold.
+
+## What it actually does
+
+A Raspberry Pi 3 connects to Arduino Mega and Uno boards carrying an HIH6130 humidity and temperature sensor, a DS18B20 waterproof temperature probe, and a BMP280 temperature and pressure sensor.
+
+A Node.js and Express service uses Johnny-Five over Firmata to read the Arduino sensors. It pushes readings to a React frontend through Socket.io, so the interface updates when data arrives rather than on a polling interval. Passport handles authentication. Twilio sends SMS alerts when readings leave their configured ranges, so monitoring does not depend on someone keeping the dashboard open.
+
+A companion `aquaponic-api` service exposes a small set of sensor routes.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Push readings through Socket.io | Sensor data arrives on the hardware schedule. Push delivery updates the browser within the sensor interval without repeated polling. |
+| Use Johnny-Five over Firmata | The Arduino boards remain sensor interfaces while the application logic stays in Node.js on the Raspberry Pi. |
+| Treat alerts as part of the monitoring path | SMS alerts surface threshold violations without requiring continuous dashboard use. |
+
+## Honest limits
+
+This is a prototype with a presentation, not a deployed product. The system has no durable time-series store or historical analysis, so it reports current conditions but not trends.

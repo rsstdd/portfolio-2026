@@ -1,0 +1,33 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Scan point. Two corner brackets framing a single marked point: the same idea
+    as .rule-datum in design-tokens.css (a fixed reference, and a measurement
+    taken from it), reshaped to survive 16px.
+
+    Three decisions worth keeping, each made against a rendered PNG rather than
+    against this source:
+
+    1. Brackets, not a crosshair or a tick. A tick reads as a clipped fragment
+       of a rule at this size, and the earlier station-scale variants all
+       collided with a Latin capital (E, then F, then TT), because parallel
+       strokes off a vertical stem is what a capital is. Two diagonal brackets
+       collide with no character in any alphabet.
+
+    2. A square point, not a circle. Datum is machined, with radii at or near
+       zero, so a circle was already foreign to the language. It is also the
+       weaker choice technically: at 16px a circle anti-aliases into a soft
+       blob, while these edges land on whole pixels and stay sharp.
+
+    3. Every coordinate is even and stroke-width is 4. At the 16px render that
+       halves to whole pixels (2px strokes, a 4x4 point at 6,6), so nothing
+       falls on a half-pixel and needs smoothing. Changing any number here to
+       an odd value will soften the mark at tab size. Verify by rasterizing,
+       not by eye on the SVG.
+
+    Colors are exact Datum tokens: paper #f5f2ec, ink #221f1a, orange #dd4e12.
+  -->
+  <rect width="32" height="32" fill="#f5f2ec"/>
+  <path d="M 6 12 L 6 6 L 12 6" fill="none" stroke="#221f1a" stroke-width="4"/>
+  <path d="M 26 20 L 26 26 L 20 26" fill="none" stroke="#221f1a" stroke-width="4"/>
+  <rect x="12" y="12" width="8" height="8" fill="#dd4e12"/>
+</svg>

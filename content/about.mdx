@@ -1,0 +1,53 @@
+---
+title: About
+description: Ross Todd is a senior software engineer in Munich. Roughly a decade across sensor telemetry, full-stack product work, event-driven backend systems, and shared frontend platforms.
+portrait: /images/ross-todd.jpg
+portraitAlt: Ross Todd
+updated: 2026-07-30
+---
+
+My first engineering work was greenhouse monitoring. I wrote Python agents that
+read pH and conductivity probes over FTDI serial, pushed a reference temperature
+to each probe before every reading because uncompensated pH drifts with water
+temperature, and fanned the results out to independent sinks so that losing one
+service did not lose the data. Everything since has been a version of that same
+problem at a larger scale. Full-stack product work came next, at Migo, then
+Lululemon, then Volume Media, where I led the incremental migration of a
+four-thousand-file Django monolith onto Next.js one page at a time rather than
+in one cutover. After that came the deepest backend work I have done, on Nike's
+consent platform: event-driven and serverless across four AWS regions including
+China, where I migrated roughly twenty million consent records off a third-party
+vendor and fixed the failure modes the first attempt had surfaced. Most
+recently, shared frontend platforms at Alaska Airlines, where I architected
+Borealis, a Lit and Web Components platform that four to five product teams
+adopted across Next.js, Svelte, React, Vue, and .NET. The range is wider than
+most and none of it was planned.
+
+I prefer boring tooling and explicit contracts, and I would rather check
+something than reason about it. What I am most useful for is the unglamorous
+half of platform work: migration planning, integration boundaries, versioned
+contracts, test infrastructure, and documentation good enough that another team
+can ship against it without me in the room. Borealis held together across five
+frameworks because its props and events carried semver and a deprecation policy,
+which meant consuming teams could upgrade on their own schedule instead of on
+mine. The same instinct shows up in how I handle being wrong: when a major
+integration went badly, I ran the retro that turned it into readiness gates and
+component contract standards the organization adopted. I have kept daily
+engineering notes for about a decade, so the write-up usually exists before
+anyone asks for it. I have taught alongside the engineering for most of that
+time, six years as a substitute instructor at the University of Washington and
+a teaching fellowship before it, and that is where most of the documentation
+habit came from.
+
+I live in Munich on an EU Blue Card. We moved here in January, when my wife
+accepted a role in the city. English is native, German is A0, and there is no
+point dressing that up. My last three engagements were contracts, which was
+deliberate at the time because it let me work across three very different
+platforms in quick succession; what I want next is the opposite of that pattern,
+which is one platform owned over years rather than months. At the moment I am
+building an aircraft catalog that begins at a Rust scraper into PostgreSQL
+behind a typed Rust REST API and a React frontend, because I wanted a pipeline
+that was real rather than illustrative. It is not finished yet, and the project
+page says so. I also photograph and am learning to play the cello. Code is on
+[GitHub](https://github.com/rsstdd), and [email](mailto:rssmtdd@gmail.com) is
+the fastest way to reach me.

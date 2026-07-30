@@ -1,0 +1,34 @@
+---
+title: Plane scraper
+summary: A concurrent Rust scraping pipeline with bounded concurrency, coordinated shutdown, and rate-limit-aware retry.
+role: Sole author
+stack: ["Rust", "tokio", "reqwest", "clap"]
+repo: https://github.com/rsstdd/plane-scraper
+featured: true
+date: 2026-01-15
+verified: true
+---
+
+A three-pass Rust scraper that collects manufacturers, models, and aircraft specifications into JSON stores. The crawler uses a generic producer-consumer pipeline with bounded backpressure and coordinated shutdown.
+
+## What it actually does
+
+The CLI uses Clap subcommands on a `#[tokio::main]` runtime. It accepts configurable request delay, crawl concurrency, and processing concurrency, and uses `env_logger` for runtime logging. It builds a crawler, a shared `Arc<Fetcher>`, and three asynchronous JSON-backed stores, then dispatches one of three `Spider` implementations.
+
+The crawler is generic over the spider implementation. Tokio `mpsc` channels carry URLs to visit, scraped items, and newly discovered URLs. Channel capacity scales with configured concurrency, so a fast scraper cannot build an unbounded queue behind a slow processor. An `AtomicUsize` tracks active spiders, and a Tokio `Barrier(3)` coordinates the control loop, scraper task, and processor task during shutdown. `futures::for_each_concurrent` bounds concurrent work, a `HashSet` deduplicates visited URLs, and the crawler completes after both channels drain and the active count reaches zero.
+
+The fetcher wraps reqwest with a rotating User-Agent pool, default headers, an optional bearer token, and a request timeout. `get_text` retries connection and timeout failures, uses `Retry-After` for HTTP 429 when present, and otherwise applies capped exponential backoff with jitter. It also retries 5xx responses, treats 404 as terminal, and rejects empty response bodies.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Coordinate shutdown with a barrier | Dropping channels can end tasks before in-flight items finish. The barrier makes all three tasks agree that work is complete. |
+| Size bounded channels from concurrency | Bounded queues turn a slow processor into backpressure instead of unbounded memory growth. |
+| Use `Retry-After` before local backoff | The server-provided delay takes precedence. Jittered exponential backoff remains the fallback when no delay is provided. |
+| Write files through a temporary path and rename | An interrupted write does not replace a valid store with a partial JSON document. |
+| Use `BTreeMap` for output | Stable key ordering produces reviewable diffs between runs. |
+
+## Honest limits
+
+The scraper targets one upstream site, so each spider depends on that site's markup. There is no persistent work queue; an interrupted crawl loses progress that has not been flushed. Retry behavior is implemented, but the test suite is not exhaustive.

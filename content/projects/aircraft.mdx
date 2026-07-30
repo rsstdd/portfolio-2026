@@ -1,0 +1,41 @@
+---
+title: Aircraft
+summary: A full-stack aircraft catalog with a Rust scraper, PostgreSQL, a typed Hono API, and a React 19 frontend.
+role: Sole author
+stack: ["TypeScript", "React 19", "Hono", "Drizzle", "PostgreSQL", "Rust"]
+repo: https://github.com/rsstdd/aircraft
+featured: true
+date: 2026-08-01
+verified: false
+---
+
+> **Status: in active development.** The pipeline below is the current design. Planned sections are not yet built.
+
+The application centers on three boundaries: scraped source data validated before import, an API contract shared with the frontend through TypeScript, and view state stored in the URL.
+
+## The pipeline
+
+`plane-scraper` produces JSON in Rust. A seed process validates that data before writing it to PostgreSQL. A Hono API serves the records and exports its route types to the React 19 client. The scraper is a separate completed project, and the validated JSON schema forms the boundary between the Rust and TypeScript code.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Hono RPC rather than tRPC or GraphQL | The server exports route types and the client imports them, so API changes become frontend compile errors. tRPC provides similar type safety but exposes an RPC interface. GraphQL adds schema and tooling overhead without a need for flexible client queries. |
+| Drizzle rather than Prisma | Drizzle keeps SQL-shaped queries and migrations visible and avoids a separate schema language and query-engine binary. |
+| React Compiler from the first commit | The compiler owns memoization from the start, so the codebase does not accumulate manual `useMemo`, `useCallback`, or `React.memo` conventions. |
+| The URL as the primary state store | Filters, sorting, pagination, and selection live in typed search parameters. Views remain shareable, reload-safe, and compatible with browser navigation. |
+| A client-rendered SPA rather than a meta-framework | The catalog does not depend on search indexing. A separate API and SPA keep the service boundary explicit. |
+
+## Planned features
+
+1. Catalog list with server pagination
+2. Faceted filtering through typed search parameters
+3. Detail route with a specification comparison drawer
+4. Favorites with optimistic updates and rollback
+5. Specification charts
+6. Seed pipeline with validation at the scraper boundary
+
+## Honest limits
+
+The application is not finished. The source data comes from a third-party site through my scraper, so a deployed version will use either a small attributed subset or an openly licensed source such as the FAA aircraft characteristics database.

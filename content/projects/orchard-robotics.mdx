@@ -1,0 +1,42 @@
+---
+title: Geospatial harvest volume estimator
+summary: A harvest estimator with a Next.js and Google Maps client, Flask API, geospatial PostgreSQL schema, and Cloud Run deployment.
+role: Sole author
+stack:
+  - TypeScript
+  - Next.js
+  - React
+  - Python
+  - Flask
+  - PostgreSQL
+  - GCP
+repo: https://github.com/rsstdd/orchard-robotics-assessment
+featured: true
+date: 2025-09-01
+verified: true
+---
+
+A take-home assessment for a robotics company. It estimates harvest volume from a date range, fruit-diameter range, and growth rate. The submission includes the client, API, database design, deployment configuration, and architecture rationale.
+
+## What it actually does
+
+The Next.js client displays individual fruit scans on Google Maps and accepts a date range, growth rate, and diameter range. It sends those parameters to a Flask API, then renders a histogram and average fruit size from the response.
+
+The Flask API queries the database and calculates predicted harvest volume for matching fruit. Each fruit is modeled as an ellipsoid with major, minor, and subminor dimensions in millimeters. The schema stores average diameter and volume at write time because the workload reads those values repeatedly and the formulas do not change.
+
+Locations use geospatial `POINT` values, which allow spatial filtering and indexing without separate latitude and longitude range predicates.
+
+Both services are containerized for Cloud Run. The README compares that deployment model with GKE, AWS Lambda, AWS Fargate, and Heroku, including cold-start and stateless-execution trade-offs.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Precompute diameter and volume | The application repeatedly reads values derived from fixed formulas. Computing them at write time removes repeated calculation from each query, with documented denormalization and consistency costs. |
+| Store locations as geospatial `POINT` values | Spatial types and indexes match the orchard-location access pattern directly. |
+| Deploy containers on Cloud Run | Cloud Run runs stateless request-response services without cluster management. Cold-start latency is acceptable for the expected usage. |
+| Use Flask for the compute layer | Python fits the numerical estimation code, while TypeScript remains in the client. The service boundary keeps the two concerns separate. |
+
+## Honest limits
+
+This is a scoped assessment, not a production system tested under changing requirements or sustained load. The estimation model follows the exercise specification.

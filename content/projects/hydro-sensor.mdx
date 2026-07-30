@@ -1,0 +1,35 @@
+---
+title: Hydro sensor
+summary: A Python edge agent that reads Atlas Scientific probes over FTDI serial, applies temperature compensation, and sends telemetry to independent sinks.
+role: Sole author
+stack: ["Python", "pylibftdi", "MongoDB", "CircleCI"]
+repo: https://github.com/rsstdd/hydro-sensor
+featured: true
+date: 2018-06-01
+verified: true
+---
+
+A Python edge agent that reads environmental sensors over USB serial and sends each reading to several backend services. It runs on real hardware against Atlas Scientific probes. The code implements the serial protocol, applies cross-probe temperature compensation, and isolates failures between telemetry sinks.
+
+The repository overlaps with my professional greenhouse-monitoring work and references the same device identity files and internal endpoints.
+
+## What it actually does
+
+`atlas_hydro.py` defines an `AtlasDevice` subclass of `pylibftdi.Device` for Atlas Scientific temperature, pH, and electrical-conductivity probes. The code implements the device protocol directly: `send_cmd()` appends a carriage return, and `read_line()` reads one byte at a time until CR, with a one-second timeout and explicit `FtdiError` handling. The agent reads a configured sensor list by serial number, issues the `R` command, and parses each response by sensor type. It converts Celsius to Fahrenheit, splits conductivity into EC and ppm values, and rounds pH.
+
+The temperature probe acts as the reference. Its reading is sent to the other probes with `T,<temp>` before they are read, so pH and EC measurements use temperature compensation. Without that step, the probes can return plausible but incorrect values as water temperature changes.
+
+`sensor_worker.py` loads device identity and metadata from a local JSON file. It adds the hostname, role, room, sensor group, version, and UTC timestamp to every reading, then sends the result to several sinks: HTTP APIs with customer-specific routing, MongoDB collections by sensor type, and a local file fallback. Each sink handles errors independently, so one failure does not stop the others.
+
+## Decisions worth defending
+
+| Decision | Reasoning |
+|---|---|
+| Implement the serial protocol directly | The probes use a small line protocol. Owning the read loop makes timeout and USB error behavior explicit. |
+| Compensate against a reference temperature probe | pH and EC vary with water temperature. Sending the reference temperature before each read prevents plausible but incorrect measurements. |
+| Isolate each telemetry sink | One failed API or database should not block the remaining destinations. |
+| Keep a local file fallback | Readings remain recoverable when the network or a remote service is unavailable. |
+
+## Honest limits
+
+The codebase uses Python 2. Configuration lives in a local identity file rather than a configuration service. The HTTP sink expects status 201 instead of accepting the broader 2xx range.
