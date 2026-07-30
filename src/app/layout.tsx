@@ -75,7 +75,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable}`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable}`}
+    >
       <body className="flex min-h-dvh flex-col bg-bg text-ink antialiased">
         <SiteHeader />
         <div className="flex-1">{children}</div>
