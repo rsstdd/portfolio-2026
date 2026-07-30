@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f5f2ec"/>
+  <line x1="84" y1="84" x2="1116" y2="84" stroke="#d9d2c2" stroke-width="2"/>
+  <line x1="84" y1="84" x2="180" y2="84" stroke="#dd4e12" stroke-width="6"/>
+  <text x="84" y="136" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="22" font-weight="600"
+        letter-spacing="1.8" fill="#6b655a">ASTRO · REACT 19 · TYPESCRIPT</text>
+  <text font-family="IBM Plex Serif, Georgia, serif" font-size="92" font-weight="600" fill="#221f1a"
+        y="354"><tspan x="84" dy="0">Photography</tspan></text>
+  <line x1="84" y1="516" x2="1116" y2="516" stroke="#d9d2c2" stroke-width="2"/>
+  <text x="84" y="550" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="21"
+        fill="#6b655a">rsstdd.com/projects/photography · in progress</text>
+</svg>

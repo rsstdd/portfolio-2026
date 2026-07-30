@@ -25,6 +25,7 @@ export const projectSchema = z.object({
    * home page to keep unfinished work off the front page automatically.
    */
   verified: z.boolean().default(true),
+  ogImage: z.string().optional(),
 });
 
 /**

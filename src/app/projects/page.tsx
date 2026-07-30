@@ -34,7 +34,9 @@ export default function ProjectsPage() {
       </header>
 
       <ul className="mt-16 border-t border-line">
-        {projects.map((project) => (
+        {projects
+          .filter(project => project.verified)
+          .map((project) => (
           <li key={project.slug}>
             <Link
               href={`/projects/${project.slug}`}

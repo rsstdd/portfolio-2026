@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { site } from "@/lib/site";
 import "./globals.css";
 
 /**
@@ -38,17 +39,37 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rsstdd.com"),
+  metadataBase: new URL(site.url),
   title: {
     default: "Ross Todd — Senior Software Engineer",
     template: "%s — Ross Todd",
   },
   description:
-    "Senior software engineer in Munich. Nine years across sensors, full-stack product work, and shared frontend platforms.",
+    "Senior software engineer in Munich working across platform engineering, distributed systems, and full-stack products.",
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    locale: "en_US",
     siteName: "Ross Todd",
+    title: "Ross Todd — Senior Software Engineer",
+    description:
+      "Platform engineering, distributed systems, and full-stack products.",
+    url: site.url,
+    locale: "en_US",
+    images: [
+      {
+        url: "/images/og/default.png",
+        width: 1200,
+        height: 630,
+        alt: "Ross Todd, senior software engineer, Munich",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ross Todd — Senior Software Engineer",
+    description:
+      "Platform engineering, distributed systems, and full-stack products.",
+    images: ["/images/og/default.png"],
   },
 };
 

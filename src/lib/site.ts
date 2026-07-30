@@ -9,7 +9,7 @@ export const site = {
   name: "Ross Todd",
   role: "Senior Software Engineer",
   location: "München",
-  url: "https://www.rsstdd.com",
+  url: "https://rsstdd.com",
   email: "rssmtdd@gmail.com",
   github: "https://www.github.com/rsstdd",
   linkedin: "https://www.linkedin.com/in/rsstdd",
