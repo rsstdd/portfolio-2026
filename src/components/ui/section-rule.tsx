@@ -12,22 +12,22 @@
  * Pages without a meaningful sequence omit it rather than number arbitrarily.
  */
 export function SectionRule({
-                                index = "",
-                                label = "",
-                                className = "",
-                            }: {
-    index?: string,
-    label?: string,
-    className?: string,
+  index = "",
+  label = "",
+  className = "",
+}: {
+  index?: string;
+  label?: string;
+  className?: string;
 }) {
-    return (
-        <div className={`rule-datum ${className}`}>
-            {label ? (
-                <p className="font-mono text-overline uppercase text-muted">
-                    {index ? `${index} — ` : null}
-                    {label}
-                </p>
-            ) : null}
-        </div>
-    );
+  return (
+    <div className={`rule-datum ${className}`}>
+      {label ? (
+        <p className="font-mono text-overline uppercase text-muted">
+          {index ? `${index} — ` : null}
+          {label}
+        </p>
+      ) : null}
+    </div>
+  );
 }

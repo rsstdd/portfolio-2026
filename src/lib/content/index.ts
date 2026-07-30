@@ -1,14 +1,14 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import {
   type About,
-  type Cv,
-  type Home,
-  type Project,
   aboutSchema,
+  type Cv,
   cvSchema,
+  type Home,
   homeSchema,
+  type Project,
   projectSchema,
 } from "./schema";
 
@@ -70,7 +70,7 @@ export function getProjects(): LoadedProject[] {
         return {
           ...projectSchema.parse(data),
           slug: file.replace(/\.mdx$/, ""),
-          body
+          body,
         };
       } catch (e) {
         return fail(`projects/${file}`, e);

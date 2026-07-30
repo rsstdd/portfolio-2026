@@ -46,9 +46,7 @@ export default async function ProjectPage({ params }: Params) {
       </Link>
 
       <header className="mt-8 max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">
-          {project.stack.join(" · ")}
-        </p>
+        <p className="font-mono text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
 
         <h1 className="mt-2 font-display text-display font-semibold text-balance">
           {project.title}

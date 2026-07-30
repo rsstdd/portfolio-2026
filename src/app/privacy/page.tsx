@@ -3,7 +3,10 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  robots: { index: false },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 /**
@@ -61,12 +64,13 @@ export default function PrivacyPage() {
 
         <h2>Hosting and server logs</h2>
         <p>
-          The site is served as static files by {site.host.name}. Like any web server, theirs records
-          standard access logs, which may include your IP address, the requested URL, the time of the
-          request, and your browser&rsquo;s user agent. Those logs exist for security and operational
-          purposes on the legal basis of legitimate interest under Art. 6(1)(f) GDPR. I do not
-          analyse them, export them, or combine them with anything else, and the retention period is
-          the host&rsquo;s own, because I neither control nor keep a separate copy.
+          The site is served as static files by {site.host.name}. Like any web server, theirs
+          records standard access logs, which may include your IP address, the requested URL, the
+          time of the request, and your browser&rsquo;s user agent. Those logs exist for security
+          and operational purposes on the legal basis of legitimate interest under Art. 6(1)(f)
+          GDPR. I do not analyse them, export them, or combine them with anything else, and the
+          retention period is the host&rsquo;s own, because I neither control nor keep a separate
+          copy.
         </p>
 
         <h2>Transfer outside the EU</h2>
@@ -90,9 +94,9 @@ export default function PrivacyPage() {
         <h2>Your rights</h2>
         <p>
           Under the GDPR you have the right to access, correct, or erase personal data held about
-          you, to restrict or object to its processing, to data portability, and to lodge a complaint
-          with a supervisory authority. Given that this site collects nothing, in practice this
-          concerns only email correspondence you have chosen to send.
+          you, to restrict or object to its processing, to data portability, and to lodge a
+          complaint with a supervisory authority. Given that this site collects nothing, in practice
+          this concerns only email correspondence you have chosen to send.
         </p>
         <p>
           The competent authority for private-sector controllers in Bavaria is the Bayerisches

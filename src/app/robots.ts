@@ -2,16 +2,11 @@ import type { MetadataRoute } from "next";
 import { site } from "@/lib/site";
 
 /**
- * robots.txt
+ * Search crawlers may index the public site.
  *
- * Search crawlers are welcome, because the site exists to be found. The legal
- * pages are excluded here and also carry noindex metadata, since a robots
- * disallow alone does not prevent indexing.
- *
- * The AI-training crawlers below are a stated position rather than an enforced
- * one: compliance is voluntary and unverifiable. Keep this list consistent with
- * whatever the photography site declares, because two different answers from
- * the same person is worse than either answer.
+ * The legal pages carry `noindex` metadata but remain crawlable so search
+ * engines can read that directive. AI crawler exclusions express a preference;
+ * enforcement depends on crawler compliance.
  */
 const aiCrawlers = [
   "GPTBot",
@@ -25,19 +20,25 @@ const aiCrawlers = [
   "PerplexityBot",
   "Bytespider",
   "meta-externalagent",
-];
+] as const;
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = new URL(site.url).origin;
+
+  const rules = [
+    {
+      userAgent: "*",
+      allow: "/",
+    },
+    {
+      userAgent: [...aiCrawlers],
+      disallow: "/",
+    },
+  ] satisfies MetadataRoute.Robots["rules"];
+
   return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/impressum", "/privacy"],
-      },
-      ...aiCrawlers.map((userAgent) => ({ userAgent, disallow: "/" })),
-    ],
-    sitemap: `${site.url}/sitemap.xml`,
-    host: site.url,
+    rules,
+    sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }

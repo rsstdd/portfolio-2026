@@ -16,35 +16,64 @@ const ORANGE = "#dd4e12";
  * nested <svg> children.
  */
 function OrchardMark() {
- return (
-  <div style={{ position: "relative", width: 22, height: 15, display: "flex" }}>
-   <div style={{ position: "absolute", inset: 0, border: `2.4px solid ${INK}`, borderRadius: "50%" }} />
-   <div style={{ position: "absolute", top: "50%", left: -2, right: -2, height: 2.4, background: ORANGE }} />
-  </div>
- );
+  return (
+    <div style={{ position: "relative", width: 22, height: 15, display: "flex" }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          border: `2.4px solid ${INK}`,
+          borderRadius: "50%",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: -2,
+          right: -2,
+          height: 2.4,
+          background: ORANGE,
+        }}
+      />
+    </div>
+  );
 }
 
 function DefaultMark() {
- return (
-  <div style={{ position: "relative", width: 22, height: 20, display: "flex" }}>
-   <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 2.4, background: INK }} />
-   <div style={{ position: "absolute", left: 0, top: 0, width: 9, height: 2.4, background: ORANGE }} />
-  </div>
- );
+  return (
+    <div style={{ position: "relative", width: 22, height: 20, display: "flex" }}>
+      <div
+        style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 2.4, background: INK }}
+      />
+      <div
+        style={{ position: "absolute", left: 0, top: 0, width: 9, height: 2.4, background: ORANGE }}
+      />
+    </div>
+  );
 }
 
 const marks: Record<string, () => JSX.Element> = {
- "orchard-robotics": OrchardMark,
+  "orchard-robotics": OrchardMark,
 };
 
 export default async function Icon({ params }: { params: Promise<{ slug: string }> }) {
- const { slug } = await params;
- const Mark = marks[slug] ?? DefaultMark;
+  const { slug } = await params;
+  const Mark = marks[slug] ?? DefaultMark;
 
- return new ImageResponse(
-  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: BG }}>
-   <Mark />
-  </div>,
-  size,
- );
+  return new ImageResponse(
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: BG,
+      }}
+    >
+      <Mark />
+    </div>,
+    size,
+  );
 }

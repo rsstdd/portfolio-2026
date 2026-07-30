@@ -4,16 +4,35 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Colophon",
-  description: "How this site is built: Next.js 16, static generation, MDX in git, no client JavaScript.",
+  description:
+    "How this site is built: Next.js 16, static generation, MDX in git, no client JavaScript.",
 };
 
 const stack = [
-  ["Next.js 16, App Router", "Static generation covers every route. Dynamic rendering requires a stated reason, and no route currently has one."],
-  ["React 19 with the compiler", "No useMemo, useCallback, or React.memo written for performance anywhere in the codebase. The compiler owns memoization."],
-  ["Zero client components", "Every file is a Server Component. Each candidate island was rejected with a reason recorded in the file rather than in a commit message."],
-  ["MDX parsed by about a hundred owned lines", "gray-matter plus Zod. A content library would save those lines and cost understanding of the build."],
-  ["Biome, plus ESLint for the compiler rules only", "One fast formatter and linter. ESLint survives solely for the React Compiler diagnostics, which Biome does not implement."],
-  ["No database, no CMS, no analytics", "Content is files in git, reviewed by diff. Nothing is collected from visitors."],
+  [
+    "Next.js 16, App Router",
+    "Static generation covers every route. Dynamic rendering requires a stated reason, and no route currently has one.",
+  ],
+  [
+    "React 19 with the compiler",
+    "No useMemo, useCallback, or React.memo written for performance anywhere in the codebase. The compiler owns memoization.",
+  ],
+  [
+    "Zero client components",
+    "Every file is a Server Component. Each candidate island was rejected with a reason recorded in the file rather than in a commit message.",
+  ],
+  [
+    "MDX parsed by about a hundred owned lines",
+    "gray-matter plus Zod. A content library would save those lines and cost understanding of the build.",
+  ],
+  [
+    "Biome, plus ESLint for the compiler rules only",
+    "One fast formatter and linter. ESLint survives solely for the React Compiler diagnostics, which Biome does not implement.",
+  ],
+  [
+    "No database, no CMS, no analytics",
+    "Content is files in git, reviewed by diff. Nothing is collected from visitors.",
+  ],
 ];
 
 /**
@@ -30,8 +49,8 @@ const contrast = [
 
 const copy = {
   datum:
-    "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data.Color relationships were calculated for consistency and contrast rather than selected by eye."
-}
+    "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data.Color relationships were calculated for consistency and contrast rather than selected by eye.",
+};
 
 export default function ColophonPage() {
   return (
@@ -92,12 +111,12 @@ export default function ColophonPage() {
         <SectionRule index="03" label="Measurements" />
         <div className="mt-8 max-w-prose">
           <p className="text-muted">
-            Not yet measured. These will carry real numbers once the site is deployed, and they
-            will say so plainly if any of them disappoint.
+            Not yet measured. These will carry real numbers once the site is deployed, and they will
+            say so plainly if any of them disappoint.
           </p>
           <p className="data-plate mt-6">
-            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse:
-            not yet measured
+            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not
+            yet measured
           </p>
         </div>
       </section>

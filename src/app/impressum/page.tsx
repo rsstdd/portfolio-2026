@@ -3,7 +3,10 @@ import { addressIncomplete, site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Impressum",
-  robots: { index: false },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 /**
@@ -44,11 +47,6 @@ export default function ImpressumPage() {
         <h1 className="mt-2 font-display text-display font-semibold">Impressum</h1>
       </header>
 
-      {/*
-       * A build-time reminder rendered as page content, because a placeholder
-       * address on a live Impressum is a legal problem and a TODO comment in a
-       * file nobody reopens is not a safeguard.
-       */}
       {addressIncomplete ? (
         <p className="mt-8 max-w-prose border border-error px-4 py-3 font-mono text-caption text-error">
           Not ready to deploy: the address below is still a placeholder. § 5 DDG requires a full

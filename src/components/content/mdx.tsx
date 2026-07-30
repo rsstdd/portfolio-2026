@@ -15,7 +15,7 @@ import remarkGfm from "remark-gfm";
  */
 type ProjectBodyProps = {
   source: string;
-  className?: string
+  className?: string;
 };
 
 export function Mdx({ source, className = "" }: ProjectBodyProps) {
@@ -25,8 +25,8 @@ export function Mdx({ source, className = "" }: ProjectBodyProps) {
         source={source}
         options={{
           mdxOptions: {
-            remarkPlugins: [remarkGfm]
-          }
+            remarkPlugins: [remarkGfm],
+          },
         }}
       />
     </div>

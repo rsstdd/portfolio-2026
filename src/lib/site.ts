@@ -17,7 +17,7 @@ export const site = {
    * Set to null when the search ends. The home page omits the line entirely
    * rather than rendering an empty element.
    */
-  availability: "Open to senior engineering roles. Munich or remote." as string | null,
+  availability: "Based in Munich. Authorized to work in Germany without sponsorship. Open to senior and staff platform or full-stack roles." as string | null,
 
   /**
    * Ladungsfähige Anschrift for the Impressum, required by § 5 DDG. A P.O. box
