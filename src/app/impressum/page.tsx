@@ -3,10 +3,7 @@ import { addressIncomplete, site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Impressum",
-  robots: {
-    index: false,
-    follow: false,
-  },
+  robots: { index: false, },
 };
 
 /**
@@ -17,7 +14,7 @@ export const metadata: Metadata = {
  * successor to § 5 TMG since 2024), which triggers the disclosure obligation.
  * The safest reading is to provide it.
  *
- * Three notes for whoever edits this next:
+ * Notes:
  *
  *   1. The address comes from `site.address` and appears twice below. Edit it
  *      there, not here.
@@ -28,6 +25,10 @@ export const metadata: Metadata = {
  *   3. Do NOT add a link to the EU online dispute resolution platform. It was
  *      shut down on 20 July 2025, and continuing to reference it is itself an
  *      Abmahnung risk. Generators written before that date still emit it.
+ *   4. Language marking is load-bearing here, not cosmetic. `main` is lang="de"
+ *      and the two English passages are lang="en". Adding an English string
+ *      inside the German block, or German text outside it, reintroduces the
+ *      WCAG 3.1.2 failure this page was fixed for.
  *
  * The "Haftung für Inhalte" and "Haftung für Links" blocks that generators
  * produce were removed on purpose: German courts treat them as decorative
@@ -35,20 +36,47 @@ export const metadata: Metadata = {
  * publish filler. The copyright note stays, because the MIT statement does real
  * work.
  *
- * Written by a non-lawyer. Have the final text checked.
+ * Written by a non-lawyer.
  */
 export default function ImpressumPage() {
   const { address } = site;
 
   return (
-    <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
+    /*
+     * lang="de" is set here rather than on a wrapper inside, because the page is
+     * a German legal document and German is therefore its default language. The
+     * two English passages below carry lang="en" as the exception. WCAG 2.2
+     * SC 3.1.2 wants every passage marked, and marking the majority language
+     * once plus the exceptions is fewer attributes than the reverse.
+     *
+     * Do not put `prose-datum` on this element. The inner div already carries it,
+     * and applying it here silently styles any future child that has no
+     * utilities of its own.
+     */
+    <main
+      id="main"
+      lang="de"
+      className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10"
+    >
       <header className="max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">Legal</p>
+        {/* English chrome label, matching /privacy. */}
+        <p lang="en" className="font-mono text-overline uppercase text-muted">
+          Legal
+        </p>
         <h1 className="mt-2 font-display text-display font-semibold">Impressum</h1>
       </header>
 
+      {/*
+       * A build-time reminder rendered as page content, because a placeholder
+       * address on a live Impressum is a legal problem and a TODO comment in a
+       * file nobody reopens is not a safeguard. Written in English because it
+       * addresses the developer rather than the reader, hence lang="en".
+       */}
       {addressIncomplete ? (
-        <p className="mt-8 max-w-prose border border-error px-4 py-3 font-mono text-caption text-error">
+        <p
+          lang="en"
+          className="mt-8 max-w-prose border border-error px-4 py-3 font-mono text-caption text-error"
+        >
           Not ready to deploy: the address below is still a placeholder. § 5 DDG requires a full
           street address, and a P.O. box does not satisfy it. Set it in src/lib/site.ts.
         </p>

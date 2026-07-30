@@ -78,15 +78,6 @@
 }
 
 @theme {
-  /*
-   * Typography: one superfamily, three voices.
-   *
-   * These literal family names are the baseline. A project that loads the faces
-   * through a build-time mechanism (the portfolio uses next/font) overrides
-   * these in its own stylesheet with an `@theme inline` block pointing at the
-   * generated variables. The literals then serve as the fallback for the window
-   * before those variables resolve.
-   */
   --font-display: "IBM Plex Serif", ui-serif, Georgia, serif;
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;

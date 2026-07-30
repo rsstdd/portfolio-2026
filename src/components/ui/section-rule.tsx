@@ -1,7 +1,7 @@
 /**
  * The datum tick: a hairline with a short orange mark at its origin, after the
- * reference line on a measurement drawing. This is the design system's most
- * frequent accent appearance, and on most pages it is the only one.
+ * reference line on a measurement drawing. The design system's most
+ * frequent accent appearance. On most pages it is the only one.
  *
  * The tick itself comes from `.rule-datum` in design-tokens.css rather than
  * from utilities here, because that file is shared with the Astro photography
@@ -14,11 +14,13 @@
 export function SectionRule({
   index = "",
   label = "",
+  as: Tag = "p",
   className = "",
 }: {
   index?: string;
   label?: string;
   className?: string;
+  as?: "p" | "h2" | "h3";
 }) {
   return (
     <div className={`rule-datum ${className}`}>

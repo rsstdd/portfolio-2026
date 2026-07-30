@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProjectCard } from "@/components/content/project-card";
 import { SectionRule } from "@/components/ui/section-rule";
 import { getHome, getProjects } from "@/lib/content";
+import { JsonLd, personJsonLd } from "@/lib/json-ld";
 import { site } from "@/lib/site";
 
 /**
@@ -27,6 +28,8 @@ export default function HomePage() {
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 md:px-8 lg:px-10">
+      <JsonLd data={personJsonLd()} />
+
       <section className="pt-16 pb-24 md:pt-32 md:pb-32">
         <p className="font-mono text-overline uppercase text-muted">
           {site.name} · {site.role} · {site.location}
@@ -55,7 +58,7 @@ export default function HomePage() {
       </section>
 
       <section className="pb-24 md:pb-32">
-        <SectionRule label={home.workLabel} />
+        <SectionRule label={home.workLabel} as="h2" />
 
         <ul className="mt-8 grid gap-4 md:grid-cols-3">
           {featured.map((project) => (

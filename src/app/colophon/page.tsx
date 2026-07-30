@@ -85,9 +85,18 @@ export default function ColophonPage() {
           <table className="mt-8 w-full">
             <thead>
               <tr>
-                <th>Pair</th>
-                <th className="text-right">Ratio</th>
-                <th className="text-right">Level</th>
+                <th
+                  className="border-b border-line pb-3 pr-4 text-left font-mono text-overline font-semibold uppercase text-muted">
+                  Pair
+                </th>
+                <th
+                  className="border-b border-line pb-3 pr-4 text-left font-mono text-overline font-semibold uppercase text-muted text-right">
+                  Ratio
+                </th>
+                <th
+                  className="border-b border-line pb-3 pr-4 text-left font-mono text-overline font-semibold uppercase text-muted text-right">
+                  Level
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -125,8 +134,7 @@ export default function ColophonPage() {
         <SectionRule index="04" label="Source" />
         <div className="mt-8 max-w-prose">
           <p className="text-muted">
-            The repository is public, because a site that claims engineering discipline should let
-            people read the code. Fonts are self-hosted and there are no third-party requests, so
+            The repository is public. Fonts are self-hosted, and there are no third-party requests, so
             nothing about a visit is shared with anyone.
           </p>
           <p className="mt-6">

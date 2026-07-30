@@ -5,6 +5,7 @@ import { cache } from "react";
 import { Mdx } from "@/components/content/mdx";
 import { SectionRule } from "@/components/ui/section-rule";
 import { getAbout } from "@/lib/content";
+import { JsonLd, personJsonLd } from "@/lib/json-ld";
 import { site } from "@/lib/site";
 
 const getAboutContent = cache(getAbout);
@@ -33,10 +34,11 @@ export function generateMetadata(): Metadata {
 
 export default function AboutPage() {
   const about = getAboutContent();
-  const updated = about.updated.toISOString().slice(0, 10);
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
+      <JsonLd data={personJsonLd()} />
+
       <header className="max-w-prose">
         <p className="font-mono text-overline uppercase text-muted">About</p>
 
