@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SectionRule } from "@/components/ui/section-rule";
+import { Term } from "@/components/ui/term";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -47,7 +48,7 @@ const contrast = [
   ["Orange body text on paper", "5.24", "AA"],
 ];
 
-const copy = {
+const datumCopy = {
   datum:
     "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data.Color relationships were calculated for consistency and contrast rather than selected by eye.",
 };
@@ -56,7 +57,25 @@ export default function ColophonPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">Colophon</p>
+        <p className="font-mono text-overline uppercase text-muted">
+          <Term
+            id="colophon-definition"
+            note={
+              <>
+                <i lang="grc-Latn" className="font-mono not-italic">
+                  kolophōn
+                </i>
+                , from the Greek for <i>finishing stroke</i>. A <dfn>colophon</dfn> is the note
+                traditionally placed at the end of a book describing how it was made. This page is
+                the digital equivalent: a record of the technologies, design decisions, and
+                engineering behind this site. That is why it is not titled{" "}
+                <span className="whitespace-nowrap">&ldquo;About this site.&rdquo;</span>
+              </>
+            }
+          >
+            Colophon
+          </Term>
+        </p>
         <h1 className="mt-2 font-display text-display font-semibold text-balance">
           How this site is built
         </h1>
@@ -80,7 +99,7 @@ export default function ColophonPage() {
       <section className="mt-24">
         <SectionRule index="02" label="Datum" />
         <div className="mt-8 max-w-prose">
-          <p className="text-muted">{copy.datum}</p>
+          <p className="text-muted">{datumCopy.datum}</p>
 
           <table className="mt-8 w-full">
             <thead>

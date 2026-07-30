@@ -51,6 +51,147 @@
 
 @layer components {
   /*
+   * Defined term, with a note on hover, focus, and tap.
+   *
+   * Pure CSS because the colophon claims zero client components and this
+   * appears on the colophon. See src/components/ui/term.tsx for the markup and
+   * the accessibility reasoning.
+   */
+  .term-trigger {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    /*
+     * Muted at rest, orange only on interaction. DESIGN_SYSTEM § 6 allows one
+     * accent moment per view and the section rules already spend it on their
+     * datum ticks, so the resting state stays monochrome and the orange is
+     * reserved for the affordance.
+     */
+    text-decoration-color: var(--border-c);
+    text-underline-offset: 0.18em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .term-trigger:hover,
+  .term-trigger:focus-visible {
+    text-decoration-color: var(--accent);
+  }
+
+  /*
+   * The note is a native popover, so it renders in the top layer. That escapes
+   * every ancestor's containing block, which is why placement uses anchor
+   * positioning rather than `position: absolute`. The anchor name arrives as an
+   * inline style from the component so two terms on a page cannot collide.
+   */
+  .term-note {
+    position: absolute;
+    position-area: bottom span-right;
+    margin: 0.6em 0 0 0;
+
+    width: max-content;
+    max-width: min(42ch, calc(100vw - 2.5rem));
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border-c);
+    border-radius: var(--radius-xs);
+    box-shadow: var(--shadow-md);
+
+    /* Reset what it would inherit from a mono uppercase overline. */
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: normal;
+    text-transform: none;
+    text-align: left;
+    color: var(--text);
+
+    /*
+     * Closed state.
+     *
+     * `overlay` carries allow-discrete so the element stays in the top layer
+     * long enough to animate out. Do NOT add `display` to this list, however
+     * often that pairing appears in examples: tested in Chrome, transitioning
+     * both leaves the note stuck on screen after close, computing
+     * `display: block` and `opacity: 1` with a live bounding box while
+     * `:popover-open` no longer matches. Transitioning `overlay` alone gives
+     * the same exit animation and closes cleanly.
+     */
+    opacity: 0;
+    translate: 0 -4px;
+    transition:
+      opacity var(--duration-base) var(--ease-standard),
+      translate var(--duration-base) var(--ease-standard),
+      overlay var(--duration-base) allow-discrete;
+  }
+
+  /* Flip above the trigger when there is no room below. */
+  @supports (position-try-fallbacks: flip-block) {
+    .term-note {
+      position-try-fallbacks: flip-block;
+    }
+  }
+
+  .term-note:popover-open {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* Without this the entry animation is skipped, because the element goes
+     straight from display:none to its open state. */
+  @starting-style {
+    .term-note:popover-open {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+
+  /*
+   * Engines without anchor positioning would otherwise pin the note to the
+   * top-left of the viewport. Centre it instead: less elegant, still usable.
+   */
+  @supports not (position-anchor: --a) {
+    .term-note {
+      position: fixed;
+      inset: auto;
+      top: 50%;
+      left: 50%;
+      margin: 0;
+      translate: -50% calc(-50% - 4px);
+    }
+    .term-note:popover-open {
+      translate: -50% -50%;
+    }
+  }
+
+  .term-note::backdrop {
+    background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .term-note,
+    .term-note:popover-open {
+      translate: none;
+    }
+  }
+
+  /* The note is chrome, not content: it has no place on a printed page. */
+  @media print {
+    .term-note {
+      display: none;
+    }
+    .term-trigger {
+      text-decoration: none;
+    }
+  }
+
+  /*
    * MDX prose.
    *
    * Content arrives as raw h2/p/table elements with no classNames, so it needs
