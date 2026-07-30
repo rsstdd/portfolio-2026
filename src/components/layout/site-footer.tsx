@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
 
+const links = [
+  { href: site.github, label: "GitHub" },
+  { href: site.linkedin, label: "LinkedIn" },
+  { href: `mailto:${site.email}`, label: "Email" },
+  { href: "/impressum", label: "Impressum" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/colophon", label: "Colophon" },
+]
+
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-line md:mt-32">
@@ -10,13 +19,7 @@ export function SiteFooter() {
         </p>
 
         <ul className="flex flex-wrap gap-x-5 gap-y-2">
-          {[
-            { href: site.github, label: "GitHub" },
-            { href: site.linkedin, label: "LinkedIn" },
-            { href: `mailto:${site.email}`, label: "Email" },
-            { href: "/impressum", label: "Impressum" },
-            { href: "/privacy", label: "Privacy" },
-          ].map((link) => (
+          {links.map((link) => (
             <li key={link.label}>
               <Link
                 href={link.href}
