@@ -38,6 +38,15 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+/*
+ * Site-wide defaults only.
+ *
+ * Do NOT add `alternates: { canonical: ... }` here. Next inherits it into every
+ * route that does not override it, so one value makes /cv, /about, /projects
+ * and /colophon each declare themselves a duplicate of the home page and ask
+ * search engines to index the home page instead. Canonicals are per page, via
+ * `pageMetadata` in src/lib/metadata.ts.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
@@ -45,31 +54,11 @@ export const metadata: Metadata = {
     template: "%s — Ross Todd",
   },
   description:
-    "Senior software engineer in Munich working across platform engineering, distributed systems, and full-stack products.",
-  alternates: { canonical: "/" },
+    "Senior software engineer in Munich. Nine years across sensors, full-stack product work, and shared frontend platforms.",
   openGraph: {
     type: "website",
-    siteName: "Ross Todd",
-    title: "Ross Todd — Senior Software Engineer",
-    description:
-      "Platform engineering, distributed systems, and full-stack products.",
-    url: site.url,
     locale: "en_US",
-    images: [
-      {
-        url: "/images/og/default.png",
-        width: 1200,
-        height: 630,
-        alt: "Ross Todd, senior software engineer, Munich",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Ross Todd — Senior Software Engineer",
-    description:
-      "Platform engineering, distributed systems, and full-stack products.",
-    images: ["/images/og/default.png"],
+    siteName: "Ross Todd",
   },
 };
 

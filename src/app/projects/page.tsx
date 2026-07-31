@@ -29,8 +29,8 @@ export default function ProjectsPage() {
         <h1 className="mt-2 font-display text-display font-semibold text-balance">Selected work</h1>
         <p className="mt-4 text-body-lg text-muted">
           Every project is documented with evidence, technical decisions, and
-          measurable outcomes. Where work is incomplete or claims cannot be
-          verified, that is stated explicitly.
+          measurable outcomes. If the work is incomplete or claims cannot be
+          verified, I state that explicitly.
         </p>
       </header>
 

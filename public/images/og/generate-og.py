@@ -72,7 +72,7 @@ CARDS = [
      "Senior full-stack software engineer",
      "rsstdd.com/cv · Munich · EU Blue Card"),
     ("projects", "Selected work",
-     "Eight projects, each with its honest limits.",
+     "Eight projects, each with its Limitations.",
      "rsstdd.com/projects"),
     ("colophon", "Colophon",
      "How this site is built, and what it measures.",
