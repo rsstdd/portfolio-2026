@@ -3,7 +3,7 @@
 My portfolio site. Next.js 16 App Router, statically generated, content as MDX files in git, zero database.
 
 <!-- Screenshot of the projects page here once the design settles. -->
-<!-- Live at: add URL once deployed. -->
+Live at: [rsstdd.com](https://rsstdd.com).
 
 > **Status: in active development (July 2026).**
 >
