@@ -11,195 +11,137 @@ languages: "English native; German A0"
 updated: 2026-07-30
 ---
 
-Senior software engineer with roughly a decade building web applications, backend services, and the shared platforms other engineers ship on. Primary stack: TypeScript, JavaScript, React, Next.js, and Node.js, with Python, Rust, and AWS for backend, data, and infrastructure work. The through-line is platform ownership: a framework-agnostic component platform adopted across five host frameworks at Alaska Airlines, a serverless consent platform serving four AWS regions including China at Nike, and an incremental Django-to-Next.js migration at Volume. Strongest in frontend and platform architecture, event-driven backend systems, performance work backed by measurement, and the documentation and contracts that let other teams move without a meeting.
+Senior software engineer, a decade into building the platforms other engineers ship on.
+
+At Alaska Airlines, a component platform served four product teams across Next.js, Svelte, React, Vue, and .NET. It held because its props and events were versioned contracts with a deprecation policy, so teams could upgrade on their own schedule rather than in lockstep. At Nike, a serverless consent platform spanned four AWS regions, including China. Migrating off a third-party vendor moved 20 million consent records onto it, and its APIs were load-tested at 30,000 requests per second.
+
+The core stack is TypeScript, React, Next.js, and Node.js, with Python, Rust, and AWS underneath. The strength is the unglamorous half of platform engineering: integration contracts, migrations that run page by page rather than as a rewrite, and performance backed by measurement. Based in Munich, and authorized to work in Germany without sponsorship.
+
+Based in Munich, authorized to work in Germany without sponsorship.
 
 ## Experience
 
 ### Alaska Airlines — Senior software engineer, content engineering
 **Feb 2024 – Jan 2026 · Contract · Remote, USA**
 
-Shared frontend and content platform for alaskaair.com through the Alaska–Hawaiian integration. Three threads: Borealis, a component platform; RetroStack, the server-rendered content application running on Kubernetes in Azure behind Azure Front Door; and the Sitecore-to-Contentstack migration.
+Shared frontend and content platform for alaskaair.com through the Alaska–Hawaiian integration, spanning Borealis (a component platform), RetroStack (the server-rendered content application on Kubernetes in Azure), and the Sitecore-to-Contentstack migration.
 
 **Platform architecture**
 
-- Architected and delivered Borealis, a framework-agnostic Lit and Web Components platform adopted by four to five product teams across Next.js, Svelte, React, Vue, and .NET host applications.
-- Authored the platform's architecture principles: a decoupled content model, capability injection, contract-first props and events versioned with semver and a deprecation policy, and deterministic SSR-safe registration and hydration utilities. Versioned contracts were what let consuming teams upgrade independently.
-- Moved CMS-to-props mapping out of the components, so a Contentstack schema change could not break every consumer at once.
-- Built the deterministic SSR-safe loading, registration, and hydration utilities the platform depended on. It ran mixed-mode through the transition: true Lit server rendering on some surfaces, client-only mounts inside server-rendered pages on others.
-- Built RetroStack's dual-CMS content abstraction, normalizing Sitecore (GraphQL queries plus a library of page-layout models) and Contentstack (SDK helpers with field mappers and providers) to the same render models, so pages could flip between content systems without touching the rendering layer.
-- Contributed to the Header/Footer service modernization design: variant detection centralized out of consumer-copied functions, variant-coupled theming for merger-era brands, and an Optimizely-gated phased rollout that preserved legacy endpoints.
-- Delivered the platform side of Flight Results and Compare Fares, onboarding the Flight Search team to Contentstack and building multi-brand theming.
-
-**Personalization and offer orchestration**
-
-- Designed the islands-architecture integration with the Offer Orchestration service: one backend call per server-rendered page, roughly 30 ranked offers normalized into header, body, pre-footer, and footer placements, embedded as a read-only JSON snapshot that islands hydrate from with zero client-to-API calls afterward. Documented as a sequence-diagrammed reference architecture with fail-closed fallback to CMS content.
-- Authored the two-stage deduplication design: cross-surface filtering, then deterministic partitioning on canonical offer keys, against a CMS-defined zone schema carrying capacity, priority, and per-route enable flags, plus a telemetry spec covering dedupe drop reasons and post-render duplicate detection.
-- Authored the Component Personalization Service architecture proposal against a stated target of 99.9% monthly availability: one .NET endpoint returning either JSON or server-rendered markup, Okta-to-Azure APIM authentication with managed identity and no client-exposed secrets, edge caching separated from short in-memory caching for authenticated sessions, and trace stitching by transaction ID. Architecture and proposal stage rather than shipped.
-- Designed GDPR and CCPA consent gating for personalization, sized for a 200,000-key p95 cache space at a five-minute TTL.
+- Architected and delivered Borealis, a framework-agnostic Lit and Web Components platform adopted by four to five product teams across Next.js, Svelte, React, Vue, and .NET host applications. It held across five frameworks because props and events were contract-first, versioned with semver and a deprecation policy, so consuming teams upgraded on their own schedule rather than mine.
+- Pulled CMS-to-props mapping out of the components, so a Contentstack schema change could not break every consumer at once, and built the deterministic SSR-safe registration and hydration utilities the platform depended on. It ran mixed-mode through the transition: true Lit server rendering on some surfaces, client-only mounts inside server-rendered pages on others.
+- Built the dual-CMS abstraction for the Next.js application behind the homepage and content pages, normalizing two content systems onto one set of render models: Sitecore through GraphQL queries and a library of page-layout models, Contentstack through SDK helpers with field mappers. Either could serve a page without the rendering layer knowing which, which is what let the migration run page by page instead of as a rewrite.
+- Designed the offer-orchestration integration: one backend call per server-rendered page, roughly 30 ranked offers deduplicated on canonical keys and partitioned into CMS-defined zones with capacities and priorities, embedded as a read-only snapshot that islands hydrate from with zero client-to-API calls afterward.
+- Authored the Component Personalization Service architecture, including GDPR and CCPA consent gating for personalization, against a stated 99.9% monthly availability target. Architecture and proposal stage rather than shipped.
 
 **Reliability and performance**
 
-- Led root-cause analysis and authored the incident report for a Sev2 production incident in which an infinite request loop saturated backend infrastructure and degraded homepage flight search. Proved the two rolled-back commits were not the cause, isolated a pre-existing race condition exposed by a new skeleton loader, briefed SRE, resumed deployment against a documented risk assessment, and defined remediation aimed at the class of defect rather than the single instance.
-- Wrote a repeatable reproduction procedure so the failure was demonstrable rather than theoretical, plus a component-level code audit enumerating each missing safeguard.
-- Ran a six-scenario controlled Lighthouse matrix on the homepage, isolating one third-party script per scenario against a fixed baseline. Removing Optimizely alone moved the performance score from 60.33 to 70.67, cut total blocking time 65% (0.20s to 0.07s), and cut time to interactive 1.13 seconds, roughly 20%; AppDynamics was the second-largest cost at 60% of total blocking time. Root-caused six bottlenecks, including JavaScript bootup, render-blocking resources, 3.5 to 3.8MB of byte weight, a 2,173-element DOM, and a server response time over 500ms, and produced per-script deferral recommendations adopted into planning.
-- Drove the Auro CDN-to-npm migration to cut render-blocking component loads, including component namespacing and a before-and-after validation plan.
+- Led root-cause analysis and authored the incident report for a Sev2 outage in which an infinite request loop saturated backend infrastructure and degraded homepage flight search. Proved the two rolled-back commits were not the cause, isolated a pre-existing race condition exposed by a new skeleton loader, and defined remediation aimed at the class of defect rather than the single instance.
+- Ran a six-scenario controlled Lighthouse matrix isolating each third-party script against a fixed baseline. Removing Optimizely alone moved the performance score from 60.33 to 70.67, cut total blocking time 65%, and cut time to interactive 1.13 seconds; AppDynamics was second at 60% of total blocking time. The per-script deferral strategy was adopted into planning.
 
-**Delivery, standards, and enablement**
+**Delivery and standards**
 
-- Led the Flight Search retro, analyzing systemic cross-team delivery failure with issue-level evidence across roughly 20 issues and pull requests, including a core feature pull request blocked for over two months by chained upstream dependency fixes and an upstream major release landing mid-integration. The outcome fed org-wide standardization of web-component events and APIs plus readiness gates, and drove recurring cross-team architecture meetings.
-- Led Sitecore-to-Contentstack migration planning with EPAM: catalogued the content page and partial inventory, defined integration contracts and documentation governance, and wrote the Contentstack onboarding cookbook internal teams used instead of depending on the vendor.
-- Designed the Contentstack and Smartling auto-translation workflow: AI and human translation routing, legal and policy review gating, layout-overwrite prevention, and unpublished-translation reporting.
-- Built platform CI/CD and infrastructure: Azure Static Web Apps pipelines, Terraform-provisioned Azure Front Door, Static Web App, Key Vault, and Storage with a WAF policy, Storybook deployed to Azure for isolated component development, and changesets-based release versioning.
-- Built and maintained test infrastructure across Vitest, Jest, React Testing Library, and Playwright, including team training, plus unit tests for .NET converters under SonarQube-driven refactors.
-- Wrote the deployment, manual VQA, and visual QA runbooks, converting tribal knowledge into repeatable process.
+- Led the Flight Search retro after a core feature pull request sat blocked for over two months behind chained upstream dependency fixes, analyzing the failure across roughly 20 cited issues and pull requests. The outcome fed org-wide standardization of web-component events and APIs plus readiness gates, and drove recurring cross-team architecture meetings.
+- Led Sitecore-to-Contentstack migration planning with EPAM, defining integration contracts and documentation governance and writing the Contentstack onboarding cookbook internal teams used instead of depending on the vendor.
+- Built the platform's CI/CD and infrastructure on Azure Static Web Apps with Terraform-provisioned Front Door, Key Vault, and a WAF policy, plus changesets-based releases, Storybook, and the deployment and visual QA runbooks that turned tribal knowledge into repeatable process.
 - Won the 2025 organization-wide AI hackathon on a team that built an LLM chatbot grounded in internal FAQ content.
 
-*TypeScript, JavaScript, Lit, Web Components, React, Next.js, Svelte, Vue, .NET/C#, Node.js, Vite, Vitest, Jest, Playwright, React Testing Library, Storybook, Azure (AKS, Front Door, Static Web Apps, Key Vault, APIM, App Insights), Terraform, Sitecore, Contentstack, Optimizely, Smartling, GraphQL*
+*TypeScript, Lit, Web Components, React, Next.js, Svelte, Vue, .NET/C#, Node.js, Vite, Vitest, Playwright, Storybook, Azure (AKS, Front Door, Static Web Apps, Key Vault, APIM), Terraform, Sitecore, Contentstack, Optimizely, GraphQL*
 
 ### Nike — Senior software engineer, privacy and compliance engineering
 **May 2022 – Jul 2023 · Contract · Remote, USA**
 
 Backend and platform engineering on User Permission Services, the serverless consent platform behind Nike's digital experiences globally and in China. Concurrent with the Volume engagement from May to Sep 2022.
 
-**Consent platform**
+- Built and operated the consent service layer: the publish service wrote events to Kinesis, fanning out through SQS queues with dead-letter queues into three ingest Lambdas for purpose-limitation state, the data lake, and the audit trail, with DynamoDB persistence, Firehose delivery to S3, and X-Ray tracing across the service graph.
+- Implemented the consent and permission REST APIs on a domain model separating implicit consents, meaning legal defaults per jurisdiction, from explicit user choices, with every consent event referencing a versioned context frame recording the exact interface the user saw, so the audit trail could prove what was consented to.
+- Deployed and integration-tested across four AWS regions behind Akamai globally and AliCloud in China, and owned the China side: replicated global routing via AliCloud and root-caused behavioral divergence between the two CDNs.
+- Led the push-notification consent migration off a third-party vendor. Root-caused the first pass's failures to DynamoDB conditional-write collisions during bulk ingest and fixed them, authored the plan and cutover runbook for the second, validated Glue jobs against production-scale mock data in test, and wrote the data loading in Rust after Node.js hit memory limits on the full dataset. The entire relevant dataset, roughly 20 million records, migrated and the vendor dependency was eliminated, with a 93% opt-in rate retained.
+- Performance-validated the platform at launch scale: p95 latency of 174 to 201ms across runs of roughly 31.6 million and 1.85 million invocations with 5xx rates below 0.001%, then authored the AWS limit-increase intake for a 30,000 requests-per-second launch scenario after load-testing at that rate. Shipped and validated the API Gateway caching layer behind it.
+- Enabled Codecov across the pipeline with 90% coverage thresholds enforced in CI and an integration-test matrix parameterized across all four regions, and onboarded two engineers with documentation and technical demos for distributed teams.
 
-- Built and operated the consent service layer: an event-driven pipeline in which the publish service wrote consent events to Kinesis, fanning out through SQS consumer queues with dead-letter queues into three ingest Lambdas for purpose-limitation state, the data lake, and the audit trail, with DynamoDB persistence, Kinesis Firehose delivery to S3, S3 and Glue ETL, and X-Ray tracing across the service graph.
-- Implemented the consent and permission REST APIs, including a consent write carrying purpose-limitation categories, consent levels, and control types, and a cached read for purpose-limitation defaults by experience and location. Authored the low-level design for V2 fields, the audit-log contract naming, and the DynamoDB client interface.
-- Modeled the domain distinction the platform runs on: implicit consents, meaning legal defaults per jurisdiction, against explicit consents, meaning the user's own choices, with every consent event referencing a versioned context frame recording the exact interface the user saw, so the audit trail could prove what was consented to.
-- Deployed and integration-tested across four AWS regions behind Akamai globally and AliCloud in China. Owned the China side: replicated global Akamai routing via AliCloud, audited CORS and edge behavior across four endpoints in both environments and both regimes, and root-caused behavioral divergence between the two CDNs.
-- Authored the future Akamai routing strategy design, including regional routing via traffic policy and the trade-off analysis for owning caching in-account against the organizational standard.
-
-**Migration off the third-party vendor**
-
-- Led the push-notification consent data migration off a third-party vendor into the in-house platform: authored the plan and design for the second pass, designed the identity-data extract import after taking an options analysis through identity-team approval, and validated Glue jobs against production-scale mock data staged in test S3 buckets.
-- Root-caused the first pass's ingest failures to DynamoDB conditional-write collisions during bulk ingest and implemented the error handling that fixed them.
-- Authored the cutover runbook: disable Lambda event sources, watch for an invocation flatline of at least five minutes, verify consumer queues and dead-letter queues hold no visible or invisible messages, check the Firehose audit delivery stream, and trace the pipeline through saved X-Ray service-graph queries spanning all three ingest services.
-- Wrote the data loading and transmission in Rust after Node.js hit memory limits on the full dataset.
-- Migrated the entire relevant dataset, roughly 20 million records, and eliminated the vendor dependency, with a 93% opt-in rate retained.
-
-**Performance and platform quality**
-
-- Shipped and validated API Gateway caching for the cached defaults endpoint, authoring the decision document that chose stage caching over the CDN, implementing it through CloudFormation and SAM across two repositories with path-parameter cache keys and a header for cache introspection, and deliberately deferring China production enablement because the endpoint was not yet consumed there.
-- Performance-validated the aggregator platform at launch scale: end-to-end tests recording p95 latency of 174 to 201ms over runs of roughly 31.6 million and 1.85 million invocations with 5xx rates below 0.001%, then authored the AWS limit-increase intake for a 30,000 requests-per-second launch scenario after load-testing at that rate.
-- Ran and documented the team's Gatling performance-test infrastructure: parameterized Jenkins jobs driving distributed load agents on EC2 against a virtual service mocking identity, with a before-and-after comparison methodology that became the team's documentation standard.
-- Designed consent-analytics reporting improvements to the internal data platform, adding jurisdiction-at-selection and context-frame mapping to the analytics stream, covering event-mapper changes, a new stream and supporting services for context-frame metadata, source-contract updates, and schema coordination for both global and China.
-- Ran the Korea jurisdiction onboarding epic end to end: production intake, context-frame creation, API contract updates, translations, the operational runbook, and a deprecation plan for superseded context frames.
-- Built self-service identity-data tooling on Databricks, removing the team's dependency on another team for data extracts.
-- Enabled Codecov across the pipeline with 90% coverage thresholds enforced in CI and an integration-test matrix parameterized across all four regions. Served rotating Bugmaster and Scrum Master duties.
-- Onboarded two engineers and authored the documentation and technical demos distributed teams ramped up on.
-
-*Node.js, JavaScript, Python, Rust, AWS (Lambda, API Gateway, Kinesis, Firehose, SNS, SQS, S3, DynamoDB, Glue, Athena, X-Ray, CloudFormation, SAM, IAM), Kafka, Databricks, PySpark, Jenkins, Gatling, Mocha, Jest, Chai, Akamai, AliCloud*
+*Node.js, JavaScript, Python, Rust, AWS (Lambda, API Gateway, Kinesis, Firehose, SQS, S3, DynamoDB, Glue, Athena, X-Ray, CloudFormation), Databricks, Jenkins, Gatling, Akamai, AliCloud*
 
 ### Volume Media — Senior software engineer
 **May 2021 – Sep 2022 · Contract · Remote, USA**
 
-Full-stack engineer on a browser-based live video and audio streaming platform for musicians, Dockerized on Google Cloud. The codebase was an inherited Django monolith of 1,073 directories and 4,057 files with server-rendered templates. Concurrent with the Nike engagement from May to Sep 2022.
+Full-stack engineer on a browser-based live video and audio streaming platform for musicians, Dockerized on Google Cloud. Concurrent with the Nike engagement from May to Sep 2022.
 
-- Conducted the frontend architecture audit of the monolith that made the case for migration, covering structure, the existing build, and why the absence of a frontend framework was costing delivery speed.
-- Co-led the incremental React and Next.js migration off the monolith, starting with the highest-traffic page, against a roughly 20-item workplan spanning component atoms, Django CORS and view changes, Next configuration, metadata, and monitoring. Django continued serving everything not yet migrated, so there was no cutover risk.
-- Solved the Django-to-Next.js authentication bridge: CSRF token flow and HttpOnly session cookies against Django REST Framework, with the CORS configuration changes that let credentials survive cross-origin requests. This became the pattern the rest of the migration followed.
-- Owned homepage delivery: API integration and data shaping, responsive and mobile sections, carousel defects, and theme toggle integration.
-- Built revenue and creator features end to end: a Stripe-integrated purchase modal, and artist bio panels with Twitter and Instagram integrations spanning the Django model, URLs, and views plus extendable React panel components.
-- Introduced a design system on atomic design with Storybook, refactored stylesheets to CSS Modules, BEM, and ITCSS to cut collisions and complexity, and rebuilt the Webpack configuration for minification, code splitting, and correct production bundling. Time to first paint and time to interactive both improved.
-- Identified delivery gaps the team had absorbed as normal, including no way to determine which commit was deployed, and cataloged the remaining static-page and support surface for the migration.
+- Audited the inherited Django monolith, 1,073 directories and 4,057 files of server-rendered templates, and made the case for migration; then co-led the incremental move to React and Next.js one page at a time, highest-traffic first, with Django continuing to serve everything not yet migrated so there was no cutover risk.
+- Solved the Django-to-Next.js authentication bridge, the technical crux of the migration: CSRF token flow and HttpOnly session cookies against Django REST Framework, with the CORS changes that let credentials survive cross-origin requests. It became the pattern the rest of the migration followed.
+- Built revenue and creator features end to end, including a Stripe-integrated purchase flow and artist profile panels spanning Django models and views through to React components.
+- Introduced a design system on atomic design with Storybook and rebuilt the Webpack configuration for code splitting and correct production bundling. Time to first paint and time to interactive both improved.
 
-*Python, TypeScript, JavaScript, React, Next.js, Django, Django REST Framework, Storybook, Docker, Google Cloud Platform, PostgreSQL, Webpack, Jest, React Testing Library, Enzyme, SCSS, Styled Components, GraphQL, Stripe, New Relic, Jenkins, GitHub Actions*
+*Python, TypeScript, React, Next.js, Django, Django REST Framework, Docker, Google Cloud Platform, PostgreSQL, Webpack, Storybook, Stripe, GraphQL*
 
 ### Lululemon — Lead software engineer, content and education
 **Apr 2020 – May 2021 · Full-time · Remote and Seattle, WA**
 
-Promoted from software engineer after 11 months, leading the team owning product detail pages and content experiences on lululemon.com.
+Promoted from software engineer after 11 months, leading the team owning product detail pages on lululemon.com, the highest-traffic and highest-revenue pages on the site, through the 2020 e-commerce surge and heavy cross-team dependencies.
 
-- Ran sprint planning and refinement across a quarterly cadence, coordinated against the A/B testing calendar so feature work and experiments shared one schedule.
-- Reduced feature thrashing and rework through planning discipline and cross-team communication, on a team carrying heavy dependencies on the highest-revenue pages during the 2020 e-commerce surge.
-- Incrementally restructured the application to consolidate duplicated business logic into shared services, and simplified layout logic by extracting presentational UI into Storybook.
-- Drove automated testing and raised code coverage above 90%.
+- Restructured the application to consolidate duplicated business logic into shared services and extracted presentational UI into Storybook, and drove automated coverage above 90%.
+- Ran sprint planning and refinement on a quarterly cadence coordinated against the A/B testing calendar, so feature work and live experiments shared one schedule rather than competing for the same surface.
+- Built engineering culture structurally rather than ad hoc: a Community of Practice, a design-system champions group, a documented team goals framework, and the onboarding documentation new engineers started from.
 - Ran 1:1s and contributed input to performance reviews; formal people management remained with the engineering manager.
-- Built engineering culture structurally rather than ad hoc: a Community of Practice, a design-system champions group, a documented team goals framework, and onboarding documentation.
-- Flagged security and privacy defects through security review, including logout failing to invalidate an access token held in duplicate, and a third-party analytics tool collecting identity data.
+- Flagged security and privacy defects through security review, including logout failing to invalidate an access token held in duplicate, a third-party script blocking some logout calls, and an analytics vendor collecting identity data.
 
-*JavaScript, React, Next.js, Storybook, React Testing Library, Jest, Enzyme, Webpack, SCSS, GraphQL/Apollo, Splunk, GitLab, Travis*
+*JavaScript, React, Next.js, Storybook, React Testing Library, Jest, Webpack, SCSS, GraphQL/Apollo, Splunk*
 
 ### Lululemon — Software engineer, content and education
 **May 2019 – Apr 2020 · Full-time · Remote and Seattle, WA**
 
-- Delivered product detail page features with UX, product, brand, and engineering partners, including the product image carousel and lightbox, "Why we made this," the Bra Quiz, ratings and reviews, social content, and store-pickup mapping. Chose the carousel library against a scored evaluation matrix of candidate libraries, rated on pagination, navigation, transitions, looping, and partial visibility, rather than by preference.
-- Led the GraphQL migration plan for the product detail page, the company's riskiest surface: authored a component-by-component data-distribution audit mapping every component to the exact fields it pulled from the legacy gateway and flagging over-fetching, then scoped and sequenced the epic so a GraphQL query could first mirror the legacy response shape and let consumption switch without component rewrites. Rollout was planned behind an experiment flag so the migration could serve a rising share of real traffic with instant rollback.
-- Designed and built the generic size-guide platform, replacing one-off pages: statically generated Next.js dynamic routes and a consistent table design system consuming per-category size-chart datasets, with ATG data mapping, an SEO heading and markup specification developed with the SEO team, a redirect strategy, localization, and an audit to normalize inconsistent legacy conversion charts before templating them. Adding a garment category became a content task rather than an engineering one.
-- Drove the code-splitting and lazy-loading architecture, moving below-the-fold and interaction-gated components behind dynamic imports.
-- Contributed image optimization, script cleanup, code splitting, and lazy loading to a portfolio of performance work that was credited internally with contributing to nine-figure annual gains. The attribution belongs to the team's combined work rather than to any one change or engineer.
+Frontend engineering on the product detail page and content experiences, delivered with UX, product, brand, and engineering partners across the Web App, Adobe AEM, and Endeca/ATG teams.
 
-*JavaScript, React, Next.js, Storybook, React Testing Library, Jest, Enzyme, Webpack, SCSS, GraphQL/Apollo, Splunk, Adobe Target, GitLab, Travis*
+- Led the GraphQL migration plan for the product detail page, the company's riskiest surface: authored a component-by-component audit mapping every component to the exact fields it pulled from the legacy gateway, flagging over-fetching where a component pulled an entire product response for two values, then sequenced the epic as a strangler so a GraphQL query could first mirror the legacy response shape and let consumption switch without component rewrites. Rollout was planned behind an experiment flag so it could serve a rising share of real traffic with instant rollback, and the client was chosen against the company's GraphQL serving architecture rather than by preference.
+- Designed and built the generic size-guide platform, replacing one-off pages with statically generated Next.js dynamic routes and a table design system consuming per-category datasets. The work spanned source data mapping from the legacy commerce system, an SRE epic for the infrastructure, a per-section heading and markup specification developed with the SEO team, a redirect strategy, localization onto the French storefront, and an audit normalizing inconsistent legacy conversion charts before templating them. Adding a garment category became a content task rather than an engineering one.
+- Drove the code-splitting and lazy-loading architecture for the page, splitting eagerly rendered above-the-fold components from everything below the fold or interaction-gated, including the image carousel, recommendations, video player, and store-pickup and zoom modals, which moved behind dynamic imports.
+- Delivered image optimization, script cleanup, code splitting, and lazy loading as part of a portfolio of performance work credited internally with contributing to nine-figure annual gains. Changes shipped inside measured A/B experiments rather than alongside them, which is the honest basis for that attribution; the credit belongs to the team's combined work rather than to any one change or engineer.
+- Shipped conversion-facing features across the page with cross-functional partners, including the product image lightbox, "Why we made this," the Bra Quiz, ratings and reviews, social content, and store-pickup mapping. Dependency choices were made against a scored evaluation matrix rather than by preference.
+
+*JavaScript, React, Next.js, Storybook, Jest, Webpack, SCSS, GraphQL/Apollo, Adobe Target*
 
 ### Migo, Inc. — Software engineer
 **Feb 2018 – Apr 2019 · Seattle, WA**
 
 Transportation aggregation platform with large-scale static page generation.
 
-- Built features across a React, Gatsby, Node.js, and DynamoDB application aggregating transportation options.
-- Built the static-generation pipeline that shipped millions of pages for search indexing.
-- Isolated and parallelized the build to work around Node.js memory limits during compilation, which was what made generation at that volume possible at all.
-- Wrote large-scale web scrapers, established the database layer, and built an image resize, compress, and store tool.
-- Added a test suite for the data-acquisition layer and automated build and deployment.
+- Built the static-generation pipeline that shipped millions of pages for search indexing, and isolated and parallelized the build to work around Node.js memory limits during compilation, which was what made generation at that volume possible at all.
+- Wrote large-scale web scrapers and established the database layer behind the catalog.
 - Refactored SCSS to ITCSS, cutting rule declarations by roughly two thirds and media queries by roughly half while reducing specificity.
 
-*JavaScript, Python, React, Gatsby, Node.js, Webpack, Jest, Enzyme, SCSS, GraphQL/Apollo, AWS S3, Route 53, DynamoDB, GitHub Actions*
+*JavaScript, Python, React, Gatsby, Node.js, DynamoDB, AWS S3, Webpack, SCSS*
 
-### Humming — Web application developer
-**Jul 2017 – Aug 2018 · Seattle, WA**
+### Earlier roles
 
-Early-stage localized advertising platform for small businesses, built by a two-person engineering team. Early advertising-platform exposure rather than mature ad-serving experience.
+**Humming — Web application developer** · Jul 2017 – Aug 2018 · Seattle, WA
+Early-stage localized advertising platform built by a two-person team. Owned the Node.js and Express server, the database schema and REST endpoints, and deployment on Google Cloud Platform. Early advertising-platform exposure rather than mature ad-serving experience.
 
-- Managed the Node.js and Express server, designed the database schema and REST endpoints, and deployed and maintained the service on Google Cloud Platform.
-- Built the React component library and decoupled the frontend from the backend.
+**LaunchCode — Teaching fellow** · Jul 2017 – Aug 2018 · Seattle, WA
+Taught and mentored students in LC101, a frontend JavaScript and Java program. The cohort recorded the highest retention rate of any to that point.
 
-*JavaScript, React, Node.js, Express, PostgreSQL, Webpack, Jest, SCSS, Google Cloud Platform*
-
-### LaunchCode — Teaching fellow
-**Jul 2017 – Aug 2018 · Seattle, WA**
-
-- Taught and mentored students in LC101, a frontend JavaScript and Java program, through class sessions and one-on-one work.
-- Supported students on debugging, third-party API integration, software design, and computer science fundamentals.
-- The cohort recorded the highest retention rate of any to that point.
-
-*JavaScript, Java, Python, React, Spring, Flask, jQuery, MySQL*
-
-### IUNU — Software developer, contract
-**Apr 2017 – Jun 2017 · Seattle, WA**
-
-Greenhouse environmental and inventory monitoring with field IoT devices.
-
-- Built and maintained a React, Redux, Node.js, Express, and MongoDB application tracking agricultural processes across an international greenhouse monitoring platform, with MongoDB and Redis in production.
-- Wrote and maintained Python agents collecting sensor and camera data on edge devices.
-- Used Ansible to push updates and configuration to field IoT devices.
-
-*JavaScript, React, Redux, Node.js, Express, Python, MongoDB, Redis, Heroku, Ansible*
+**IUNU — Software developer, contract** · Apr 2017 – Jun 2017 · Seattle, WA
+Greenhouse environmental and inventory monitoring. Built a React, Redux, Node.js, and MongoDB application with MongoDB and Redis in production, wrote the Python agents collecting sensor and camera data on edge devices, and used Ansible to push configuration to field IoT devices.
 
 ## Additional experience
 
-**University of Washington — Substitute instructor, continuing education** · Jan 2020 – Jan 2026 · Seattle, WA
-Taught the full-stack web development curriculum part time across six years alongside other roles, through labs, demonstrations, and lectures, and supported students on debugging, API integration, and software design.
+**University of Washington — Substitute instructor, continuing education** · Jan 2020 – Jan 2026
+Taught the full-stack web development curriculum part time across six years alongside other roles.
 
-**RMT Dev LLC — Owner** · Apr 2022 – Dec 2025 · Seattle, WA, remote
-Ran a software engineering consultancy alongside other roles. Designed and built Next.js and Shopify storefronts, and advised a small business on analytics tooling and SEO.
+**RMT Dev LLC — Owner** · Apr 2022 – Dec 2025 · Remote
+Software engineering consultancy run alongside other roles. Next.js and Shopify storefronts, plus analytics and SEO advisory.
 
 ## Skills
 
-- **Languages:** TypeScript, JavaScript, Python, Rust, C# (contributing), Java (taught)
-- **Frontend:** React, Next.js, Gatsby, Lit, Web Components, Svelte and Vue (as platform consumers), Storybook, SCSS, CSS Modules, Styled Components, server-side rendering, hydration, islands architecture, design systems, atomic design, ITCSS, BEM
-- **Backend and APIs:** Node.js, Express, Django, Django REST Framework, Flask, REST, GraphQL/Apollo, consent and permission APIs, event-driven and serverless service design, backend-for-frontend patterns
-- **Data:** PostgreSQL, MySQL, DynamoDB, MongoDB, Redis, CouchDB, Kinesis, Kafka, Glue, Athena, Databricks, PySpark
-- **Cloud and infrastructure:** AWS (Lambda, API Gateway, S3, EC2, IAM, CloudFormation, CDK, SAM, X-Ray, SNS, SQS), Azure (AKS, Front Door, Static Web Apps, Key Vault, APIM, App Insights), Google Cloud Platform, Terraform, Docker, Ansible, Akamai, AliCloud, Fastly
-- **Build and CI/CD:** Vite, Webpack, pnpm, npm, Yarn, changesets, Jenkins, GitHub Actions, GitLab CI, CircleCI, Azure Pipelines
-- **Testing and quality:** Vitest, Jest, Mocha, Chai, Playwright, React Testing Library, Enzyme, Gatling, Codecov, SonarQube, load and performance testing
-- **Practices:** Platform and API contract design, semver and deprecation policy, migration planning, incident response and root-cause analysis, performance measurement, technical documentation and runbooks, mentoring and onboarding, cross-functional delivery, GDPR and CCPA compliance engineering
+- **Languages:** TypeScript, JavaScript, Python, Rust, C#
+- **Frontend:** React, Next.js, Lit, Web Components, Storybook, server-side rendering, hydration, islands architecture, design systems, SCSS and CSS Modules
+- **Backend and APIs:** Node.js, Express, Django, Django REST Framework, Flask, REST, GraphQL, event-driven and serverless service design, backend-for-frontend patterns
+- **Data:** PostgreSQL, DynamoDB, MongoDB, Redis, Kinesis, Kafka, Glue, Databricks
+- **Cloud and infrastructure:** AWS (Lambda, API Gateway, S3, IAM, CloudFormation, X-Ray, SQS, SNS), Azure (AKS, Front Door, Static Web Apps, APIM), Google Cloud Platform, Terraform, Docker
+- **Build, test, and CI/CD:** Vite, Webpack, changesets, Jenkins, GitHub Actions, GitLab CI, Vitest, Jest, Playwright, React Testing Library, Gatling
+- **Practices:** Platform and API contract design, semver and deprecation policy, migration planning, incident response and root-cause analysis, performance measurement, technical documentation, mentoring, GDPR and CCPA compliance engineering
 
 ## Education
 
 **Galvanize Inc.** — Certificate, full-stack web development · 2016–2017 · Seattle, WA
 **Louisiana Tech University** — M.A., English language and literature · 2013–2015 · Ruston, LA
 **Louisiana Tech University** — B.A., history · 2010–2013 · Ruston, LA
-
-## Certifications
-
-Grow With Google Challenge Scholarship, Mobile Web Specialist Challenge Course, Udacity · 2017

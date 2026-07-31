@@ -1,6 +1,6 @@
 ---
 title: Photography
-summary: A static Astro photography site with build-time image processing, EXIF-derived captions, and a near-zero JavaScript budget.
+summary: A static Astro photography site with build-time image processing, EXIF-derived captions, schema-enforced alt text, and a near-zero JavaScript budget.
 role: Sole author
 stack: ["Astro", "React 19", "TypeScript", "Sharp"]
 repo: https://github.com/rsstdd/photography
@@ -11,26 +11,61 @@ verified: false
 
 > **Status: in active development.**
 
+## Context and scope
+
 A static photography site built around a strict JavaScript budget. Gallery pages ship no JavaScript. Only the lightbox hydrates.
 
-## Rendering model
+The scope is one author publishing photographs through git. There is no CMS, no upload interface, and no per-visitor state, which is what makes the budget achievable rather than aspirational.
 
-The gallery grid renders as static HTML. A single React island provides the lightbox and keyboard navigation, and it hydrates lazily when the gallery enters the viewport. Any JavaScript delivered before that point indicates that the island boundary has expanded beyond the interaction that requires it.
+## System design
 
-## Decisions worth defending
+### Rendering model
 
-| Decision | Reasoning |
+The gallery grid renders as static HTML. A single React island provides the lightbox and its keyboard navigation, hydrating lazily when the gallery enters the viewport.
+
+### Content collections
+
+Astro build collections rather than live collections, because live collections do not support the `image()` schema helper and that helper is the entire reason for choosing Astro here. Build collections keep image processing and validation at build time.
+
+### Image pipeline
+
+Sharp generates responsive variants in modern formats at build. EXIF is extracted from the source files during the same pass, so the technical captions on each photograph derive from the file rather than from anything typed by hand.
+
+### Image protection
+
+Any image a browser renders can be captured, so the approach is layered mitigation rather than prevention. Delivered variants are capped in resolution and originals stay outside the repository. The build re-embeds IPTC creator and copyright fields, strips location data, and the CDN blocks hotlinking. Right-click blocking is deliberately omitted, because it obstructs legitimate readers and stops nobody.
+
+## Budget-regression behavior
+
+The JavaScript budget is the constraint this project exists to hold, so the failure mode that matters is shipping script that was never intended.
+
+The tripwire is specific: any JavaScript delivered to a gallery page before the lightbox hydrates means an island boundary has expanded past the interaction that justified it. That is a defect rather than a preference, and the production build's payload for a gallery route is the number that decides it.
+
+A second gate runs earlier. Alt text is required by the content schema, so a photograph without it fails the build rather than waiting for a manual review that will eventually be skipped. Enforcing accessibility at the schema is the same move as enforcing the budget at the build: both convert a discipline into a condition that has to be met rather than remembered.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Use Astro instead of a React SPA or Next.js | The gallery is static content. Astro renders it without shipping a React runtime and reserves React for the lightbox. |
-| Use build content collections | Astro live collections do not support the `image()` schema helper. Build collections preserve build-time image processing and validation. |
-| Require alt text in the schema | The build fails when a photograph lacks alt text instead of relying on a manual review step. |
-| Extract EXIF data from source files | Build-time extraction keeps technical captions aligned with the image metadata. |
-| Keep content in files | One author can add photographs and metadata through git without a CMS. |
+| Astro rather than a React SPA or Next.js | The gallery is static content. Astro renders it without shipping a React runtime and reserves React for the one interaction that needs it. |
+| Build content collections | Live collections do not support the `image()` schema helper, and losing build-time image processing and validation would cost more than the flexibility is worth. |
+| Alt text required by the schema | The build fails when a photograph lacks it, rather than relying on a review step. An empty alt attribute on a photograph is a defect, not a style choice. |
+| EXIF extracted at build | Captions derive from the file, so they cannot drift from the image they describe. |
+| Content in files | One author adds photographs and metadata through git. A CMS would add an interface and a database to a workflow that needs neither. |
+| Layered image mitigation over prevention | Prevention is not achievable in a browser, so the effort goes to provenance metadata and hotlink blocking, which do something, rather than to right-click blocking, which does not. |
 
-## Image protection
+## Verification status
 
-The site uses layered mitigation because any image rendered by a browser can be captured. Delivered variants have capped resolution. Originals remain outside the repository. The build re-embeds IPTC creator and copyright fields, removes location data, adds ownership metadata, and blocks hotlinking at the CDN. Right-click blocking is omitted because it provides no meaningful protection.
+Nothing here is verified. The site is not built, so the rendering model, the JavaScript budget, and the image pipeline are stated as design rather than as measured behavior.
 
-## Honest limits
+The claims that will be checkable once it exists: the payload of a gallery route before hydration, the format and dimensions of generated variants, and whether the schema actually fails a build on missing alt text.
 
-The site is not yet built. The architecture, JavaScript budget, and image-processing path remain unverified until implementation.
+## Known limitations
+
+### Status
+
+Not implemented. This page describes an intended architecture, and the distance between an intended JavaScript budget and a held one is the whole difficulty of the project.
+
+### Storage
+
+The originals strategy is undecided. Git LFS is simplest below roughly 500MB and object storage with a committed manifest is correct above it. Choosing after the first hundred photographs are committed is more expensive than choosing before.

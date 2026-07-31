@@ -1,6 +1,6 @@
 ---
 title: This portfolio site
-summary: A statically generated Next.js 16 portfolio with MDX content in git and no client components.
+summary: A statically generated Next.js 16 portfolio with MDX content in git, no client components, and a content schema that fails the build rather than rendering a blank card.
 role: Sole author
 stack: ["Next.js 16", "React 19", "TypeScript", "MDX"]
 repo: https://github.com/rsstdd/portfolio
@@ -11,21 +11,55 @@ verified: false
 
 > **Status: in active development.**
 
-This portfolio is statically generated from MDX files in git. The [colophon](/colophon) documents the implementation in detail.
+## Context and scope
 
-## The constraint
+The site you are reading. Statically generated from MDX files in git, with the [colophon](/colophon) documenting the implementation in detail.
 
-Server Components are the default. Every `"use client"` directive must include a one-sentence justification above it. The current count is zero. A small static site provides a controlled place to enforce the React Server Component boundary.
+The scope is deliberately small, because the point is not the site but the constraint it enforces: Server Components are the default, and every `"use client"` directive must carry a one-sentence justification above it. The current count is zero. A small static site is a controlled place to hold that boundary, since there is no feature pressure to erode it.
 
-## Decisions worth defending
+## System design
 
-| Decision | Reasoning |
+### Rendering
+
+Static generation covers every route. Dynamic rendering requires a stated reason, and no route currently has one.
+
+### Content pipeline
+
+Roughly forty lines of loader read the filesystem, parse frontmatter with `gray-matter`, and validate it against a Zod schema. Content lives at the repository root rather than under `src`, because it is data rather than code and keeping it out of `src` means the TypeScript, linter, and test globs never need a special case for prose.
+
+### Claim tracking
+
+The content schema carries a `verified` field. It renders into the data plate on each project page, so the claim level is visible to a reader rather than known only to the author.
+
+## Content-validation behavior
+
+A malformed content file fails the build. That is the designed response rather than an accident of strictness, because the alternative is a portfolio that silently renders a blank card, and a site that quietly drops a project is worse than one that refuses to compile.
+
+The validation error names the offending file and what was expected. Zod alone reports the field but not the file, and "expected string, received undefined" with no filename is a poor thing to debug.
+
+The same principle governs the missing-file case: an absent content file raises an error naming the path and the fix, rather than surfacing a raw `ENOENT` pointing at the line that tried to read it.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Static first; dynamic only with a stated reason | The site needs crawlable pages, link previews, and predictable delivery. Static generation meets those requirements without runtime rendering. |
-| A small custom MDX loader | The loader is about forty lines and remains easy to inspect. A content library would remove little code while adding another abstraction. |
-| A `verified` field in the content schema | Project claims are marked as verified or unverified in the same source file that contains the copy. Unsupported claims are marked or removed. |
-| No database or CMS | One author edits content as files and reviews changes as diffs. The site does not need another persistence layer. |
+| Static first, dynamic only with a stated reason | The site needs crawlable pages, link previews, and predictable delivery. Static generation meets those requirements without runtime rendering. |
+| A small custom MDX loader | The loader is about forty lines and stays legible in one file. A content library would remove little code while adding an abstraction to debug through. |
+| A `verified` field in the content schema | Project claims are marked verified or unverified in the same file that holds the copy, so an unsupported claim is either marked or removed rather than quietly asserted. |
+| No database or CMS | One author edits content as files and reviews changes as diffs. Another persistence layer would be infrastructure looking for a problem. |
 
-## Honest limits
+## Verification status
 
-The site is still in development. Colophon measurements remain marked as unmeasured until the deployed build produces them.
+Deployed and serving. The client-component count, the static-generation claim, and the JavaScript payload are all checkable against a production build, and the colophon states them.
+
+Not yet verified: the colophon's measurements section is still marked unmeasured, because the numbers must come from a production build and a Lighthouse run against the deployed site rather than from a development server, which reports development runtime weight and would be misleading.
+
+## Known limitations
+
+### Completeness
+
+Still in development. Several project pages are shorter than the template they follow, and the measurements section is unfinished.
+
+### Self-reference
+
+The site is its own case study, which is convenient and also the weakest kind of evidence: it demonstrates that the constraints can be held on a small site by their author, not that they survive a team or a deadline.

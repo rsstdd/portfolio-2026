@@ -1,42 +1,82 @@
 ---
 title: Geospatial harvest volume estimator
-summary: A harvest estimator with a Next.js and Google Maps client, Flask API, geospatial PostgreSQL schema, and Cloud Run deployment.
+summary: A Next.js, Flask, and Cloud SQL system that projects harvest volume from a growth rate over a fixed window and a diameter band, with precomputed fruit geometry and geospatial scan points.
 role: Sole author
-stack:
-  - TypeScript
-  - Next.js
-  - React
-  - Python
-  - Flask
-  - PostgreSQL
-  - GCP
+stack: ["TypeScript", "Next.js", "React", "Python", "Flask", "PostgreSQL", "Google Cloud Run"]
 repo: https://github.com/rsstdd/orchard-robotics-assessment
 featured: true
-date: 2025-09-01
+date: 2025-06-01
 verified: true
 ---
 
-A take-home assessment for a robotics company. It estimates harvest volume from a date range, fruit-diameter range, and growth rate. The submission includes the client, API, database design, deployment configuration, and architecture rationale.
+## Context and scope
 
-## What it actually does
+An end-to-end system that estimates the harvest volume of fruit in an orchard, given a growth rate applied over a chosen date range and restricted to a diameter band. Built as a take-home for a robotics company, so the scope was fixed and the interesting decisions were in the data model and the deployment target rather than in feature breadth.
 
-The Next.js client displays individual fruit scans on Google Maps and accepts a date range, growth rate, and diameter range. It sends those parameters to a Flask API, then renders a histogram and average fruit size from the response.
+## System design
 
-The Flask API queries the database and calculates predicted harvest volume for matching fruit. Each fruit is modeled as an ellipsoid with major, minor, and subminor dimensions in millimeters. The schema stores average diameter and volume at write time because the workload reads those values repeatedly and the formulas do not change.
+### Client
 
-Locations use geospatial `POINT` values, which allow spatial filtering and indexing without separate latitude and longitude range predicates.
+A Next.js and React client renders orchard scan points as markers on a Google Map, alongside a scan-date picker, a growth-rate input in cubic millimetres per day, and a diameter range selector bounded at 20 to 120mm. On submit it posts the query to the backend and renders the returned distribution as a histogram with the average fruit size.
 
-Both services are containerized for Cloud Run. The README compares that deployment model with GKE, AWS Lambda, AWS Fargate, and Heroku, including cold-start and stateless-execution trade-offs.
+The brief asked for two date selectors, for scan date and harvest date. The delivered client takes one and derives the harvest date as thirty days after the scan, which removes an input and an invalid-range state at the cost of a fixed projection window. That is a scope decision rather than an omission, and it is recorded in the repository as one.
 
-## Decisions worth defending
+### API
 
-| Decision | Reasoning |
+A Flask service queries the database and computes predicted harvest volume for the fruit falling inside the requested range, applying the supplied growth rate over the requested interval.
+
+### Data model
+
+Google Cloud SQL running PostgreSQL. Each fruit scan stores ellipsoidal dimensions as major, minor, and subminor axes in millimetres.
+
+Average diameter and volume are precomputed and stored rather than derived per query, because both appear in the filter and the aggregate and recomputing them per request would put arithmetic in the hot path for every scan considered.
+
+Scan locations are stored as a geospatial `POINT` rather than as a latitude and longitude pair, so location filtering is a spatial query rather than a bounding-box approximation.
+
+### Deployment
+
+Both client and server are containerized and deployed to Google Cloud Run.
+
+## Consistency behavior
+
+Derived-column drift is the failure mode this schema accepts, because precomputing average diameter and volume duplicates information already present in the three axis measurements, and duplicated data can disagree with its source.
+
+The hazard is specific: any write path that updates an axis without recomputing the derived columns leaves a scan whose stored volume no longer describes its stored dimensions. Nothing in the schema prevents that, and a query filtering on volume would silently return the wrong fruit rather than fail.
+
+The design accepts this because the ingest path is a bulk scan import rather than incremental edits, so the derived values are written once alongside the dimensions they describe and are not updated in place. That assumption is what makes the redundancy safe, and it is the assumption that would break first if the system took live corrections. The written rationale records the trade rather than presenting the precomputation as free.
+
+Cold-start latency is the other accepted cost, inherent to serverless containers, and it was weighed rather than discovered.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Precompute diameter and volume | The application repeatedly reads values derived from fixed formulas. Computing them at write time removes repeated calculation from each query, with documented denormalization and consistency costs. |
-| Store locations as geospatial `POINT` values | Spatial types and indexes match the orchard-location access pattern directly. |
-| Deploy containers on Cloud Run | Cloud Run runs stateless request-response services without cluster management. Cold-start latency is acceptable for the expected usage. |
-| Use Flask for the compute layer | Python fits the numerical estimation code, while TypeScript remains in the client. The service boundary keeps the two concerns separate. |
+| Precompute average diameter and volume | Both are filter and aggregate inputs, so deriving them per request would repeat the same arithmetic across every scan on every query. The cost is stored redundancy that must be kept consistent with the source dimensions, which the written rationale records rather than glosses. |
+| Store locations as a geospatial point | Makes spatial filtering a database operation rather than a bounding-box approximation in application code. |
+| Deploy on Cloud Run rather than a managed cluster or a function runtime | Serverless containers fit a stateless request-response workload without operating a cluster. The trade accepted is cold-start latency, weighed in writing against GKE, Lambda, Fargate, and Heroku rather than chosen by default. |
 
-## Honest limits
+## Verification status
 
-This is a scoped assessment, not a production system tested under changing requirements or sustained load. The estimation model follows the exercise specification.
+Source-verified. The repository is public, and the schema file, the OpenAPI document, and the architecture notes were read directly rather than taken from the README.
+
+Demonstrated by the repository: the three-tier split across `client`, `server`, and `db`; a `scans` table holding `location` as a PostgreSQL `POINT` alongside the three axis measurements, with `avg_diameter` and `volume` as stored columns; a B-tree index on `avg_diameter`, which is what makes the precomputation rationale concrete rather than asserted; and the written comparison of Cloud Run against GKE, Lambda, Fargate, and Heroku.
+
+Also demonstrated, and load-bearing for the section above: nothing in the schema enforces agreement between the derived columns and the axes they summarize. There is no generated column, trigger, or check constraint. The consistency hazard described earlier is a property of the committed DDL rather than an inference about it.
+
+Read as design rather than as delivered behavior: the committed SQL is a schema sketch rather than an applied migration, and the DDL actually behind the deployment is not in the repository. The OpenAPI document describes a wider surface than the take-home delivered, including orchard and variety comparison endpoints, user management with password hashes, and stored harvest estimates, and it still carries placeholder contact fields and a `servers` host that is not the deployed one. It records an intended contract, not a running API.
+
+Not verified: query performance at orchard scale, the accuracy of the growth model against real harvest outcomes, and behavior under concurrent use. The Cloud Run URLs in the README did not answer when checked on 30 July 2026, so the deployment should be treated as retired rather than live.
+
+## Known limitations
+
+### Scope
+
+A take-home, built to a fixed brief and a short timeline. It demonstrates an end-to-end system rather than a maintained product. It was deployed to Cloud Run at the time, and those URLs no longer answer.
+
+### Model
+
+The estimate applies a single supplied growth rate uniformly over a fixed thirty-day window. It does not account for variety, position in the canopy, or seasonal variation, all of which a real harvest model would need, and the fixed window means the projection cannot be asked a question about any other horizon.
+
+### Database access
+
+The architecture notes route the API to Cloud SQL over a public IP, marked in the repository as provisional pending a move to a VPC connector. That move did not happen, so the deployed configuration reached the database over the public internet rather than over private networking.

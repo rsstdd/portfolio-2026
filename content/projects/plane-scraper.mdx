@@ -1,6 +1,6 @@
 ---
 title: Plane scraper
-summary: A concurrent Rust scraping pipeline with bounded concurrency, coordinated shutdown, and rate-limit-aware retry.
+summary: A concurrent Rust scraping pipeline with bounded backpressure, barrier-coordinated shutdown, and rate-limit-aware retry with capped jittered backoff.
 role: Sole author
 stack: ["Rust", "tokio", "reqwest", "clap"]
 repo: https://github.com/rsstdd/plane-scraper
@@ -9,26 +9,85 @@ date: 2026-01-15
 verified: true
 ---
 
-A three-pass Rust scraper that collects manufacturers, models, and aircraft specifications into JSON stores. The crawler uses a generic producer-consumer pipeline with bounded backpressure and coordinated shutdown.
+## Context and scope
 
-## What it actually does
+A three-pass scraper that collects aircraft data in stages, manufacturers, then models, then full specifications, writing each stage into its own JSON store. The primary design concern is running many concurrent requests against a single origin without overwhelming it, losing work on shutdown, or producing partial output.
 
-The CLI uses Clap subcommands on a `#[tokio::main]` runtime. It accepts configurable request delay, crawl concurrency, and processing concurrency, and uses `env_logger` for runtime logging. It builds a crawler, a shared `Arc<Fetcher>`, and three asynchronous JSON-backed stores, then dispatches one of three `Spider` implementations.
+## System design
 
-The crawler is generic over the spider implementation. Tokio `mpsc` channels carry URLs to visit, scraped items, and newly discovered URLs. Channel capacity scales with configured concurrency, so a fast scraper cannot build an unbounded queue behind a slow processor. An `AtomicUsize` tracks active spiders, and a Tokio `Barrier(3)` coordinates the control loop, scraper task, and processor task during shutdown. `futures::for_each_concurrent` bounds concurrent work, a `HashSet` deduplicates visited URLs, and the crawler completes after both channels drain and the active count reaches zero.
+### Runtime and configuration
 
-The fetcher wraps reqwest with a rotating User-Agent pool, default headers, an optional bearer token, and a request timeout. `get_text` retries connection and timeout failures, uses `Retry-After` for HTTP 429 when present, and otherwise applies capped exponential backoff with jitter. It also retries 5xx responses, treats 404 as terminal, and rejects empty response bodies.
+A Clap subcommand CLI runs on a `#[tokio::main]` runtime. Request delay, crawl concurrency, and process concurrency are configurable at invocation rather than compiled in, and `env_logger` provides runtime observability.
 
-## Decisions worth defending
+Startup builds a crawler, a shared `Arc<Fetcher>`, and three asynchronous JSON-backed stores, then dispatches one of three implementations of a common `Spider` trait.
 
-| Decision | Reasoning |
+### Concurrency and backpressure
+
+The crawler is generic over the spider. Three tokio `mpsc` channels carry URLs to visit, scraped items, and newly discovered URLs, with channel capacities scaled to the configured concurrency so the queue cannot grow without bound.
+
+Scraping and processing both run under `futures::for_each_concurrent`, which bounds in-flight work rather than spawning per URL. Visited URLs are deduplicated through a `HashSet`, and a configured delay separates operations against the origin.
+
+### Shutdown coordination
+
+An `AtomicUsize` tracks how many spiders are currently active. The control loop treats the work as complete only when both channels are drained and that count reaches zero, which avoids the race where an empty queue is mistaken for a finished crawl while a spider is still producing URLs.
+
+A tokio `Barrier` across three parties then synchronizes the control loop, the scraper task, and the processor task, so no task exits while another still holds work.
+
+### HTTP client
+
+The fetcher wraps reqwest with default headers, an optional token read from the environment, and a fifteen-second request timeout. A User-Agent is drawn at random from a pool of four when the config is built, so it varies between runs rather than between requests.
+
+### Output durability
+
+Writes are atomic. Each store serializes to a temporary file whose name carries the process id and a nanosecond timestamp, then renames it over the target, so an interrupted run cannot leave a half-written store behind and two processes cannot collide on the temporary path. Reads treat a missing or empty file as an empty store rather than as an error, so a first run needs no setup.
+
+Every store is a `BTreeMap`, so output ordering is deterministic and successive runs produce diffable files.
+
+The cost of that durability is unhidden: each insert re-serializes and rewrites the entire store. For the largest of the three, which is three megabytes of collected data, that is a three-megabyte write per record, and the total work grows with the square of the record count.
+
+## Rate-limit behavior
+
+Rate limiting is the failure mode that governs this design, because a scraper's throughput ceiling is set by the origin rather than by the client and exceeding it converts a slow crawl into a ban.
+
+`get_text` retries connection errors, timeouts, and 5xx responses, up to three retries after the first attempt. On HTTP 429 it reads `Retry-After` when the server sends one, because the origin's stated interval is better information than any local estimate. Absent that header it falls back to exponential backoff: a two-second base multiplied by `2^(attempt-1)`, with the exponent capped at six and the resulting delay capped at thirty seconds.
+
+Two responses are handled distinctly rather than retried. A 404 returns a typed not-found error, because the resource does not exist and repeating the request cannot change that. An empty response body is rejected rather than returned, because storing it would record absence as data. Exhausting retries against a 429 returns a distinct rate-limited error carrying the attempt count, so the caller can tell a throttled origin from a broken one.
+
+Two weaknesses in this design are worth naming, because both are visible in the source and an interviewer reading it will find them. The jitter is a random zero or one second added to the delay, which is too coarse to decorrelate concurrent retries in the way jitter is supposed to. And the thirty-second cap is applied to the server's `Retry-After` value as well as to the computed backoff, so an origin asking for a longer pause does not get it, which undercuts the reason for reading the header at all.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Coordinate shutdown with a barrier | Dropping channels can end tasks before in-flight items finish. The barrier makes all three tasks agree that work is complete. |
-| Size bounded channels from concurrency | Bounded queues turn a slow processor into backpressure instead of unbounded memory growth. |
-| Use `Retry-After` before local backoff | The server-provided delay takes precedence. Jittered exponential backoff remains the fallback when no delay is provided. |
-| Write files through a temporary path and rename | An interrupted write does not replace a valid store with a partial JSON document. |
-| Use `BTreeMap` for output | Stable key ordering produces reviewable diffs between runs. |
+| Size channel capacity to configured concurrency | Creates backpressure, because an unbounded queue converts a slow consumer into unbounded memory growth rather than a slower crawl. |
+| Track active spiders with an atomic counter | Distinguishes a drained queue from a finished crawl, which are not the same condition while a spider is still emitting URLs. |
+| Coordinate shutdown through a three-party barrier | Ensures the control loop, scraper, and processor all reach the same point before exit, rather than relying on task-completion ordering. |
+| Honor `Retry-After` before falling back to backoff | The server's own stated interval is better information than any local guess, and ignoring it is what turns rate limiting into a ban. |
+| Cap the backoff and add jitter | Bounds worst-case wait and prevents retries from re-synchronizing into bursts. |
+| Write atomically and order deterministically | An interrupted run leaves the previous store intact, and stable ordering makes successive runs comparable by diff. |
 
-## Honest limits
+## Verification status
 
-The scraper targets one upstream site, so each spider depends on that site's markup. There is no persistent work queue; an interrupted crawl loses progress that has not been flushed. Retry behavior is implemented, but the test suite is not exhaustive.
+Source-verified. The concurrency topology, the shutdown coordination, the retry logic, and the atomic writes were all read directly rather than taken from a summary.
+
+Confirmed in the source: tokio `mpsc` channels, an `AtomicUsize` active-spider counter, `futures::for_each_concurrent` for bounded work, a `HashSet` for URL deduplication, and a `Barrier` constructed for exactly three parties, matching the three tasks described above. In the fetcher, `Retry-After` handling, the capped exponential backoff, the typed rate-limited and not-found errors, and the empty-body rejection are all present. In the store layer, the temporary-file-then-rename write and the `BTreeMap` ordering are present.
+
+Corrected against an earlier description of this project: the User-Agent is chosen once per run rather than rotated per request, and continuous integration runs `cargo build` and `cargo test` only. There is no formatting or lint step in the workflow, despite a `rustfmt.toml` in the repository.
+
+Automated coverage is close to none. There is no `tests` directory, and neither the fetcher nor the store layer carries a test module, so the `cargo test` step currently proves that the crate compiles rather than that it behaves.
+
+Not verified: throughput, memory behavior under sustained load, or correctness against a hostile origin. There is no benchmark evidence, and the pipeline has not been run at a scale that would exercise the backpressure design in earnest.
+
+## Known limitations
+
+### Scope
+
+The crawler is generic over the spider trait but has only been exercised against one origin. Coordination is single-process, so there is no distributed work sharing or resumable checkpointing across machines.
+
+### Data licensing
+
+The scraped source is a third-party specification database, and the collected output is committed to this public repository rather than kept local, which is republication rather than a question about future republication. Before this is cited anywhere prominent the source's terms need checking, with attribution added, the dataset cut to a representative subset, or an openly licensed source substituted.
+
+### Repository hygiene
+
+The repository carries fifty-eight editor local-history snapshots under `.history`, roughly 121KB of them, along with committed editor settings. They are noise, and they are the first thing visible to anyone browsing the file list.

@@ -1,6 +1,6 @@
 ---
 title: Aircraft
-summary: A full-stack aircraft catalog with a Rust scraper, PostgreSQL, a typed Hono API, and a React 19 frontend.
+summary: A full-stack aircraft catalog joining a Rust scraper, PostgreSQL, a typed Hono API, and a React 19 frontend across one validated schema boundary.
 role: Sole author
 stack: ["TypeScript", "React 19", "Hono", "Drizzle", "PostgreSQL", "Rust"]
 repo: https://github.com/rsstdd/aircraft
@@ -9,25 +9,15 @@ date: 2026-08-01
 verified: false
 ---
 
-> **Status: in active development.** The pipeline below is the current design. Planned sections are not yet built.
+> **Status: in active development.** The design below is current. Planned sections are not yet built.
 
-The application centers on three boundaries: scraped source data validated before import, an API contract shared with the frontend through TypeScript, and view state stored in the URL.
+## Context and scope
 
-## The pipeline
+A catalog of aircraft specifications, built end to end by one author across three languages. The application turns on three boundaries: scraped source data validated before import, an API contract shared with the frontend through TypeScript rather than through documentation, and view state stored in the URL rather than in components.
 
-`plane-scraper` produces JSON in Rust. A seed process validates that data before writing it to PostgreSQL. A Hono API serves the records and exports its route types to the React 19 client. The scraper is a separate completed project, and the validated JSON schema forms the boundary between the Rust and TypeScript code.
+The scraper is a separate finished project, so the work here begins at the JSON it produces.
 
-## Decisions worth defending
-
-| Decision | Reasoning |
-|---|---|
-| Hono RPC rather than tRPC or GraphQL | The server exports route types and the client imports them, so API changes become frontend compile errors. tRPC provides similar type safety but exposes an RPC interface. GraphQL adds schema and tooling overhead without a need for flexible client queries. |
-| Drizzle rather than Prisma | Drizzle keeps SQL-shaped queries and migrations visible and avoids a separate schema language and query-engine binary. |
-| React Compiler from the first commit | The compiler owns memoization from the start, so the codebase does not accumulate manual `useMemo`, `useCallback`, or `React.memo` conventions. |
-| The URL as the primary state store | Filters, sorting, pagination, and selection live in typed search parameters. Views remain shareable, reload-safe, and compatible with browser navigation. |
-| A client-rendered SPA rather than a meta-framework | The catalog does not depend on search indexing. A separate API and SPA keep the service boundary explicit. |
-
-## Planned features
+### Planned scope
 
 1. Catalog list with server pagination
 2. Faceted filtering through typed search parameters
@@ -36,6 +26,52 @@ The application centers on three boundaries: scraped source data validated befor
 5. Specification charts
 6. Seed pipeline with validation at the scraper boundary
 
-## Honest limits
+## System design
 
-The application is not finished. The source data comes from a third-party site through my scraper, so a deployed version will use either a small attributed subset or an openly licensed source such as the FAA aircraft characteristics database.
+### Data pipeline
+
+`plane-scraper` produces JSON in Rust. A seed process validates that data before writing it to PostgreSQL through Drizzle. The validated schema is the contract between the Rust and TypeScript halves of the system, and it is the only place the two languages meet.
+
+### API contract
+
+A Hono service serves the records and exports its route types. The client imports those types directly, so a change to a route signature surfaces as a compile error in the frontend rather than as a runtime failure in a browser.
+
+### Client state
+
+Filters, sorting, pagination, and selection live in typed search parameters. That keeps a view shareable as a URL, correct after a reload, and compatible with browser navigation, none of which hold when the same state lives in component state.
+
+## Import-validation behavior
+
+Scraped data is dirty by definition, so the seed boundary is where this system either holds or fails quietly.
+
+Validation runs at import rather than at read. A record that does not match the schema is rejected there, because the alternative is a malformed row reaching the API and surfacing as an unexplained frontend error several layers away from its cause.
+
+The design consequence is that the database is trusted downstream. The API does not re-validate shape, and the client trusts the API's exported types, which is only safe because the untrusted input was rejected at the single point where trust changes.
+
+This is designed rather than demonstrated. The seed process is not built.
+
+## Design decisions
+
+| Decision | Rationale |
+|---|---|
+| Hono RPC rather than tRPC or GraphQL | The server exports route types and the client imports them, so API changes become frontend compile errors. tRPC gives similar safety but produces an RPC surface rather than a real HTTP API. GraphQL adds schema and tooling cost without a need for flexible client queries. |
+| Drizzle rather than Prisma | Keeps queries SQL-shaped and migrations readable, and avoids a separate schema language and a query-engine binary. Prisma is more popular; Drizzle hides less. |
+| React Compiler from the first commit | The compiler owns memoization from the start, so the codebase never accumulates manual `useMemo`, `useCallback`, or `React.memo` conventions that would later need unlearning. |
+| The URL as the primary state store | Filters, sorting, pagination, and selection stay shareable, reload-safe, and correct under browser navigation. |
+| A client-rendered SPA rather than a meta-framework | The catalog has no search-indexing requirement worth paying for, and a separate API with a separate client keeps the service boundary explicit and honest about what was built. |
+
+## Verification status
+
+Nothing here is verified. This page describes an architecture, not a running system, and the `verified` flag in its frontmatter says so.
+
+What will be checkable once it exists: whether a route-signature change actually fails the frontend build, whether the seed rejects malformed scraper output rather than passing it through, and whether the URL-driven state survives reload and back-navigation intact.
+
+## Known limitations
+
+### Status
+
+Not finished. The planned scope above is a sequence rather than a description, and several items are untouched.
+
+### Data licensing
+
+The source data is scraped from a third-party specification site through my own scraper. Local development is one thing and republishing that dataset is another, so a deployed version will use either a small attributed subset or an openly licensed source such as the FAA aircraft characteristics database.

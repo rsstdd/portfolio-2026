@@ -9,24 +9,50 @@ date: 2019-05-01
 verified: true
 ---
 
-A learning project built with Rocket, Diesel, and PostgreSQL. The main implementation detail is the connection pool exposed through Rocket's request-guard system.
+## Context and scope
 
-## What it actually does
+A learning project built with Rocket, Diesel, and PostgreSQL. Its primary design concern is database connection management through Rocket's request-guard system.
 
-The service uses pre-async Rocket with Diesel over PostgreSQL. `airplanes.rs` defines a Diesel model that derives `Queryable`, `Insertable`, `AsChangeset`, and serde traits. The Diesel query builder implements list, create, read by ID, update, and delete operations.
+## System design
 
-`pg_pool.rs` wraps an r2d2 connection pool and exposes it through `FromRequest`. A handler declares the pooled connection in its signature, and Rocket acquires and releases it for the request. When the pool is exhausted, the guard returns `ServiceUnavailable` instead of waiting indefinitely. A `Deref` implementation exposes the underlying connection to Diesel call sites.
+### Persistence model
 
-## Decisions worth defending
+The service uses pre-async Rocket with Diesel over PostgreSQL. `airplanes.rs` defines a Diesel model that derives `Queryable`, `Insertable`, `AsChangeset`, and serde traits.
 
-| Decision | Reasoning |
+The Diesel query builder implements list, create, read by ID, update, and delete operations for a single aircraft resource.
+
+### Connection acquisition
+
+`pg_pool.rs` wraps an r2d2 connection pool and exposes pooled connections through `FromRequest`.
+
+Handlers declare the connection in their signatures. Rocket acquires the connection before invoking the handler and returns it to the pool when the request completes.
+
+A `Deref` implementation exposes the underlying connection at Diesel call sites without repeated wrapper access.
+
+## Pool-exhaustion behavior
+
+When the pool cannot provide a connection, the request guard returns `ServiceUnavailable`.
+
+This converts resource exhaustion into an explicit `503` response rather than allowing connection acquisition to create unbounded request latency.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Expose the pool as a request guard | Database access appears in the handler signature, and the framework manages acquisition and release. |
-| Return `ServiceUnavailable` on pool exhaustion | A 503 response bounds the failure instead of allowing an exhausted pool to create unbounded request latency. |
-| Implement `Deref` for the wrapper | Diesel calls can use the pooled connection without repeated wrapper access. |
+| Expose pooled connections through a request guard | Makes database access explicit in the handler signature and delegates acquisition and release to the framework. |
+| Return `ServiceUnavailable` when the pool is exhausted | Bounds the failure with an explicit response instead of allowing requests to wait indefinitely. |
+| Implement `Deref` for the connection wrapper | Keeps Diesel call sites direct without exposing wrapper internals repeatedly. |
 
-## Honest limits
+## Verification status
 
-**Authentication does not work and is not claimed.** `auth.rs` contains bcrypt registration and login code with tests, but the entire module is commented out.
+The repository contains CRUD behavior and a small test module. The implementation has not been validated under production load.
 
-The project predates async Rocket. Its scope is one CRUD resource and a small test module, and it has not run under production load.
+## Known limitations
+
+### Authentication
+
+Authentication is not operational and is not presented as complete. `auth.rs` contains bcrypt registration and login code with tests, but the module is commented out.
+
+### Runtime and operational scope
+
+The project predates async Rocket. It implements one CRUD resource, has limited automated coverage, and has no production deployment or load-test evidence.

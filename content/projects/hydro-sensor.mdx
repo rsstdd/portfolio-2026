@@ -1,6 +1,6 @@
 ---
 title: Hydro sensor
-summary: A Python edge agent that reads Atlas Scientific probes over FTDI serial, applies temperature compensation, and sends telemetry to independent sinks.
+summary: A Python edge agent that speaks the Atlas Scientific serial protocol over FTDI, temperature-compensates pH and conductivity, and fans telemetry out to independent sinks.
 role: Sole author
 stack: ["Python", "pylibftdi", "MongoDB", "CircleCI"]
 repo: https://github.com/rsstdd/hydro-sensor
@@ -9,27 +9,82 @@ date: 2018-06-01
 verified: true
 ---
 
-A Python edge agent that reads environmental sensors over USB serial and sends each reading to several backend services. It runs on real hardware against Atlas Scientific probes. The code implements the serial protocol, applies cross-probe temperature compensation, and isolates failures between telemetry sinks.
+## Context and scope
 
-The repository overlaps with my professional greenhouse-monitoring work and references the same device identity files and internal endpoints.
+An edge agent that reads environmental probes on greenhouse hardware and ships their readings to backend services. It runs on the device rather than beside it, so the two design concerns are talking to sensors over a serial protocol with no framing, and not losing a reading when a network destination is unavailable.
 
-## What it actually does
+This overlaps directly with the professional greenhouse-monitoring work at IUNU: the code references the same device-identity files, internal database host, and API endpoints.
 
-`atlas_hydro.py` defines an `AtlasDevice` subclass of `pylibftdi.Device` for Atlas Scientific temperature, pH, and electrical-conductivity probes. The code implements the device protocol directly: `send_cmd()` appends a carriage return, and `read_line()` reads one byte at a time until CR, with a one-second timeout and explicit `FtdiError` handling. The agent reads a configured sensor list by serial number, issues the `R` command, and parses each response by sensor type. It converts Celsius to Fahrenheit, splits conductivity into EC and ppm values, and rounds pH.
+## System design
 
-The temperature probe acts as the reference. Its reading is sent to the other probes with `T,<temp>` before they are read, so pH and EC measurements use temperature compensation. Without that step, the probes can return plausible but incorrect values as water temperature changes.
+### Device protocol
 
-`sensor_worker.py` loads device identity and metadata from a local JSON file. It adds the hostname, role, room, sensor group, version, and UTC timestamp to every reading, then sends the result to several sinks: HTTP APIs with customer-specific routing, MongoDB collections by sensor type, and a local file fallback. Each sink handles errors independently, so one failure does not stop the others.
+`AtlasDevice` subclasses `pylibftdi.Device` to address Atlas Scientific temperature, pH, and electrical-conductivity probes over FTDI USB serial. The protocol is implemented by hand rather than through a vendor library.
 
-## Decisions worth defending
+Commands are terminated with a carriage return on send. Reads proceed byte by byte until a carriage return arrives, under a one-second timeout with explicit `FtdiError` handling, because the serial stream carries no length prefix or frame delimiter to read against.
 
-| Decision | Reasoning |
+The agent iterates a configured sensor list addressed by serial number, issues the read command to each, and parses the responses per sensor type: Celsius converted to Fahrenheit for temperature, conductivity split from parts per million for EC, and pH rounded.
+
+### Temperature compensation
+
+One probe is flagged as the reference. Its temperature reading is pushed to the other probes with a `T,<temp>` command before they are read, because uncompensated pH and conductivity readings drift with water temperature and would otherwise be recorded as real change.
+
+### Telemetry fan-out
+
+`sensor_worker.py` loads device identity and metadata from a local JSON identity file, then enriches every reading with hostname, role, room, sensor group, software version, and a UTC timestamp before dispatch.
+
+Each reading is then written to several destinations: posted to an HTTP collection API with an asserted 201, written to MongoDB, and appended to a local file.
+
+HTTP routing is exclusive rather than additive. A device belonging to a named customer, or sitting in one of two specific rooms, posts to that customer's endpoint instead of the default pair; every other device posts to both production and staging.
+
+### Orchestration
+
+`hydro_data.py` sequences the run: read the sensors, format typed payloads, dispatch.
+
+## Sink-failure behavior
+
+Destination availability is the failure mode that governs this design, because the agent runs on greenhouse hardware where the network is the least reliable component and a reading, once missed, cannot be taken again.
+
+Every sink carries its own error handling, so an unreachable HTTP endpoint does not prevent the database write and a database outage does not prevent the file append. Failure is contained to the destination that failed rather than propagating to the dispatch.
+
+The local file append is the last sink for that reason. It is the only destination that survives total network loss, which is the condition an edge device actually encounters, so it functions as the floor beneath the remote sinks rather than as a debugging convenience.
+
+A probe that does not answer is handled separately, at the read rather than the dispatch: the byte-by-byte read carries a one-second timeout with explicit `FtdiError` handling, so a silent sensor costs its own reading instead of stalling the run.
+
+One inversion in this design is worth stating, because it is the opposite of what the structure intends. The HTTP and database sinks report their failures; the local file append catches everything and discards it silently. The sink that exists as the last line of defence is the only one that cannot tell you it failed, so the case this design was built for, losing the network, is also the case where a second failure would go unrecorded.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Implement the serial protocol directly | The probes use a small line protocol. Owning the read loop makes timeout and USB error behavior explicit. |
-| Compensate against a reference temperature probe | pH and EC vary with water temperature. Sending the reference temperature before each read prevents plausible but incorrect measurements. |
-| Isolate each telemetry sink | One failed API or database should not block the remaining destinations. |
-| Keep a local file fallback | Readings remain recoverable when the network or a remote service is unavailable. |
+| Implement the serial protocol directly | The probes expose a simple command protocol, and a hand-written reader made the timeout and error behavior explicit rather than inherited from a vendor abstraction. |
+| Read byte by byte to a carriage return, under timeout | The stream has no framing, so the terminator is the only reliable boundary, and the timeout is what prevents a silent probe from hanging the run. |
+| Push a reference temperature before reading pH and EC | Uncompensated readings drift with water temperature, so without this the agent records an artifact of the water rather than a change in the chemistry. |
+| Handle each sink's errors independently | The reading is the valuable artifact. One failing service should cost that service's copy, not the reading. |
+| Append to a local file as the final sink | Preserves data through total network loss, which is the failure mode a device in a greenhouse actually experiences. |
 
-## Honest limits
+## Verification status
 
-The codebase uses Python 2. Configuration lives in a local identity file rather than a configuration service. The HTTP sink expects status 201 instead of accepting the broader 2xx range.
+Source-verified. The dispatch path was read directly rather than taken from a summary.
+
+Confirmed in the source: the identity file lookup across two known paths, the enrichment with hostname, role, room, sensor group, version, and a UTC timestamp, the asserted 201 on the HTTP post, and independent error handling around each of the three sinks. A CircleCI configuration is present, and the agent ran against real hardware rather than a simulator.
+
+Corrected against an earlier description of this project: readings are not written to a MongoDB collection per sensor type. The per-type collection is selected into a variable and then never used; the insert targets a single fixed `sensordata` collection. That is a defect in the code rather than a design choice, and it means sensor type is carried in the record rather than in the collection.
+
+Scale, stated plainly because the commit count suggests otherwise: the agent is about seven kilobytes of Python across four files, with one test file of under a thousand bytes. It is a small, specific piece of software that ran in production, not a large one.
+
+Not verified: long-run reliability figures, data-loss rates, or how the fan-out behaves under sustained backend outage. No measurements of those are retained.
+
+## Known limitations
+
+### Runtime
+
+The agent is written for Python 2.
+
+### Portability
+
+Identity file paths, the database host as a hardcoded private address, the output file path, and the API endpoints are all specific to one deployment rather than configurable, so the code documents an approach more than it provides a reusable agent. A device missing both identity files fails partway through enrichment rather than exiting on a clear error.
+
+### Repository hygiene
+
+Compiled bytecode and macOS directory metadata are committed, and the ignore file is effectively empty at ten bytes.

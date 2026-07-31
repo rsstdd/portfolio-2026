@@ -1,32 +1,66 @@
 ---
 title: Aquaponic IoT system
-summary: A Raspberry Pi and Arduino monitoring prototype that streams sensor readings to a browser and sends threshold alerts by SMS.
+summary: A Raspberry Pi and Arduino monitoring prototype that reads environmental sensors over Firmata, streams them to a browser over Socket.io, and sends SMS when a reading leaves its threshold.
 role: Sole author
-stack: ["JavaScript", "Node.js", "Johnny-Five", "Socket.io", "React", "Twilio"]
+stack: ["JavaScript", "Node.js", "Express", "Johnny-Five", "Socket.io", "React", "Twilio"]
 repo: https://github.com/rsstdd/aquaponic_IoT_system
 featured: false
-date: 2017-09-01
+date: 2017-06-01
 verified: true
 ---
 
-A working aquaponics monitoring prototype built on Raspberry Pi and Arduino hardware. It streams environmental readings to a browser and sends SMS alerts when a value crosses its configured threshold.
+## Context and scope
 
-## What it actually does
+A prototype monitoring system for an aquaponics setup, running on real hardware rather than simulated inputs. The design concern is getting sensor readings from a microcontroller to a person, both while they are watching and while they are not.
 
-A Raspberry Pi 3 connects to Arduino Mega and Uno boards carrying an HIH6130 humidity and temperature sensor, a DS18B20 waterproof temperature probe, and a BMP280 temperature and pressure sensor.
+## System design
 
-A Node.js and Express service uses Johnny-Five over Firmata to read the Arduino sensors. It pushes readings to a React frontend through Socket.io, so the interface updates when data arrives rather than on a polling interval. Passport handles authentication. Twilio sends SMS alerts when readings leave their configured ranges, so monitoring does not depend on someone keeping the dashboard open.
+### Hardware
 
-A companion `aquaponic-api` service exposes a small set of sensor routes.
+A Raspberry Pi 3 paired with an Arduino Mega or Uno, carrying an HIH6130 humidity and temperature sensor, a DS18B20 waterproof temperature probe for the water itself, and a BMP280 for temperature and barometric pressure.
 
-## Decisions worth defending
+### Acquisition
 
-| Decision | Reasoning |
+A Node.js and Express service reads the Arduino sensors through Johnny-Five over the Firmata protocol, so the microcontroller runs a standard firmware and the read logic lives in application code on the Pi rather than in a sketch that would need reflashing to change.
+
+### Transport
+
+Readings stream to a browser interface over Socket.io, so the display updates as values arrive rather than on a polling interval.
+
+### Interface and access
+
+A React frontend renders the live readings, with Passport handling authentication.
+
+## Out-of-threshold behavior
+
+An unattended dashboard is the failure mode this system exists to cover, because the condition it watches for, water chemistry drifting out of range, develops over hours and does not wait for someone to be looking at a browser tab.
+
+Each reading is compared against a configured threshold band on arrival. A reading outside its band sends an SMS through Twilio, which moves the notification off the screen and onto a device the operator carries.
+
+This is the one path in the system that assumes no observer. Everything upstream of it, the Firmata reads, the Socket.io stream, the React display, is a live view that only has value while someone is watching it.
+
+## Design decisions
+
+| Decision | Rationale |
 |---|---|
-| Push readings through Socket.io | Sensor data arrives on the hardware schedule. Push delivery updates the browser within the sensor interval without repeated polling. |
-| Use Johnny-Five over Firmata | The Arduino boards remain sensor interfaces while the application logic stays in Node.js on the Raspberry Pi. |
-| Treat alerts as part of the monitoring path | SMS alerts surface threshold violations without requiring continuous dashboard use. |
+| Read the Arduino through Johnny-Five and Firmata | Keeps the sensor logic in application code on the Pi, so changing what is read or how it is interpreted does not mean reflashing the microcontroller. |
+| Push readings over Socket.io rather than polling | The consumer is a live dashboard, and polling either wastes requests at rest or adds latency under change. |
+| Send SMS on threshold breach | A dashboard only works while someone is looking at it. The failure this system exists to catch, water chemistry drifting overnight, happens when nobody is. |
 
-## Honest limits
+## Verification status
 
-This is a prototype with a presentation, not a deployed product. The system has no durable time-series store or historical analysis, so it reports current conditions but not trends.
+Verified from a detailed README and a presentation of the working prototype, rather than by a full source read.
+
+What that substantiates: the hardware inventory, the acquisition path through Firmata, the real-time transport, and the alerting integration, all running on assembled hardware.
+
+Not verified: sensor accuracy against calibrated reference instruments, uptime over a sustained deployment, or alert reliability.
+
+## Known limitations
+
+### Maturity
+
+A prototype. There is no production deployment, no persistence strategy beyond the running system, and no recovery behavior if the Pi restarts mid-session.
+
+### Companion service
+
+A separate `aquaponic-api` Node service provides sensor routes, but it is thin, at four commits, and is better described as a stub than as a second component.
