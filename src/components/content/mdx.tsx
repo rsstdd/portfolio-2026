@@ -1,26 +1,44 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
+import {
+  Section,
+  SwatchGrid,
+  DataPlate,
+  ControlsDemo,
+  ElevationDemo,
+  DataDemo,
+  SectionRule,
+  Term,
+} from "@/components/ui";
 
-/**
- * MDX renderer.
- *
- * `next-mdx-remote/rsc` compiles on the server, so this stays a Server
- * Component and adds nothing to the client bundle.
- *
- * No components map is passed, deliberately. Element styling lives in the
- * `.prose-datum` block in globals.css, which means the MDX files stay portable
- * plain Markdown rather than acquiring a dependency on this project's component
- * names. Add a map only when a file genuinely needs a React component that
- * Markdown cannot express.
- */
-type ProjectBodyProps = {
-  source: string;
-  className?: string;
+// Default registry for the Datum system
+const registry = {
+  Section,
+  SwatchGrid,
+  DataPlate,
+  ControlsDemo,
+  ElevationDemo,
+  DataDemo,
+  SectionRule,
+  Term,
 };
 
-export function Mdx({ source, className = "" }: ProjectBodyProps) {
+type MdxProps = {
+  source: string;
+  className?: string;
+  components?: Record<string, React.ComponentType<any>>;
+};
+
+export function Mdx({ source, className = "", components = {} }: MdxProps) {
+  // Debug check: If source is missing, this will let you know immediately.
+  if (!source) {
+    console.warn("Mdx component received an empty source string.");
+    return null;
+  }
+
   return (
-    <div className={`prose-datum ${className}`}>
+    // <div className={`prose-datum ${className}`}>
+    <div className={`${className}`}>
       <MDXRemote
         source={source}
         options={{
@@ -28,6 +46,7 @@ export function Mdx({ source, className = "" }: ProjectBodyProps) {
             remarkPlugins: [remarkGfm],
           },
         }}
+        components={{ ...registry, ...components }}
       />
     </div>
   );

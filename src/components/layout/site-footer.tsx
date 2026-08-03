@@ -8,6 +8,7 @@ const links = [
   { href: "/impressum", label: "Impressum" },
   { href: "/privacy", label: "Privacy" },
   { href: "/colophon", label: "Colophon" },
+  { href: "/design", label: "Datum Design System" },
 ]
 
 export function SiteFooter() {

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { SectionRule } from "@/components/ui/section-rule";
-import { Term } from "@/components/ui/term";
+import { SectionRule, DataPlate, Term } from "@/components/ui";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -48,10 +47,7 @@ const contrast = [
   ["Orange body text on paper", "5.24", "AA"],
 ];
 
-const datumCopy = {
-  datum:
-    "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data.Color relationships were calculated for consistency and contrast rather than selected by eye.",
-};
+const datumCopy = "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data. Color relationships were calculated for consistency and contrast rather than selected by eye.";
 
 export default function ColophonPage() {
   return (
@@ -76,12 +72,8 @@ export default function ColophonPage() {
             Colophon
           </Term>
         </p>
-        <h1 className="mt-2 font-display text-display font-semibold text-balance">
-          How this site is built
-        </h1>
-        <p className="mt-4 text-body-lg text-muted">
-          What the site is built from, and why each piece is there.
-        </p>
+        <h1 className="h1 mt-2">How this site is built</h1>
+        <p className="measure mt-4 text-muted">What the site is built from, and why each piece is there.</p>
       </header>
 
       <section className="mt-16">
@@ -89,8 +81,8 @@ export default function ColophonPage() {
         <dl className="mt-8 max-w-prose">
           {stack.map(([name, why]) => (
             <div key={name} className="border-b border-line py-4">
-              <dt className="font-sans text-h3 font-semibold">{name}</dt>
-              <dd className="mt-1 text-muted">{why}</dd>
+              <dt className="h3 font-semibold">{name}</dt>
+              <dd className="measure mt-1 text-muted">{why}</dd>
             </div>
           ))}
         </dl>
@@ -99,38 +91,35 @@ export default function ColophonPage() {
       <section className="mt-24">
         <SectionRule index="02" label="Datum" />
         <div className="mt-8 max-w-prose">
-          <p className="text-muted">{datumCopy.datum}</p>
+          <p className="measure text-muted">{datumCopy}</p>
 
-          <table className="mt-8 w-full">
+          <table className="mt-8 w-full border-collapse">
             <thead>
               <tr>
-                <th
-                  className="border-b border-line pb-3 pr-4 text-left font-mono text-overline font-semibold uppercase text-muted">
-                  Pair
-                </th>
-                <th
-                  className="border-b border-line pb-3 pr-4 text-left font-mono text-overline font-semibold uppercase text-muted text-right">
-                  Ratio
-                </th>
-                <th
-                  className="border-b border-line pb-3 pr-4 text-left font-mono text-overline font-semibold uppercase text-muted text-right">
-                  Level
-                </th>
+                <th className="border-b border-line pb-3 pr-4 text-left font-mono text-overline uppercase text-muted">Pair</th>
+                <th className="border-b border-line pb-3 pr-4 text-right font-mono text-overline uppercase text-muted">Ratio</th>
+                <th className="border-b border-line pb-3 pr-4 text-right font-mono text-overline uppercase text-muted">Level</th>
               </tr>
             </thead>
             <tbody>
               {contrast.map(([pair, ratio, level]) => (
                 <tr key={pair}>
-                  <td>{pair}</td>
-                  <td className="text-right font-mono tabular-nums">{ratio}</td>
-                  <td className="text-right font-mono">{level}</td>
+                  <td className="py-2">{pair}</td>
+                  <td className="py-2 text-right font-mono tabular-nums">{ratio}</td>
+                  <td className="py-2 text-right font-mono">{level}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <p className="data-plate mt-4">
+          <DataPlate>
             Computed 2026-07-29 against opaque backgrounds · WCAG 2.2
+          </DataPlate>
+
+          <p className="mt-6">
+            <a href="/design" className="font-mono text-overline uppercase text-accent-text">
+              View the design system
+            </a>
           </p>
         </div>
       </section>
@@ -138,29 +127,25 @@ export default function ColophonPage() {
       <section className="mt-24">
         <SectionRule index="03" label="Measurements" />
         <div className="mt-8 max-w-prose">
-          <p className="text-muted">
+          <p className="measure text-muted">
             Not yet measured. These will carry real numbers once the site is deployed, and they will
             say so plainly if any of them disappoint.
           </p>
-          <p className="data-plate mt-6">
-            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not
-            yet measured
-          </p>
+          <DataPlate>
+            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not yet measured
+          </DataPlate>
         </div>
       </section>
 
       <section className="mt-24">
         <SectionRule index="04" label="Source" />
         <div className="mt-8 max-w-prose">
-          <p className="text-muted">
+          <p className="measure text-muted">
             The repository is public. Fonts are self-hosted, and there are no third-party requests, so
             nothing about a visit is shared with anyone.
           </p>
           <p className="mt-6">
-            <a
-              href={`${site.github}/portfolio`}
-              className="font-mono text-overline uppercase text-accent-text"
-            >
+            <a href={`${site.github}/portfolio`} className="font-mono text-overline uppercase text-accent-text">
               View the source
             </a>
           </p>
