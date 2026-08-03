@@ -50,8 +50,8 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Ross Todd — Senior Software Engineer",
-    template: "%s — Ross Todd",
+    default: "Ross Todd · Senior Software Engineer",
+    template: "%s · Ross Todd",
   },
   description:
     "Senior software engineer in Munich. Nine years across sensors, full-stack product work, and shared frontend platforms.",

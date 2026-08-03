@@ -1,3 +1,5 @@
+import path from "path";
+import fs from "fs";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
@@ -33,6 +35,13 @@ const PROJECTS_DIR = join(CONTENT_DIR, "projects");
 export type LoadedProject = Project & { slug: string; body: string };
 export type LoadedAbout = About & { body: string };
 export type LoadedCv = Cv & { body: string };
+export interface DesignSystemContent {
+  overline: string;
+  title: string;
+  description: string;
+  updated: Date;
+  body: string;
+}
 
 function read(path: string) {
   /*
@@ -120,5 +129,20 @@ export function getCv(): LoadedCv {
     return { ...cvSchema.parse(data), body };
   } catch (e) {
     return fail("cv.mdx", e);
+  }
+}
+
+export function getDesignSystem(): DesignSystemContent {
+  const { data, body } = read(join(CONTENT_DIR, "design-system.mdx"));
+  try {
+    return {
+      overline: String(data.overline ?? ""),
+      title: String(data.title ?? ""),
+      description: String(data.description ?? ""),
+      updated: new Date(data.updated ?? Date.now()),
+      body,
+    };
+  } catch (e) {
+    return fail("design-system.mdx", e);
   }
 }

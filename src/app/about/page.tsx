@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { cache } from "react";
 import { Mdx } from "@/components/content/mdx";
@@ -40,7 +39,7 @@ export default function AboutPage() {
       <JsonLd data={personJsonLd()} />
 
       <header className="max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">About</p>
+        <p className="font-mono text-overline overline uppercase text-muted">About</p>
 
         <h1 className="mt-2 text-balance font-display text-display font-semibold">{site.name}</h1>
 

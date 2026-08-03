@@ -1,0 +1,49 @@
+---
+overline: "Datum · design system · 2026-07-29"
+title: "Precision, with warmth."
+description: "Monochrome chrome on warm paper, one instrument color, one typographic superfamily. The orange tick at the start of each Section is the datum mark, and it is usually the only accent a view needs. Toggle dark for the photography theme."
+---
+
+<Section overline="01 — Color" title="Ink, paper, international orange">
+  <SwatchGrid items={palette} />
+  <DataPlate>
+    orange on paper 3.63 (UI/large) · orange-body on paper 5.24 (body) · ink on paper 14.70 · verified 2026-07-29
+  </DataPlate>
+</Section>
+
+<Section overline="02 — Typography" title="One superfamily, three voices">
+  <h1 className="h1 mt-3">Heading one, Plex Serif 600</h1>
+  <h2 className="h2 mt-2">Heading two, Plex Serif 600</h2>
+  <h3 className="h3 mt-2">Heading three, Plex Sans 600</h3>
+
+  <div className="measure mt-4">
+    Body is Plex Sans at 1rem, 1.65 line height, 65ch measure. The serif and the sans share
+    one skeleton, so the page reads as a single instrument. Prose links look <a className="prose-link" href="#">like this</a> and thicken to orange on hover.
+  </div>
+
+  <div className="mono mt-3">
+    D-EKXW · PA-28-181 · 180 hp · 1,043 kg · 0 ≠ O — slashed zeros, tabular numerals
+  </div>
+
+  <div className="mt-4">
+    <a className="standalone" href="#">View the full catalog</a>
+  </div>
+</Section>
+
+<Section overline="03 — Controls" title="Buttons, forms, placards">
+  <ControlsDemo />
+  <div className="caption mt-3">
+    The accent tag is an outlined placard, not a fill, because ink on orange measures 4.04 and fails body text. The constraint produced the better component.
+  </div>
+</Section>
+
+<Section overline="04 — Elevation" title="Borders first, shadows rare">
+  <ElevationDemo />
+</Section>
+
+<Section overline="05 — Data" title="Card, table, data plate">
+  <DataDemo rows={aircrafts} />
+  <DataPlate>
+    Source: plane-scraper dataset, representative subset · retrieved 2026-07
+  </DataPlate>
+</Section>
