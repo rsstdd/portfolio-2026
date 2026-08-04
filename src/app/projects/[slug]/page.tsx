@@ -116,7 +116,7 @@ export default async function ProjectPage({ params }: Params) {
         </dl>
       </header>
 
-      <article className="mt-16">
+      <article className="prose-datum mt-16">
         <Mdx source={project.body} />
       </article>
     </main>
