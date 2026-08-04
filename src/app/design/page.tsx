@@ -13,15 +13,15 @@ import {
 
 // Data defined at the page level
 const palette = [
- { name: 'paper', token: 'var(--paper)' },
- { name: 'paper-raised', token: 'var(--paper-raised)' },
- { name: 'paper-sunken', token: 'var(--paper-sunken)' },
- { name: 'line', token: 'var(--line-c)' },
- { name: 'ink', token: 'var(--ink)' },
- { name: 'ink-soft', token: 'var(--ink-soft)' },
- { name: 'ink-muted', token: 'var(--ink-muted)' },
- { name: 'orange', token: 'var(--orange)' },
- { name: 'orange-body', token: 'var(--orange-body)' },
+ { name: 'paper', token: 'var(--paper, #f5f2ec)' },
+ { name: 'paper-raised', token: 'var(--paper-raised, #fbf9f5)' },
+ { name: 'paper-sunken', token: 'var(--paper-sunken, #ebe6da)' },
+ { name: 'line', token: 'var(--line, #d9d2c2)' },
+ { name: 'ink', token: 'var(--ink, #221f1a)' },
+ { name: 'ink-soft', token: 'var(--ink-soft, #38342c)' },
+ { name: 'ink-muted', token: 'var(--ink-muted, #6b655a)' },
+ { name: 'orange', token: 'var(--orange, #dd4e12)' },
+ { name: 'orange-body', token: 'var(--orange-text, #b13f0d)' },
  { name: 'success', token: 'var(--success, #3e6b3a)' },
  { name: 'error', token: 'var(--error, #a02c2c)' },
 ];

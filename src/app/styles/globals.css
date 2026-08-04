@@ -554,6 +554,11 @@
     border-top: 1px solid var(--border-line);
     margin: 3em 0;
   }
+
+  .swatch {
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+  }
 }
 
 @layer utilities {
@@ -574,19 +579,18 @@
     font-size: var(--text-small);
     line-height: var(--leading-small);
     color: var(--text-muted);
+  }
 
+  .standalone {
+    color: var(--accent-text);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
 
-    .standalone {
-      color: var(--accent-text);
-      font-weight: 500;
-      text-decoration: none;
-      transition: color var(--duration-fast) var(--ease-standard);
-    }
-
-    .standalone:hover {
-      color: var(--accent);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
+  .standalone:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 }
