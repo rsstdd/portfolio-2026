@@ -71,8 +71,8 @@
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--leading-body);
-    margin: 4rem auto;
-    padding: 0 var(--page-gutter);
+    /* margin: 4rem auto; */
+    /* padding: 0 var(--page-gutter); */
     -webkit-font-smoothing: antialiased;
   }
 
@@ -100,12 +100,17 @@
   }
 
   a:any-link {
-    color: inherit;
+    color: var(--link);
     text-decoration: none;
   }
 
   a:hover {
+    color: var(--link-hover);
     text-underline-offset: 0.2em;
+  }
+
+  a:visited {
+    color: var(--link-visited);
   }
 
   :focus-visible {
@@ -403,7 +408,8 @@
   }
 
   a.standalone::before,
-  span.standalone::before {
+  span.standalone::before,
+  .standalone::before {
     content: "";
     display: inline-block;
     width: 16px;
@@ -411,6 +417,13 @@
     background: var(--accent);
     vertical-align: middle;
     margin-right: 8px;
+  }
+
+  a.standalone:hover,
+  span.standalone:hover,
+  .standalone:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--accent-text);
   }
 
   /* Form Elements */
@@ -581,16 +594,14 @@
     color: var(--text-muted);
   }
 
-  .standalone {
-    color: var(--accent-text);
-    font-weight: 500;
-    text-decoration: none;
-    transition: color var(--duration-fast) var(--ease-standard);
-  }
-
-  .standalone:hover {
-    color: var(--accent);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  .datum-overline {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-overline);
+    font-weight: 600;
+    letter-spacing: var(--tracking-overline);
+    line-height: var(--leading-overline);
+    text-decoration-line: overline;
+    text-transform: uppercase;
   }
 }
