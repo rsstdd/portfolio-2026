@@ -359,8 +359,12 @@
 /* ----------------- */
 /* Datum Components  */
 /* ----------------- */
+.overline {
+  text-decoration-line: overline;
+}
 
 .overline, .underline {
+  border: solid 1px var(--border-c);
   font: 600 0.8125rem/1.2 var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -471,7 +475,8 @@ a.prose-link:hover {
   text-decoration-thickness: 2px;
 }
 
-a.standalone {
+a.standalone,
+span.standalone {
   font: 600 0.8125rem var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -479,7 +484,8 @@ a.standalone {
   text-decoration: none;
 }
 
-a.standalone::before {
+a.standalone::before,
+span.standalone::before {
   content: "";
   display: inline-block;
   width: 16px;
