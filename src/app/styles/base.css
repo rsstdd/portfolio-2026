@@ -1,0 +1,48 @@
+/* ==========================================================================
+   Base Layer — HTML Elements, Resets & Global Behaviors
+   ========================================================================== */
+
+@layer base {
+ html {
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+ }
+
+ ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
+ }
+
+ body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+ }
+
+ :focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+ }
+
+ a {
+  color: var(--link);
+  text-decoration-color: var(--link-decoration);
+  text-underline-offset: 0.2em;
+  transition:
+   color var(--duration-fast) var(--ease-standard),
+   text-decoration-color var(--duration-fast) var(--ease-standard);
+ }
+
+ a:visited {
+  color: var(--link-visited);
+ }
+
+ a:hover {
+  color: var(--link-hover);
+ }
+}

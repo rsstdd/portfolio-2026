@@ -1,0 +1,290 @@
+/* ==========================================================================
+   Components Layer — OOCSS Objects & Skins
+   ========================================================================== */
+
+@layer components {
+
+ /* ------------------------------------------------------------------------
+   * Object: Rule (Structure)
+   * ------------------------------------------------------------------------ */
+ .rule {
+  position: relative;
+  border-top: 1px solid transparent;
+  padding-top: var(--space-6);
+ }
+
+ /* Skin: Datum Tick Rule */
+ .rule--datum {
+  border-top-color: var(--border-line);
+ }
+
+ .rule--datum::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+ }
+
+ /* ------------------------------------------------------------------------
+   * Object: Data Plate (Structural Container for tabular/mono metadata)
+   * ------------------------------------------------------------------------ */
+ .data-plate {
+  border-top: 1px solid var(--border-line);
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+ }
+
+ /* ------------------------------------------------------------------------
+   * Object: Badge (Structure)
+   * ------------------------------------------------------------------------ */
+ .badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1;
+ }
+
+ /* Badge Skins */
+ .badge--placard {
+  border: 1px solid var(--accent);
+  color: var(--accent-text);
+ }
+
+ .badge--tag {
+  font-family: var(--font-sans);
+  background: var(--well);
+  color: var(--text-muted);
+ }
+
+ /* ------------------------------------------------------------------------
+   * Object: Button (Structure)
+   * ------------------------------------------------------------------------ */
+ .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 var(--space-5, 1.25rem);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--text-body);
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+   background var(--duration-fast) var(--ease-standard),
+   border-color var(--duration-fast) var(--ease-standard),
+   color var(--duration-fast) var(--ease-standard);
+ }
+
+ .btn[disabled],
+ .btn--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+ }
+
+ /* Button Skins */
+ .btn--primary {
+  background: var(--brand);
+  color: var(--on-brand);
+ }
+
+ .btn--primary:hover {
+  background: var(--brand-hover);
+ }
+
+ .btn--secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-line);
+ }
+
+ .btn--secondary:hover {
+  border-color: var(--text);
+ }
+
+ .btn--ghost {
+  background: transparent;
+  color: var(--text);
+ }
+
+ .btn--ghost:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+ }
+
+ .btn--danger {
+  background: var(--error);
+  color: var(--paper);
+ }
+
+ /* ------------------------------------------------------------------------
+   * Object: Standalone Link (Structure + Skin)
+   * ------------------------------------------------------------------------ */
+ .link-standalone,
+ a.link-standalone {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--text-small);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--accent-text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+ }
+
+ .link-standalone::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  margin-right: 8px;
+ }
+
+ .link-standalone:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-text);
+ }
+
+ /* ------------------------------------------------------------------------
+   * Objects: Form Elements
+   * ------------------------------------------------------------------------ */
+ .field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+ }
+
+ .label {
+  display: block;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--text-small);
+  color: var(--text);
+ }
+
+ .input {
+  height: 44px;
+  width: 100%;
+  max-width: 280px;
+  padding: 0 12px;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-xs);
+ }
+
+ /* ------------------------------------------------------------------------
+   * Object: Term Trigger & Popover Note
+   * ------------------------------------------------------------------------ */
+ .term-trigger {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--border-line);
+  text-underline-offset: 0.18em;
+  transition: text-decoration-color var(--duration-fast) var(--ease-standard);
+ }
+
+ .term-trigger:hover,
+ .term-trigger:focus-visible {
+  text-decoration-color: var(--accent);
+ }
+
+ .term-note {
+  position: absolute;
+  position-area: bottom span-right;
+  margin: 0.6em 0 0 0;
+  width: max-content;
+  max-width: min(42ch, calc(100vw - 2.5rem));
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--text);
+  opacity: 0;
+  translate: 0 -4px;
+  transition:
+   opacity var(--duration-base) var(--ease-standard),
+   translate var(--duration-base) var(--ease-standard),
+   overlay var(--duration-base) allow-discrete;
+ }
+
+ @supports (position-try-fallbacks: flip-block) {
+  .term-note {
+   position-try-fallbacks: flip-block;
+  }
+ }
+
+ .term-note:popover-open {
+  opacity: 1;
+  translate: 0 0;
+ }
+
+ @starting-style {
+  .term-note:popover-open {
+   opacity: 0;
+   translate: 0 -4px;
+  }
+ }
+
+ @supports not (position-anchor: --a) {
+  .term-note {
+   position: fixed;
+   inset: auto;
+   top: 50%;
+   left: 50%;
+   margin: 0;
+   translate: -50% calc(-50% - 4px);
+  }
+
+  .term-note:popover-open {
+   translate: -50% -50%;
+  }
+ }
+
+ .term-note::backdrop {
+  background: transparent;
+ }
+
+ @media (prefers-reduced-motion: reduce) {
+
+  .term-note,
+  .term-note:popover-open {
+   translate: none;
+  }
+ }
+
+ @media print {
+  .term-note {
+   display: none;
+  }
+
+  .term-trigger {
+   text-decoration: none;
+  }
+ }
+}

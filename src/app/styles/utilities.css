@@ -1,0 +1,157 @@
+/* ==========================================================================
+   Utilities Layer — Type Scale, Measure & Monospace Helpers
+   ========================================================================== */
+
+@layer utilities {
+
+  /* ------------------------------------------------------------------------
+   * Display & Heading Scale
+   *
+   * RATIONALE: High-level editorial hierarchy uses IBM Plex Serif (--font-display)
+   * to establish an editorial, publication feel. Heading level .h3 shifts to
+   * IBM Plex Sans (--font-sans) to reduce visual weight for technical sub-sections.
+   * ------------------------------------------------------------------------ */
+
+  /**
+   * .display-xl — Hero Banner Display
+   *
+   * PURPOSE: Fluid, maximum-impact display type. Scales automatically via CSS clamp()
+   * from 2.75rem (mobile) up to 4.5rem (desktop).
+   *
+   * USE CASES: Landing page hero titles, photography gallery splash headings.
+   */
+  .display-xl {
+    font-family: var(--font-display);
+    font-size: var(--text-display-xl);
+    line-height: var(--leading-display-xl);
+    font-weight: 600;
+  }
+
+  /**
+   * .display — Section Banner Display
+   *
+   * PURPOSE: Secondary fluid display title. Scales automatically via CSS clamp()
+   * from 2.25rem (mobile) up to 3.25rem (desktop).
+   *
+   * USE CASES: Project showcase title headers, major landing section intro titles.
+   */
+  .display {
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    font-weight: 600;
+  }
+
+  /**
+   * .h1 — Page Primary Heading
+   *
+   * PURPOSE: Standard non-fluid 2rem serif page header.
+   *
+   * USE CASES: Article titles, page titles, standalone document headers.
+   */
+  .h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    line-height: var(--leading-h1);
+    font-weight: 600;
+  }
+
+  /**
+   * .h2 — Major Section Heading
+   *
+   * PURPOSE: 1.5rem serif heading for breaking up content blocks within a page.
+   *
+   * USE CASES: Section headers inside case studies, spec sheets, long-form content.
+   */
+  .h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    line-height: var(--leading-h2);
+    font-weight: 600;
+  }
+
+  /**
+   * .h3 — Subsection Heading
+   *
+   * PURPOSE: 1.25rem sans-serif heading. Switches font-family to IBM Plex Sans
+   * to provide clear typographic contrast against parent serif headings.
+   *
+   * USE CASES: Subsection titles, card group titles, sidebar block headings.
+   */
+  .h3 {
+    font-family: var(--font-sans);
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    font-weight: 600;
+  }
+
+  /* ------------------------------------------------------------------------
+   * Micro-typography & Layout Helpers
+   * ------------------------------------------------------------------------ */
+
+  /**
+   * .datum-overline — Signature Micro-Typography Label
+   *
+   * PURPOSE: Implements the Datum system's signature technical annotation mark.
+   * Combines tracked uppercase mono text with a literal CSS overline to anchor
+   * metadata blocks.
+   *
+   * USE CASES: Category tags above titles, section index identifiers (e.g., "SEC // 01"),
+   * telemetry readouts, technical spec category headers.
+   */
+  .datum-overline {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-overline);
+    font-weight: 600;
+    letter-spacing: var(--tracking-overline);
+    line-height: var(--leading-overline);
+    text-decoration-line: overline;
+    text-transform: uppercase;
+  }
+
+  /**
+   * .measure — Typographic Line-Length Cap
+   *
+   * PURPOSE: Restricts long-form text to an optimal reading measure (~65ch)
+   * to prevent line-tracking eye fatigue on wide desktop screens.
+   *
+   * USE CASES: Article body paragraphs, documentation text containers, bio text.
+   */
+  .measure {
+    max-width: var(--container-prose);
+    line-height: var(--leading-body);
+  }
+
+  /**
+   * .mono — Technical & Tabular Monospace Text
+   *
+   * PURPOSE: Precision numeric and code display. Forces slashed zero ('0') and
+   * fixed-width digits so numbers align neatly in columns.
+   *
+   * USE CASES: Data tables, timestamps, dimensions, coordinates, serial numbers.
+   */
+  .mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+    /* OpenType: Slashed zero ('0') to distinguish from uppercase 'O' */
+    font-feature-settings: "zero";
+    /* OpenType: Equal-width numbers for vertical alignment across rows */
+    font-variant-numeric: tabular-nums;
+  }
+
+  /**
+   * .caption — Secondary / Helper Text
+   *
+   * PURPOSE: De-emphasized small text to establish visual hierarchy without
+   * competing with body copy.
+   *
+   * USE CASES: Image captions, chart labels, form helper text, copyright notices.
+   */
+  .caption {
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+    color: var(--text-muted);
+  }
+}

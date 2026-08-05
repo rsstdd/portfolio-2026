@@ -37,8 +37,7 @@ export function Mdx({ source, className = "", components = {} }: MdxProps) {
   }
 
   return (
-    // <div className={`prose-datum ${className}`}>
-    <div className={`${className}`}>
+    <div className={`prose-datum ${className}`}>
       <MDXRemote
         source={source}
         options={{

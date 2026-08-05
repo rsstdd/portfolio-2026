@@ -16,7 +16,7 @@ export function SectionRule({
   as?: "p" | "h2" | "h3";
 }) {
   return (
-    <div className={`rule-datum ${className}`}>
+    <div className={`rule rule--datum ${className}`}>
       {label ? (
         <p
           className="font-mono text-overline overline uppercase text-muted"

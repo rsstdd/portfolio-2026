@@ -3,13 +3,9 @@
  * Shared design system for aircraft / portfolio / photography.
  * Spec and rationale: DESIGN_SYSTEM.md. Contrast ratios verified 2026-07-29.
  *
- * Usage (all three projects, after the Tailwind import):
- *   @import "tailwindcss";
- *   @import "./design-tokens.css";
- *
- * Semantic custom properties live on :root so [data-theme="dark"] can override
- * them; @theme inline maps them into Tailwind so utilities like bg-surface and
- * text-accent exist and follow the active theme automatically.
+ * Usage (after importing tailwindcss in globals.css):
+ * @import "tailwindcss";
+ * @import "./design-tokens.css";
  */
 
 :root {
@@ -62,7 +58,8 @@
   /* warm ink, never pure black */
 }
 
-[data-theme="dark"] {
+[data-theme="dark"],
+:root:has(#theme-toggle:checked) {
   /* Primitives and mapped semantics, dark (photography default) */
   --bg: #191611;
   --surface: #221e18;
@@ -105,10 +102,10 @@
 }
 
 @theme {
-  /* One superfamily: IBM Plex */
-  --font-display: "IBM Plex Serif", ui-serif, Georgia, serif;
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+  /* One superfamily: IBM Plex (Mapped to Next.js font CSS variables) */
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-plex-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "Cascadia Code", monospace;
 
   /* Type scale */
   --text-display-xl: clamp(2.75rem, 5vw + 1rem, 4.5rem);

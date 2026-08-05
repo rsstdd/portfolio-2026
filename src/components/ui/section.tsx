@@ -9,7 +9,7 @@ interface SectionProps {
 
 export function Section({ index, overline, title, children }: SectionProps) {
  return (
-  <section className="rule-datum mt-16 pt-6">
+  <section className="rule rule--datum mt-16 pt-6">
    {/* Aligning the overline styling with SectionRule */}
    <p className="font-mono text-overline overline uppercase text-muted">
     {index ? `${index} — ` : null}

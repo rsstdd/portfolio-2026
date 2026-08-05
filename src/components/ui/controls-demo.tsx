@@ -7,27 +7,27 @@ interface IButtons {
 const buttons: IButtons[] = [
  {
   name: 'Save entry',
-  classes: 'btn btn-primary',
+  classes: 'btn btn--primary',
   id: "1",
  },
  {
   name: 'Compare',
-  classes: 'btn btn-secondary',
+  classes: 'btn btn--secondary',
   id: "3",
  },
  {
   name: 'View source',
-  classes: 'btn btn-ghost',
+  classes: 'btn btn--ghost',
   id: "2",
  },
  {
   name: 'Delete',
-  classes: 'btn btn-danger',
+  classes: 'btn btn--danger',
   id: "4",
  },
  {
   name: 'Disabled',
-  classes: 'btn btn-primary',
+  classes: 'btn btn--primary',
   id: "5",
  }
 ]

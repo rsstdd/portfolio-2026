@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       data-scroll-behavior="smooth"
       className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable}`}
     >
-      <body className="flex min-h-dvh flex-col bg-bg text-ink antialiased">
+      <body className="flex min-h-dvh flex-col bg-bg text-ink antialiased transition-colors duration-200">
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />

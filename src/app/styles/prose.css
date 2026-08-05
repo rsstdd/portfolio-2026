@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Prose Engine — MDX Content Typography (.prose-datum)
+   ========================================================================== */
+
+@layer components {
+ .prose-datum {
+  max-width: var(--container-prose);
+  color: var(--text);
+ }
+
+ .prose-datum>*+* {
+  margin-top: 1.25em;
+ }
+
+ .prose-datum h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  margin-top: 2.5em;
+ }
+
+ .prose-datum h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  margin-top: 2em;
+ }
+
+ .prose-datum a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--duration-fast) var(--ease-standard);
+ }
+
+ .prose-datum a:hover {
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+ }
+
+ .prose-datum strong {
+  font-weight: 600;
+ }
+
+ .prose-datum ul,
+ .prose-datum ol {
+  padding-left: 1.25em;
+ }
+
+ .prose-datum ul {
+  list-style: disc;
+ }
+
+ .prose-datum ol {
+  list-style: decimal;
+ }
+
+ .prose-datum li+li {
+  margin-top: 0.4em;
+ }
+
+ .prose-datum blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1em;
+  color: var(--text-muted);
+ }
+
+ .prose-datum code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--well);
+  padding: 0.15em 0.35em;
+  border-radius: var(--radius-xs);
+  font-feature-settings: "zero";
+ }
+
+ .prose-datum pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  background: var(--well);
+  border: 1px solid var(--border-line);
+  padding: var(--space-4);
+  overflow-x: auto;
+  font-feature-settings: "zero";
+ }
+
+ .prose-datum pre code {
+  background: none;
+  padding: 0;
+ }
+
+ .prose-datum table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+ }
+
+ .prose-datum th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.75rem 1rem 0.75rem 0;
+  border-bottom: 1px solid var(--border-line);
+ }
+
+ .prose-datum td {
+  padding: 0.75rem 1rem 0.75rem 0;
+  border-bottom: 1px solid var(--border-line);
+  vertical-align: top;
+ }
+
+ .prose-datum hr {
+  border: 0;
+  border-top: 1px solid var(--border-line);
+  margin: 3em 0;
+ }
+}

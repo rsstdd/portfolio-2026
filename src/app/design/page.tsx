@@ -11,7 +11,6 @@ import {
  DataDemo
 } from "@/components/ui";
 
-// Data defined at the page level
 const palette = [
  { name: 'paper', token: 'var(--paper, #f5f2ec)' },
  { name: 'paper-raised', token: 'var(--paper-raised, #fbf9f5)' },
@@ -62,27 +61,22 @@ export default function DesignSystemPage() {
   ),
  };
 
- console.log(body)
-
  return (
-  <main
-   id="main"
-   className="relative max-w-[70rem] mx-auto px-6 pt-10 pb-24 text-[var(--text)] bg-[var(--bg)] transition-colors duration-200"
-  >
+  <main id="main" className="relative max-w-content mx-auto px-6 pt-10 pb-24">
    <input
     id="theme-toggle"
     type="checkbox"
-    className="peer/toggle sr-only"
+    className="peer sr-only"
     aria-label="Toggle dark theme"
    />
 
    <div className="flex justify-end w-full">
     <label
      htmlFor="theme-toggle"
-     className="cursor-pointer select-none font-mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+     className="cursor-pointer select-none font-mono text-overline uppercase text-muted transition-colors hover:text-ink"
     >
-     <span className="peer-checked/toggle:hidden">Toggle dark</span>
-     <span className="hidden peer-checked/toggle:inline">Toggle light</span>
+     <span className="peer-checked:hidden">Toggle dark</span>
+     <span className="hidden peer-checked:inline">Toggle light</span>
     </label>
    </div>
 
