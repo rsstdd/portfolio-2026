@@ -1,5 +1,6 @@
 interface IButtons {
  name: string,
+ disabled: boolean,
  classes: string,
  id: string,
 }
@@ -7,26 +8,31 @@ interface IButtons {
 const buttons: IButtons[] = [
  {
   name: 'Save entry',
+  disabled: false,
   classes: 'btn btn--primary',
   id: "1",
  },
  {
   name: 'Compare',
+  disabled: false,
   classes: 'btn btn--secondary',
   id: "3",
  },
  {
   name: 'View source',
+  disabled: false,
   classes: 'btn btn--ghost',
   id: "2",
  },
  {
   name: 'Delete',
+  disabled: false,
   classes: 'btn btn--danger',
   id: "4",
  },
  {
   name: 'Disabled',
+  disabled: true,
   classes: 'btn btn--primary',
   id: "5",
  }
@@ -35,19 +41,34 @@ const buttons: IButtons[] = [
 export function ControlsDemo() {
  return (
   <>
-   <div className="flex flex-wrap gap-3 items-center">
-    {buttons.map(({ name = '', classes = '', id }) => (
-     <button key={id} type="button" className={classes}>{name}</button>
+   {/* Button Row */}
+   <div className="flex flex-wrap items-center gap-3">
+    {buttons.map(({ id, name, classes, disabled }) => (
+     <button
+      key={id}
+      type="button"
+      disabled={disabled}
+      className={classes}
+     >
+      {name}
+     </button>
     ))}
    </div>
 
-   <div className="flex flex-wrap gap-3 items-end mt-6">
-    <div className="field">
-     <label htmlFor="d1">Aircraft model</label>
-     <input id="d1" placeholder="e.g. PA-28-181 Archer" />
+   {/* Field & Metadata Row */}
+   <div className="flex flex-wrap items-end gap-3">
+    {/* Field Group */}
+    <div className="field-group grow sm:grow-0">
+     <label htmlFor="d1" className="label">Aircraft model</label>
+     <input
+      id="d1"
+      type="text"
+      placeholder="e.g. PA-28-181 Archer"
+      className="input"
+     />
     </div>
-    <span className="tag">Piston single</span>
-    <span className="placard">Favourite</span>
+    <span className="badge badge--tag flex items-center h-11">Piston single</span>
+    <span className="badge badge--placard flex items-center h-11">Favourite</span>
    </div>
   </>
  );
