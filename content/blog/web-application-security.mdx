@@ -1,0 +1,152 @@
+---
+title: SQL injection, XSS, CSRF, and mass assignment, by hand
+summary: The mechanism behind four common web vulnerabilities, reconstructed without a framework, because that is the bar worth being able to clear.
+tags: ["security", "web"]
+date: 2026-08-01
+---
+
+Framework defaults hide most of this. The point of writing it out by hand is
+being able to reconstruct the mechanism once the framework is taken away.
+
+## SQL injection
+
+Injection happens because a query is assembled by concatenating untrusted
+input directly into a string the database then parses as code. The database
+cannot distinguish data a user typed from SQL a developer wrote once the two
+are concatenated together.
+
+```php
+// vulnerable: string concatenation
+$query = "SELECT * FROM users WHERE email = '$email' AND password = '$password'";
+```
+
+A payload against this query needs to close the quote, inject a boolean that
+is always true, then comment out the remainder so the trailing quote does not
+cause a syntax error:
+
+```
+email:    ' OR '1'='1' --
+password: anything
+```
+
+The database executes:
+
+```sql
+SELECT * FROM users WHERE email = '' OR '1'='1' --' AND password = 'anything'
+```
+
+`--` starts a SQL comment, so everything after it, including the password
+check, is discarded. The query returns every row in `users`, and the
+application logs in as whichever row comes back first.
+
+**Defense 1 — parameterized queries.** The query and the data travel to the
+database on separate channels, so the database never parses user input as SQL
+syntax at all:
+
+```php
+$stmt = $pdo->prepare('SELECT * FROM users WHERE email = ? AND password_hash = ?');
+$stmt->execute([$email, $passwordHash]);
+```
+
+**Defense 2 — an ORM query interface**, the same principle supplied by the
+framework:
+
+```ruby
+User.where(email: email, password_hash: password_hash)
+```
+
+**Why parameterization is not the complete story.** It protects values. It
+does nothing for identifiers — table names, column names, sort directions —
+because a placeholder cannot appear there:
+
+```ruby
+# still injectable: a user-controlled column name interpolated into SQL
+User.order("#{params[:sort_column]} ASC")
+```
+
+The fix for a dynamic identifier is an allowlist, not parameterization:
+
+```ruby
+SORTABLE = %w[created_at name email].freeze
+User.order("#{SORTABLE.fetch(params[:sort_column], 'created_at')} ASC")
+```
+
+"We use an ORM" is not, on its own, a security property, if a raw query or a
+stored procedure sits anywhere downstream and builds SQL by concatenation
+internally.
+
+## Cross-site scripting
+
+XSS happens when untrusted input is written into a page in a context where
+the browser executes it rather than displays it as text. Three contexts,
+three escaping rules:
+
+| Context | Example sink | Escaping needed |
+|---|---|---|
+| HTML body | `<div><%= comment %></div>` | HTML-entity encode `< > & " '` |
+| HTML attribute | `<input value="<%= name %>">` | Attribute encoding, and never let the attribute be `href`/`src` with a user-controlled scheme |
+| JavaScript context | `<script>var x = "<%= value %>";</script>` | Never interpolate directly; pass via a `data-*` attribute or a JSON payload instead |
+
+A common, easy-to-miss version of this: a small CRUD feature — a table, a
+create form submitted over AJAX — appends the new row to the DOM by echoing
+back whatever the form just submitted. If that echo happens through
+`innerHTML` rather than a text-safe insertion, and the name field is never
+escaped, an attacker submits `<img src=x onerror=alert(1)>` as a name and it
+executes for every future viewer of the table, not just the person who
+submitted it. That is stored XSS, and it is a common failure mode in
+otherwise-working CRUD features precisely because the feature "works" in
+every manual test that used a normal name.
+
+The fix in every case is the same: use the templating engine's default
+auto-escaping and never build HTML by string concatenation or unescaped
+`innerHTML`. Use `textContent`, or a templating layer that escapes by default,
+when inserting user data on the client.
+
+## CSRF
+
+CSRF exploits the fact that a browser attaches cookies automatically to any
+request to a domain, including a request triggered by a different site the
+user happens to have open. If a state-changing endpoint trusts the cookie
+alone, any page on the internet can forge a request that performs the action
+as the logged-in user.
+
+**Token refresh cadence.** The standard pattern is a per-session token,
+embedded in every form and validated on every state-changing request,
+refreshed on login and after a privilege change such as a password change —
+not on every single request. Refreshing on every request breaks multi-tab
+use: a token embedded five minutes ago becomes invalid the moment a different
+tab makes a request and rotates it. Refreshing too rarely has a different
+failure mode: a long-lived token sitting in a page left open for hours stays
+a valid forgery target for that entire window if it ever leaks.
+
+**Where `SameSite` cookies do, and do not, make the token redundant.**
+`SameSite=Strict` or `Lax` stops the browser from attaching the session
+cookie to most cross-site requests, which blocks the classic forged-form
+attack without any token at all. It does not cover subdomain-to-subdomain
+attacks, browsers that do not enforce `SameSite` yet, or an explicit
+`SameSite=None` cookie required for a legitimate cross-site embed. In
+practice, `SameSite=Lax` plus a CSRF token is defense in depth, not
+redundancy, which is why most frameworks still ship both by default.
+
+## Mass assignment
+
+The vulnerability is not that a framework lets you assign parameters to a
+model. It is trusting a hash of arbitrary client-submitted keys to update any
+column on that model, including columns the client was never meant to touch.
+
+```ruby
+# vulnerable: whatever keys the client sends get assigned
+@user.update(params[:user])
+```
+
+A client that knows, or guesses, a column name adds `user[is_admin]=true` to
+the payload and the update succeeds, because nothing checked which keys were
+allowed. The fix is an explicit allowlist of assignable attributes:
+
+```ruby
+@user.update(params.require(:user).permit(:name, :email))
+```
+
+"Use strong parameters" is the product name of the fix. The principle —
+never trust a client-submitted key to decide which server-side field gets
+written — is what has to survive if the framework did not exist.

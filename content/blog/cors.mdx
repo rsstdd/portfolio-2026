@@ -1,0 +1,399 @@
+---
+title: "CORS: What It Is, Why It Exists, and How It Works"
+summary: "A practical explanation of Cross-Origin Resource Sharing, browser same-origin policy, preflight requests, response headers, credentials, and common configuration mistakes."
+date: 2026-08-08
+tags:
+  - web
+  - http
+  - security
+  - cors
+  - browsers
+featured: false
+---
+
+
+## Definitions
+
+* **CORS** - *Cross-Origin Resource Sharing*. A browser-enforced HTTP protocol that allows a server to specify which origins may access its responses from client-side JavaScript.
+* **JSONP** - *JSON with Padding*. Used to request data from a server residing in a different domain than the client. This enables sharing of data in spite of the same-origin policy.
+
+## Same-Origin Policy Security Model
+
+All of the major web browsers implement the Same-Origin Policy as part of the Web Application Security Model. This policy is a security concept implemented by web browsers to restrict JavaScript running on one origin from reading or manipulating data from another origin. It does not prevent every cross-origin request or resource embed. The browser only considers resources to be of the same origin if they use the same protocol (http/https), the same port, and the same domain -- even different subdomains are different origins.
+
+The purpose of this policy is to protect against malicious scripting attacks and unintended access to data from another origin. Unfortunately, it also restricts legitimate web applications that need to read data across origins.
+
+To overcome some of the limitations of the same-origin policy, JSON-P (kind of a hack) was historically used, while CORS is the modern mechanism for controlled cross-origin sharing. Browsers already allow many resources such as images, stylesheets, scripts, iframes, and videos to be embedded across origins in specific contexts. CORS is especially important when JavaScript needs to read a cross-origin response, such as an API request made with `fetch` or `XMLHttpRequest`.
+
+### Example of Cross-Origin Request Error
+
+```
+XMLHttpRequest cannot load http://localhost:3000. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'null' is therefore not allowed access.
+```
+
+### Circumventing the Same-Origin Policy
+
+The HTML `<script>` tag is able to execute classic scripts retrieved from foreign origins. However, a service replying with pure JSON cannot normally be consumed by loading that response as a classic script. The browser downloads the `<script>` file, evaluates the contents as JavaScript, and raw JSON will generally fail to behave as a usable script payload. Even if the JSON resembles a JavaScript object literal, the data is not assigned somewhere that the calling page can use.
+
+### JSON-P
+
+In the JSONP usage pattern, the URL request pointed to by the `src` attribute in the `<script>` tag returns JSON data, with JavaScript code (usually a function call) wrapped around it. This "wrapped payload" is then interpreted by the browser, and the function that is already defined in the JavaScript environment can manipulate the JSON data. The function invocation to `parseResponse()` is the "P" (the *padding*) around the JSON.
+
+For JSONP to work, a server must reply with a response that includes the JSONP function (many do not). The JSONP function invocation that gets sent back, as well as the payload that the function receives, must be agreed upon by both the client and server.
+
+```html
+<script type="application/javascript"
+        src="http://server.example.com/Users/1234?callback=parseResponse">
+</script>
+```
+
+JSONP works only for GET requests and is not an effective solution for POSTs, PUTs, and DELETEs of a RESTful server.
+
+JSON-P is an early and limited solution to cross-origin sharing. Fortunately, we have better options now. There are still APIs that use JSON-P, but it's being phased out by the industry in favor of **CORS**.
+
+## CORS Security Model
+
+**CORS** is a technique for relaxing the same-origin policy, which allows JavaScript in a web application to consume an API served from a different origin. The server opts into this behavior with CORS response headers, and the browser enforces whether the response can be exposed to the calling JavaScript. CORS is not authentication or authorization, and non-browser clients such as `curl` are not restricted by the browser's CORS policy.
+
+For practical purposes, browser CORS requests can be divided into requests that can be sent without a preflight and requests that require a CORS preflight:
+
+* **Simple requests** - This use case applies to CORS-safelisted requests. The request method must be `GET`, `HEAD`, or `POST`, and request headers must remain within the CORS safelist. When `Content-Type` is set, the safelisted media types are `text/plain`, `application/x-www-form-urlencoded`, and `multipart/form-data`.
+* **Preflighted requests** - When the simple request rules do not apply, the browser first sends an HTTP `OPTIONS` request to determine whether the requested method and headers are allowed in the cross-origin context.
+* Adding a non-safelisted header such as `Authorization` normally causes the request to be preflighted.
+
+The client and server exchange headers to specify behavior regarding cross-origin requests. The following is a list of the primary headers:
+
+* `Origin`: this header is used by the browser to specify the origin from which the request is being made. The server can use it to decide which CORS response headers to return.
+* `Access-Control-Request-Method`: In the context of preflighted requests, the `OPTIONS` request sends this header to identify the HTTP method the actual request intends to use.
+* `Access-Control-Request-Headers`: within the context of preflighted requests, the `OPTIONS` request sends this header to identify non-safelisted headers the actual request intends to send.
+* `Access-Control-Allow-Credentials`: this specifies whether the browser may expose the response when credentials are included.
+* `Access-Control-Allow-Methods`: the server uses this header to tell which HTTP methods are allowed in the context of the request. This is typically used in the context of preflighted requests.
+* `Access-Control-Allow-Origin`: the server uses this header to tell which origin is allowed to access the response, or `*` when the resource is intended to be readable by any origin and credentials are not included.
+* `Access-Control-Allow-Headers`: the server uses this header to tell which request headers are allowed in the context of the request. This is typically used in the context of preflighted requests.
+* `Access-Control-Expose-Headers`: the server uses this header to identify additional response headers that JavaScript is allowed to read.
+* `Access-Control-Max-Age`: the server uses this header to tell the browser how long it may cache the result of a successful preflight request.
+
+If a cross-origin request uses credentials mode `include`, such as when `fetch` is called with `credentials: "include"`, the server must respond with `Access-Control-Allow-Credentials: true`. In that case, `Access-Control-Allow-Origin` cannot be `*`; it must contain an explicit allowed origin. The preflight request itself is sent without credentials even when the subsequent request will include them.
+
+### Simple request
+
+In a simple request, the browser sends the request directly to the other origin without a preflight. The server can still receive and process that request. If the response satisfies the CORS checks, the browser exposes it to the calling JavaScript. Otherwise, the browser blocks JavaScript from reading the response and reports a CORS error.
+
+```
++--------------+                           +-------------+
+|              |       GET (for example)   |             |
+|    Client    +-------------------------> |    Server   |
+|              |       Origin header       |             |
+|              |                           |             |
+|  Different   |                           |             |
+|  domain from |                           |   Will      |
+|  the server  |                           |   support   |
+|              |                           |   CORS      |
+|              |                           |             |
+|              |       CORS headers        |             |
++--------------+ <-------------------------+-------------+
+                         Response
+```
+
+Example Request:
+
+```http
+GET /someData/ HTTP/1.1
+Host: someDomain.org
+(...)
+Referer: http://mydomain.org/example.html
+Origin: http://mydomain.org
+```
+
+Example Response:
+
+```http
+HTTP/1.1 200 OK
+(...)
+Access-Control-Allow-Origin: *
+Content-Type: application/json
+
+[JSON Data]
+```
+
+### Preflighted request
+
+If a request does not meet the CORS safelist requirements -- for example, because it uses a non-safelisted method, header, or content type -- a *preflight* CORS request is sent in advance of the actual request. In a preflighted request, the browser checks the server's CORS policy based on HTTP headers in two phases:
+
+1. The browser executes an `OPTIONS` request with the same URL as the target request to check that it has the necessary permissions to execute the request.
+
+2. This `OPTIONS` request then returns headers that identify what is allowed for the URL. If the requested method and headers satisfy the CORS policy, the browser executes the actual request.
+
+* Essentially, the preflight request is "asking" the server if the browser may send the intended cross-origin request. If the preflight succeeds, the server responds with a successful 2xx status and the appropriate CORS headers; `204 No Content` and `200 OK` are both common.
+
+```
++---------------------+                   +--------------------+
+|                     |   OPTIONS         |                    |
+|      Client         +-----------------> |      Server        |
+|                     |  Origin header    |                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|     Different       |  CORS headers     +    With support    |
+|    domain from      | <-----------------+       of  CORS      |
+|     the server      |    Response       +                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|                     | POST (for example)|                    |
+|                     +-----------------> |                    |
+|                     |  Origin header    |                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|                     |                   |                    |
+|                     |   CORS headers    |                    |
+|                     | <-----------------+                    |
+|                     |     Response      |                    |
+|                     |                   |                    |
++---------------------+                   +--------------------+
+
+```
+
+### Example Header Exchange
+
+```http
+OPTIONS /myresource/ HTTP/1.1
+Host: mydomain.org
+(...)
+Origin: http://test.org
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: content-type
+```
+
+The corresponding response:
+
+```http
+HTTP/1.1 200 OK
+(...)
+Access-Control-Allow-Origin: http://test.org
+Access-Control-Allow-Methods: POST, GET, OPTIONS
+Access-Control-Allow-Headers: content-type
+Access-Control-Max-Age: 1728000
+```
+
+Since the `OPTIONS` pre-request succeeds, the browser will then send the actual request:
+
+```http
+POST /myresource/ HTTP/1.1
+Host: mydomain.org
+Content-type: application/json
+Accept: application/json
+(...)
+Referer: http://test.org/example.html
+Origin: http://test.org
+
+[JSON Data]
+```
+
+The corresponding response:
+
+```http
+HTTP/1.1 200 OK
+(...)
+Access-Control-Allow-Origin: *
+Content-Type: application/json
+
+[JSON Data]
+
+```
+
+*Headers and diagrams from [Templier, 2015](http://restlet.com/blog/2015/12/15/understanding-and-using-cors/).*
+
+---
+
+## Handling CORS on your Express Server
+
+Although CORS makes controlled cross-origin response sharing possible within the browser, server-side applications must set the right headers in the response.
+
+As you can see, to enable cross-origin sharing, the server must set the appropriate CORS headers. These headers tell the browser which origins, methods, headers, and credential modes are allowed, and the browser then enforces those rules. They do not replace authentication or authorization on the API itself.
+
+For an Express server, that code comes in the form of middleware before the API routes.
+
+### Express Middleware to Enable CORS
+
+```javascript
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.get("/", (req, res, next) => {
+  // Handle the get for this route
+});
+
+app.post("/", (req, res, next) => {
+  // Handle the post for this route
+});
+```
+
+Let's break that down line-by-line.
+
+```javascript
+res.header("Access-Control-Allow-Origin", "*");
+// "*" is appropriate when the resource is intentionally public
+// and does not use credentialed CORS. Credentialed requests require
+// an explicit allowed origin instead.
+```
+
+This informs the browser that JavaScript from any origin may read this response, assuming the request is not credentialed. If access should be limited, change the "*" to a specific allowed origin. This does not prevent other origins or non-browser clients from sending requests to the API.
+
+```javascript
+res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+```
+
+---
+
+This informs the browser which request headers are allowed during a preflight. If you want to add additional non-safelisted headers, such as `Authorization`, they must be allowed here.
+
+If you need to whitelist multiple domains, then you will need to make the middleware dynamic so that it chooses the appropriate `Access-Control-Allow-Origin` value for the incoming `Origin`. When that response value varies by request origin, include `Vary: Origin` so shared caches do not reuse a response for the wrong origin.
+
+If you only want to expose some routes to JavaScript from all origins, set the response headers on those routes directly and send the response there.
+
+```javascript
+app.get("/public", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.json({ data: [1, 2, 3, 4] });
+});
+```
+
+---
+
+## Configure CORS with an npm Module
+
+The good news is, the [cors](https://www.npmjs.com/package/cors) node module makes configuring CORS extremely simple. Once installed, it's as simple as including the middleware in your application.
+
+```javascript
+const cors = require("cors");
+app.use(cors());
+```
+
+Make sure that any Express middleware being used (such as CORS, in this case) is configured before the routes are matched.
+
+Once this is installed, browser clients such as Axios or `fetch` can read cross-origin responses when the middleware configuration permits their origin, method, headers, and credential mode. Axios does not bypass or implement a separate CORS policy; the browser enforces CORS.
+
+---
+
+## Other Ways Around the Same-Origin Policy
+
+*Information obtained from Titarenco, David, ["The Same Origin Policy"](http://stackoverflow.com/questions/3076414/ways-to-circumvent-the-same-origin-policy), Stack Overflow.*
+
+### The document.domain method (legacy)
+
+* Method type: iframe.
+
+Historically, this iframe technique allowed related subdomains to relax part of the same-origin check by setting `document.domain` to a shared suffix. For example, pages on `http://store.company.com/` and `http://www.company.com/` could both execute the following statement:
+
+```javascript
+document.domain = "company.com";
+```
+
+After both related pages set the same value, some legacy origin checks could treat them as same-origin. A page could not set `document.domain` to an unrelated domain such as `othercompany.com`.
+
+This technique weakens the same-origin policy and is deprecated. It should not be used in new applications. For communication between documents on different origins, use mechanisms such as `window.postMessage` instead.
+
+Source: [MDN: Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)
+
+### The Cross-Origin Resource Sharing method
+
+* Method type: **AJAX**.
+
+Cross-Origin Resource Sharing (CORS) is defined by the Fetch Standard and describes how browsers and servers communicate when a script needs access to a resource across origins. The basic idea behind CORS is to use HTTP headers so the server can declare which origins may read the response and the browser can enforce that policy.
+
+For a simple request, the method must be GET, HEAD, or POST and the request headers must remain within the CORS safelist. When Content-Type is set, the safelisted values are text/plain, application/x-www-form-urlencoded, and multipart/form-data. The request is sent with an extra header called Origin. The Origin header contains the origin (protocol, domain name, and port) of the requesting page so that the server can determine which CORS response headers to return. An example Origin header might look like this:
+
+```http
+Origin: http://www.stackoverflow.com
+```
+
+If the server decides that the request should be allowed, it sends a Access-Control-Allow-Origin header echoing back the same origin that was sent or * if it’s a public resource. For example:
+
+```http
+Access-Control-Allow-Origin: http://www.stackoverflow.com
+```
+
+If this header is missing, or the allowed origin does not match, then the browser prevents the calling JavaScript from reading the response. Cookies and other credentials are a separate concern: cross-origin credentials must be enabled by the client, and the server must return `Access-Control-Allow-Credentials: true` with an explicit allowed origin.
+
+Older browsers required feature detection around `XMLHttpRequest` and Internet Explorer's `XDomainRequest`. That compatibility technique is obsolete and should not be used in new applications. Modern browsers use `fetch` or `XMLHttpRequest` directly:
+
+```javascript
+const response = await fetch("https://www.example.com/data");
+const data = await response.json();
+```
+
+Note that for CORS to work, the target server must return the appropriate CORS headers. Client-side JavaScript cannot simply opt itself into reading an arbitrary third-party response.
+
+Source: [NCZOnline: Cross-domain Ajax with Cross-Origin Resource Sharing](http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/)
+
+### The window.postMessage method
+
+* Method type: iframe.
+
+`window.postMessage` serializes the supplied message using the structured-clone algorithm and queues a `message` event on the target window. The resulting `MessageEvent` exposes the cloned value through `data`, the sender's origin through `origin`, and the sending window through `source`.
+
+To use `window.postMessage`, an event listener must be attached:
+
+```javascript
+window.addEventListener("message", receiveMessage, false);
+```
+
+And a receiveMessage function must be declared:
+
+```javascript
+function receiveMessage(event) {
+  // do something with event.data;
+}
+```
+
+The off-site iframe must also send events properly via postMessage. When the destination origin is known, specify it instead of using `*`:
+
+```html
+<script>window.parent.postMessage('foo', 'https://www.example.com')</script>
+```
+
+Any window may access this method on another window reference, regardless of the origin of the document in that window, to send it a message. Consequently, any event listener used to receive messages must first check the identity of the sender using the origin and, where appropriate, source properties. This cannot be understated: **Failure to validate the `origin` and possibly `source` properties can create serious cross-origin security vulnerabilities.**
+
+Source: [MDN: Window.postMessage()](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
+
+### The Reverse Proxy method
+
+* Method type: Ajax.
+
+Setting up a simple reverse proxy on the server, will allow the browser to use relative paths for the Ajax requests, while the server would be acting as a proxy to any remote location.
+
+If using mod_proxy in Apache, the fundamental configuration directive to set up a reverse proxy is the ProxyPass. It is typically used as follows:
+
+```apache
+ProxyPass /ajax/ http://other-domain.com/ajax/
+```
+
+In this case, the browser would be able to request /ajax/web_service.xml as a relative URL, but the server would serve this by acting as a proxy to `http://other-domain.com/ajax/web_service.xml`.
+
+One interesting feature of this method is that the reverse proxy can also distribute requests toward multiple back-ends, thus acting as a load balancer.
+
+## For Your Consideration
+
+1. What is the same origin policy? Why is it enforced?
+2. What is JSONP?
+3. What is CORS? How is it useful?
+4. Why is CORS preferred over JSONP? What advantages does it give us over JSONP?
+
+## Resources
+
+- [*_WHATWG Fetch Standard_*. 'CORS protocol'](https://fetch.spec.whatwg.org/#http-cors-protocol)
+- [*_WHATWG HTML Standard_*. 'Origin'](https://html.spec.whatwg.org/multipage/browsers.html#origin)
+- [*_MDN_*. 'Same-Origin Policy'](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)
+- [*_Spring.io_*. 'Understanding CORS'](https://spring.io/understanding/CORS)
+- [Templier, Thierry. *_Restlet Blog_*. 'Understanding and using CORS' ](http://restlet.com/blog/2015/12/15/understanding-and-using-cors/)
+- [*_Adobe Developer Connection_*: 'Understanding Cross-Origin Resource Sharing (CORS)'](https://www.adobe.com/devnet/archive/html5/articles/understanding-cross-origin-resource-sharing-cors.html)
+- [*_Wikipedia_*. 'Cross-Origin resource sharing'](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing#How_CORS_works)
+- [*_Wikipedia_*. 'Same-Origin Policy'](https://en.wikipedia.org/wiki/Same-origin_policy)
+- [*_Wikipedia_*. 'JSONP'](https://en.wikipedia.org/wiki/JSONP)
+- [*_Security StackExchange_*. 'Why is the same origin policy so important?'](http://security.stackexchange.com/questions/8264/why-is-the-same-origin-policy-so-important)
+- [*_MDN_*. 'HTTP access control (CORS)'](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)

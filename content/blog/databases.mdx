@@ -1,0 +1,110 @@
+---
+title: Database indexing and query diagnosis
+summary: A Raspberry Pi and Arduino monitoring prototype that reads environmental sensors over Firmata, streams them to a browser over Socket.io, and sends SMS when a reading leaves its threshold.
+date: 2026-08-08
+tags: ["systems", "node", "concurrency"]
+---
+
+# Database indexing and query diagnosis
+
+## Index types
+
+An index is a separate, ordered data structure the database maintains
+alongside a table so it can find matching rows without scanning every row.
+The type of structure determines what kind of lookup it actually speeds up.
+
+| Index type | Structure | Good for | Bad for |
+|---|---|---|---|
+| B-tree (default in Postgres/MySQL) | Balanced tree, sorted | Equality, range queries (`<`, `>`, `BETWEEN`), sorting, prefix `LIKE 'abc%'` | High-cardinality-adjacent writes cause page splits; not great for pure equality on huge datasets vs. hash |
+| Hash | Hash table of the indexed value | Pure equality lookups (`WHERE id = ?`) | Cannot satisfy range queries or `ORDER BY` at all — the hash discards ordering |
+| Composite (multi-column) | B-tree over a tuple of columns, in the order declared | Queries filtering/sorting on a *prefix* of the declared column order | A query that filters on the second column only cannot use the index — see below |
+| Covering | A regular index that happens to include every column the query needs | Lets the database answer the query from the index alone, never touching the table ("index-only scan") | Wasted storage and slower writes if columns are added just for this and rarely queried together |
+| Partial / filtered | A B-tree built over only the rows matching a `WHERE` predicate (e.g., `WHERE deleted_at IS NULL`) | Small, fast index when queries always filter on that same predicate | Useless, and silently not used, for any query that does not match the partial predicate |
+
+**Concrete case where the wrong index type makes performance worse, not just
+slower:** a hash index on `created_at` for a table that is frequently queried
+with `WHERE created_at > ?` (a range). The hash index cannot serve the range
+query at all, so the planner falls back to a sequential scan — but the
+database still pays the write-time cost of maintaining the hash index on
+every insert. Net effect: slower writes, and reads that get no benefit
+whatsoever. A B-tree on the same column would serve both the range query and
+writes at a normal cost.
+
+## Composite index column order
+
+The columns in a composite index only serve queries that filter on a
+**left-to-right prefix** of the declared order — this is the single most
+commonly misunderstood fact about indexing.
+
+```sql
+CREATE INDEX idx_orders_user_status_created
+  ON orders (user_id, status, created_at);
+```
+
+This index serves:
+- `WHERE user_id = ?` — uses the leading column.
+- `WHERE user_id = ? AND status = ?` — uses the first two columns.
+- `WHERE user_id = ? AND status = ? ORDER BY created_at` — uses all three,
+  and the sort comes for free because the index is already ordered that way.
+
+It does **not** serve `WHERE status = ?` alone, or `WHERE created_at > ?`
+alone — the database cannot jump into the middle of the tree without first
+fixing the leading column.
+
+**Ordering rule of thumb:** put the column used in equality filters first
+(narrows the search the most, and prefix matching requires it), range-filtered
+columns next, and the column used for `ORDER BY` last, so the same index
+serves the filter and avoids a separate sort step.
+
+## Choosing an index for range- vs. equality-queried columns
+
+- **Equality-heavy column** (a status enum, a foreign key, a boolean flag):
+  low cardinality is fine for a plain B-tree, and it is often the leading
+  column of a composite index precisely because equality filters compose
+  well as index prefixes.
+- **Range-heavy column** (a timestamp, a price): needs a B-tree specifically
+  because only an ordered structure can answer "everything greater than X"
+  without a full scan. If a range-queried column and an equality-queried
+  column both appear in the same hot query, the equality column goes first
+  in the composite index (per the prefix rule above), and the range column
+  goes second — putting the range column first would make the equality
+  column After it unusable, because the index cannot narrow by an exact
+  value once it is already scanning a range.
+
+A single index type is not "right" for both cases in isolation — a hash
+index would be strictly better for the pure-equality column if it were
+queried alone, but the moment ordering, ranges, or composite prefixes enter
+the picture, B-tree wins, which is why B-tree is the sane default and hash
+indexes are a narrow optimization, not a general-purpose choice.
+
+## Diagnosing a slow endpoint (high P95, high DB CPU)
+
+Steps:
+
+1. **Confirm where the time actually goes.**
+   - Distinguish "the database is
+   slow" from "the app is slow calling the database" from "the network hop
+   between them is slow"
+   - An APM trace or even manual timestamps around the
+   query call settles this in minutes and prevents optimizing the wrong
+   layer.
+2. **`EXPLAIN / ANALYZE` the actual query** (not a simplified version of it) to
+   see the real query plan:
+   - sequential scan vs. index scan
+   - estimated vs. actual row counts (a large mismatch means stale statistic
+   s), and where
+   the planner spends its time.
+3. **Check for a missing or unused index** on the columns in the `WHERE`,
+   `JOIN ON`, and `ORDER BY` clauses, using the composite-prefix rule above
+   to confirm an existing index actually matches the query shape rather than
+   just existing.
+4. **Check for N+1 queries** — a single slow-looking request that is
+   actually hundreds of small ones, common with ORM lazy-loading across a
+   collection.
+5. **Only then** consider caching, denormalization, or read replicas — these
+   hide a slow query rather than fixing it, and are the wrong first move
+   because they add operational complexity that a correct index does not.
+
+> Interview angle: walking through *this order*, out loud, before proposing
+> a fix, is the actual signal — jumping straight to "add caching" reads as
+> not having ruled out a five-minute index fix first.

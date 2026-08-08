@@ -1,0 +1,86 @@
+---
+title: "Process vs. thread, and where Node fits"
+summary: Why isolation and shared memory are different trade-offs, and how Node's single-threaded event loop and worker_threads actually relate to that choice.
+tags: ["systems", "node", "concurrency"]
+date: 2026-08-08
+---
+
+## The core distinction
+
+A **process** has its own isolated memory space, its own file descriptors,
+and its own address space, allocated and torn down by the OS. Two processes
+cannot read each other's memory directly. They communicate only through
+explicit channels the OS provides: pipes, sockets, shared memory segments,
+signals. Spawning a process is comparatively expensive, and crashing one does
+not directly corrupt another.
+
+A **thread** exists inside a process and shares that process's memory space
+with every other thread in it. Threads are cheap to create relative to
+processes, and communicating between them is as fast as writing to a shared
+variable, which is also exactly the danger: without explicit synchronization
+— locks, mutexes, atomics — two threads can race on the same memory and
+produce a data race, an entire class of bug processes cannot have by
+construction, because processes do not share memory by default.
+
+| | Process | Thread |
+|---|---|---|
+| Memory | Isolated | Shared with siblings |
+| Creation cost | Expensive | Cheap |
+| Communication | Explicit (IPC, sockets, pipes) | Implicit (shared memory) — fast but requires synchronization |
+| Fault isolation | A crash stays contained | A crash can take down the whole process |
+| Typical use | Isolating untrusted or unstable work | Parallelizing CPU work within one trusted unit that needs shared state |
+
+## Where the choice actually matters
+
+Choosing process-level isolation for running untrusted or unpredictable
+third-party work — executing a user-submitted script, shelling out to a
+third-party CLI tool — is the right default specifically because a crash or
+an infinite loop in that code stays contained to a process that can be
+killed and restarted independently. The cost is real: fork/exec overhead,
+serialization for any data that has to cross the boundary. It is the right
+trade when the isolation guarantee is the point.
+
+The opposite case, choosing threads, is right when the work is trusted,
+CPU-bound, and needs to share a large in-memory structure without paying a
+serialization cost to hand data back and forth — several threads
+collaboratively processing regions of the same large array, for instance.
+
+## Where Node fits
+
+Node's JavaScript execution is single-threaded by design. There is one
+thread running application code, ever, so no data races on JS objects are
+possible from JS code itself. Concurrency for I/O comes from the event loop
+plus a libuv thread pool working underneath that single JS thread: I/O
+operations are handed to the thread pool, and the JS thread is notified via a
+callback when they complete, without ever blocking on them.
+
+A few consequences follow directly:
+
+**`async`/`await` and Promises are not parallelism.** They schedule
+callbacks on the single JS thread once an I/O operation completes elsewhere.
+Two awaited I/O calls can be in flight concurrently. Two CPU-bound
+synchronous functions cannot — the second one waits its turn on the same
+thread.
+
+**A CPU-bound synchronous function blocks everything** — every other
+request, every timer, every pending I/O callback — because there is only one
+JS thread to run any of it.
+
+**`worker_threads`** is Node's actual thread primitive, for genuinely
+parallelizing CPU-bound JS work, at the cost of message-passing overhead to
+move data in and out, or an explicit `SharedArrayBuffer` if true shared
+memory is needed.
+
+**`child_process`** — `spawn`, `fork`, `exec` — is Node's process primitive,
+for the isolation case above: running another program, or another Node
+process, with a hard fault boundary.
+
+The browser-side analogue of the same trade-off is a Web Worker: process-like
+isolation, no shared memory, message-passing only, versus keeping work on the
+main thread.
+
+The sharp version of this whole distinction is separating concurrency —
+Node's event loop, interleaving I/O-bound work on one thread — from
+parallelism — `worker_threads`, actually running code simultaneously across
+multiple cores. Conflating the two is the most common way an explanation of
+this goes wrong.

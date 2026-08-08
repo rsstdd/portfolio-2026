@@ -1,0 +1,120 @@
+---
+title: "Notes on agentic engineering: CLAUDE.md and agentic loops"
+summary: A synthesis of Better Stack's published playbook for shipping production code with an AI agent, restructured as reference notes.
+tags: ["ai", "engineering-practice"]
+date: 2026-08-04
+---
+
+Better Stack's CTO and CEO [published their own internal AI-engineering
+playbook](https://juraj.blog/p/the-no-bullshit-guide-to-agentic), written for
+their own team. These are my notes on it, restructured for reference, not a
+copy: read the original for the direct account.
+
+## Vibe coding vs. agentic engineering
+
+These are not two points on one quality spectrum. They are different tools
+for different jobs.
+
+**Vibe coding** is fast, throwaway, and does not need to be secure or
+maintained. It is good for prototyping and validating an idea, and the output
+is disposable by design.
+
+**Agentic engineering** produces code intended to reach production, held to
+the same bar as human-written code: tested, secure, documented, and
+maintained going forward.
+
+The line is not how good the model is. It is what happens to the code after
+today. A working checklist for whether agent-written code is actually ready
+to ship, distinct from whether it merely runs:
+
+- Tests exist and were run, not only generated alongside the code.
+- The change was exercised end to end, not verified by reading the diff.
+- Security-sensitive surfaces — auth, input handling, anything touching money
+  or personal data — got a deliberate human read, not just the agent's own
+  report that it looked fine.
+- The reasoning behind any non-obvious decision is written somewhere durable:
+  a code comment, a design doc, a commit message, not only a chat transcript
+  no one else on the team can see.
+
+## CLAUDE.md as the real system prompt
+
+The core claim worth internalizing: the real engineering work now happens in
+the CLAUDE.md file, not in the individual prompt. A well-designed one means
+short, simple prompts produce good output by default. A weak or missing one
+means every prompt has to re-explain context the agent should already carry.
+
+**Three required parts.**
+
+**A one-sentence description of the codebase**, terse, with no explanation of
+things the model already knows. *"This is a Ruby on Rails and PostgreSQL
+backend for an iOS application that handles subscription billing."*
+
+**Rules — behavioral instructions, not product knowledge.** This is
+meta-programming in plain English: what the agent should and should not do.
+Domain knowledge does not belong here, because it loads into every session
+regardless of relevance, which wastes context and can degrade output quality.
+
+**A routing table** — where to find things: adjacent codebases, relevant
+docs, production telemetry sources. A markdown table saying "when looking for
+X, look in Y" is enough. The signal that this section is missing or thin: the
+agent's own output says something like "exploring the codebase to understand
+X." That is the agent doing work the routing table should have made
+unnecessary.
+
+A few rules worth having, independent of stack:
+
+- **Test-driven development.** A written test is implicit documentation of
+  intended behavior, and it lets an agent validate its own change without a
+  human in the loop for every step.
+- **A one-sentence doc comment on every class and method.** Cheap, and it is
+  additional grounding context the agent reads before touching nearby code —
+  repetition over abstraction, for an agent-legible codebase.
+- **Document non-trivial cross-file coupling directly in the code, on both
+  sides.** An agent's practical tool for finding related code is grep.
+  Anything only implied by git history or convention is invisible to it
+  unless written down at the point of coupling.
+- **State naming and UI conventions explicitly.** A consistent product is
+  close to free once these are written down, because the agent applies them
+  by default on every change.
+- **Point to the best existing example when asking for something new.**
+  Without that pointer, an agent has no signal for which part of the
+  codebase to imitate, and may draw from mediocre code as easily as
+  excellent code.
+- **Require end-to-end verification after implementing a feature** — signing
+  in and exercising it in a real browser, not trusting that code which
+  compiles and passes unit tests actually works end to end.
+- **State the quality bar explicitly**: response-time targets, dark-mode
+  support, auth on every protected route. An unstated quality requirement
+  does not get enforced by default. A stated one does.
+
+## Agentic loops
+
+An agentic loop is an agent working for an extended period, checking its own
+work against stated, objective conditions, with minimal back-and-forth. Being
+vague about what "done" looks like is the actual failure mode — an agent
+cannot build toward a target that was never described concretely.
+
+A structure worth borrowing for a backend feature: write the design document
+first and review it word by word before any code exists, because that step
+is cheap to redo and expensive to skip. Implement in a clean workspace, so
+review stays comparable to the design doc rather than an evolving diff. Have
+the agent enumerate what "fully working" means for the feature and turn that
+into a concrete verification plan, rather than leaving "working" undefined.
+Run the simplest possible smoke test before the full suite, because catching
+total breakage early is cheaper than discovering it after a long run. Run
+the remaining verification in parallel where the checks are independent, and
+review the diffs it produces rather than re-reading every line of
+implementation.
+
+The throughline: an agentic loop is only as good as the quality criteria it
+checks itself against. Same idea as the CLAUDE.md quality-bar rule above,
+applied at the scale of a whole feature instead of a single file.
+
+## A candidate who can describe their own setup this specifically
+
+The genuinely useful test, for anyone evaluating how they work with an
+agent, is whether they can describe their own CLAUDE.md, or Cursor rules, or
+equivalent, in this level of structural detail: description, rules, routing
+table, not "I have a prompt file." "I use AI to help me code faster" is a
+different, much shallower claim than being able to say what the rules
+actually are and why each one is there.
