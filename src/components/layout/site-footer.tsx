@@ -9,6 +9,7 @@ const links = [
   { href: "/privacy", label: "Privacy" },
   { href: "/colophon", label: "Colophon" },
   { href: "/design", label: "Datum Design System" },
+  { href: "/blog", label: "Engineering Notes" },
 ]
 
 export function SiteFooter() {
