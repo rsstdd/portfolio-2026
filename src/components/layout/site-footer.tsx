@@ -25,7 +25,7 @@ export function SiteFooter() {
             <li key={link.label}>
               <Link
                 href={link.href}
-                className="font-mono text-caption uppercase tracking-[0.08em] text-muted transition-colors duration-[--duration-fast] hover:text-ink"
+                className="font-mono text-caption uppercase tracking-overline text-muted transition-colors duration-[--duration-fast] hover:text-ink"
               >
                 {link.label}
               </Link>

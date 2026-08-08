@@ -30,6 +30,22 @@ featured: true
 
 #### How do REST, GraphQL, and a BFF compare, and when should each be used?
 
+### GraphQL at scale
+
+#### What is the N+1 query problem in GraphQL, and how does a DataLoader batch-and-cache pattern solve it?
+
+#### How does query complexity or depth limiting protect a GraphQL server from a single expensive client query?
+
+#### What are persisted queries, and what do they trade away in exchange for restricting arbitrary client queries?
+
+#### How should GraphQL errors be represented so a partial response and a partial failure are both usable by the client?
+
+#### How does field-level authorization differ from endpoint-level authorization in a GraphQL schema?
+
+#### How do you prevent a single GraphQL query from fanning out into an uncontrolled number of downstream service calls?
+
+#### When does a GraphQL gateway or federation layer become the right architecture instead of one monolithic schema?
+
 ### HTTP semantics as a review standard
 
 #### What is the difference between safe, idempotent, and neither, and why can treating POST like an idempotent operation be dangerous?
@@ -226,6 +242,32 @@ featured: true
 
 #### What should a cutover runbook verify when disabling an event source, draining queues and DLQs, confirming delivery, and validating traces?
 
+## Event & Message Schema Evolution
+
+### Compatibility discipline
+
+#### Why does an event schema need the same backward- and forward-compatibility discipline as a public API?
+
+#### What distinguishes a backward-compatible change from a breaking change in Avro, Protobuf, or JSON Schema?
+
+#### What does a schema registry enforce, and what does it fail to enforce on its own?
+
+#### Why is adding a required field to an event schema dangerous, and how should a new field be introduced instead?
+
+### Consumer behavior
+
+#### How should a consumer handle an event version it does not recognize?
+
+#### Why is silently dropping unknown fields safer than rejecting them, and when is that not true?
+
+#### How do you coordinate a schema change across producers and consumers that deploy independently and cannot be forced to upgrade in lockstep?
+
+### Trade-offs
+
+#### What is the cost difference between a schema-on-write system like Avro with a registry and a schema-on-read system that trusts producers?
+
+#### How would you detect that a downstream consumer is silently failing to parse a new event shape?
+
 ## Multi-Region Architecture
 
 ### Topologies
@@ -305,6 +347,60 @@ featured: true
 #### What pass/fail criteria should be defined before a load test?
 
 #### What results should be documented after the test?
+
+## AI-Assisted Engineering & AI Product Systems
+
+### Agentic engineering practice
+
+#### What should a useful `CLAUDE.md` or equivalent codebase instruction file contain?
+
+#### What behavioral rule do most teams forget to put in an agent instruction file?
+
+#### What is an agentic loop?
+
+#### What real task have you delegated to an agentic loop, and how did the agent verify its own work?
+
+#### What is a real task you deliberately chose *not* to delegate to an AI coding agent, and why?
+
+#### Where is the line between vibe coding and production-grade agentic engineering?
+
+#### What is your checklist before agent-written code ships?
+
+#### When has an AI tool produced subtly wrong code for you, and how did you catch it?
+
+#### How did that failure change your prompting or review process?
+
+#### Have you connected an AI coding agent to production or staging telemetry, and what guardrails did you use?
+
+#### How would you improve an under-specified `CLAUDE.md` that causes agents to rediscover the repository every session?
+
+#### How would you know that the improved agent instructions are actually working?
+
+### Building with LLMs: architecture and security
+
+#### What is retrieval-augmented generation, and what problem does it solve that a larger context window alone does not?
+
+#### How do chunking strategy and embedding-model choice affect retrieval quality in a RAG pipeline?
+
+#### What is prompt injection, and why can it not be fully solved by input sanitization the way SQL injection can?
+
+#### How does prompt injection differ between a direct attack in user input and an indirect attack embedded in retrieved or tool-returned content?
+
+#### What is improper output handling in an LLM application, and how does it create the same class of vulnerability as unescaped template output?
+
+#### What is excessive agency in an agentic system, and how do scoped tool permissions and human approval gates limit its blast radius?
+
+#### What is system prompt leakage, and why can a system prompt not be treated as a secret boundary?
+
+#### What are the security implications of a vector database that mixes embeddings from multiple tenants or trust levels?
+
+#### How would you rate-limit or budget an LLM-backed feature against unbounded consumption from a single user or a runaway agentic loop?
+
+#### How do you evaluate a model-serving choice between a hosted API, a self-hosted open-weight model, and a fine-tuned model, on latency, cost, and data-residency grounds?
+
+#### How should an LLM-backed feature degrade when the model provider is slow, rate-limited, or unavailable?
+
+#### How do you test an LLM-backed feature's correctness when its output is non-deterministic?
 
 ## Platform Engineering
 
@@ -407,6 +503,32 @@ featured: true
 #### What prerequisites allow tree shaking to work?
 
 #### Why do side-effect-free package declarations matter to a shared platform bundle?
+
+## Systems, Unix & Language Fundamentals
+
+### Unix and the shell
+
+#### Which Unix commands would you chain to find files over a given size modified in the last seven days, and what does each flag do?
+
+#### With no APM installed, what commands would you use to find what is consuming disk, memory, or CPU on a production host?
+
+#### How do you distinguish a CPU-bound bottleneck from an I/O-bound one using only `top`, `iostat`, and application logs?
+
+### Integers and overflow
+
+#### What happens when a 64-bit signed integer overflows in a systems language such as Rust, Go, or C, and how does the language's own semantics of panicking, wrapping, or undefined behavior shape the answer?
+
+#### How does integer overflow differ in JavaScript, where `Number` is a double-precision float rather than a fixed-width integer?
+
+#### What is `Number.MAX_SAFE_INTEGER`, and what real bug can occur when a value silently exceeds it?
+
+#### When should `BigInt` be used instead of `Number` in JavaScript or TypeScript?
+
+### Processes and threads
+
+#### What is the difference between a process and a thread, in memory model, creation cost, and fault isolation?
+
+#### When would you choose process-level isolation over threads for a piece of untrusted or unpredictable work?
 
 ## Scaling
 
@@ -564,204 +686,6 @@ featured: true
 
 #### Could you reimplement a minimal version of each protection in an unfamiliar stack without relying on the framework?
 
-## Better Stack Interview Drills
-
-### Security
-
-#### Can you write an actual SQL injection payload against a naive, string-concatenated login query and give two independent defenses?
-
-#### How often should a CSRF token be refreshed, and where do SameSite cookies make CSRF tokens redundant or insufficient?
-
-#### Where are the most likely stored or reflected XSS vulnerabilities in a Bootstrap table plus AJAX form feature?
-
-#### What database index types do you know, and when can the wrong index make performance worse rather than merely fail to help?
-
-#### What are dedicated, shared, and service workers, and when would you use each?
-
-#### What security consequence does a service worker introduce?
-
-#### How would you protect an application from mass assignment without naming a framework feature as the answer?
-
-#### How would you validate and sanitize a user-submitted phone number for storage, display, and downstream use?
-
-#### Can you explain one framework-provided security default deeply enough to reproduce its mechanism without the framework?
-
-### AI-assisted and agentic engineering
-
-#### What should a useful `CLAUDE.md` or equivalent codebase instruction file contain?
-
-#### What behavioral rule do most teams forget to put in an agent instruction file?
-
-#### What is an agentic loop?
-
-#### What real task have you delegated to an agentic loop, and how did the agent verify its own work?
-
-#### What is a real task you deliberately chose *not* to delegate to an AI coding agent, and why?
-
-#### Where is the line between vibe coding and production-grade agentic engineering?
-
-#### What is your checklist before agent-written code ships?
-
-#### When has an AI tool produced subtly wrong code for you, and how did you catch it?
-
-#### How did that failure change your prompting or review process?
-
-#### Have you connected an AI coding agent to production or staging telemetry, and what guardrails did you use?
-
-#### How would you improve an under-specified `CLAUDE.md` that causes agents to rediscover the repository every session?
-
-#### How would you know that the improved agent instructions are actually working?
-
-### Production ownership
-
-#### What is your checklist between "it works on my machine" and shipping a feature to production without another reviewer?
-
-#### When have you personally decided that a feature was done, and what made you stop rather than continue polishing it?
-
-#### Given a vague one-paragraph feature brief with no acceptance criteria, what do you build first and what do you intentionally leave out?
-
-#### When have you shipped something wrong and had to fix it live without a strong safety net?
-
-#### What does production-ready mean for a feature that touches user data?
-
-#### Which production-readiness checks would you cut first under genuine time pressure, and why?
-
-#### When have you challenged a scope decision by proposing a concrete alternative rather than silently complying or escalating?
-
-### Performance, databases, and caching
-
-#### Can you write a three-table SQL join with a `WHERE` clause and `ORDER BY` that genuinely benefits from a composite index?
-
-#### Which columns belong in that composite index, in what order, and why?
-
-#### How would you preprocess roughly 40 GB of data client-side without loading it all into memory?
-
-#### Where would you use streaming, Web Workers, chunking, or IndexedDB in that design?
-
-#### What resource limit would likely fail first?
-
-#### Which caching strategies have you used in practice?
-
-#### How does an application-level cache such as Redis differ from an HTTP or CDN cache?
-
-#### What real cache-invalidation bug have you encountered?
-
-#### Given a slow endpoint with high p95 latency and high database CPU, what is your diagnostic order of operations?
-
-#### What frontend technique can reduce reflows and repaints?
-
-#### When have you diagnosed actual layout thrashing rather than merely guessing that rendering was slow?
-
-#### Which index would you choose for a frequently range-queried timestamp versus a frequently equality-queried status field, and why?
-
-### Frontend internals and UX
-
-#### What blocks the browser's initial render, and in what order?
-
-#### What would you change first on a page that visibly flashes unstyled content?
-
-#### What happens between pressing Enter on a URL and pixels appearing on the screen?
-
-#### What does answer-engine optimization mean in practice for a marketing or documentation page?
-
-#### What would you change so an LLM-based answer engine can cite a page correctly?
-
-#### What UI decision have you made that a backend-leaning engineer might skip, and what reasoning drove it?
-
-#### What has broken on mobile in a responsive UI that did not break on desktop, and how did you catch it?
-
-#### What should you do when a Figma design has no dark-mode variant but the application requires dark mode?
-
-### Systems fundamentals
-
-#### Which Unix commands would you chain to find files over 100 MB modified in the last seven days, and what does each flag do?
-
-#### What happens when a 64-bit signed integer overflows in your primary language?
-
-#### How does that differ from JavaScript's `Number` semantics and `BigInt`?
-
-#### What is the difference between a process and a thread?
-
-#### When have you chosen one concurrency model over another, and why did it matter?
-
-#### With no APM installed, what commands would you use to find what is consuming disk, memory, or CPU on a production host?
-
-#### What is `Number.MAX_SAFE_INTEGER`?
-
-#### What real bug can occur when JavaScript silently exceeds its safe integer range?
-
-### Engineering judgment
-
-#### What is a real feature where you cut a small amount of scope to simplify implementation dramatically?
-
-#### When is "quick and dirty" engineering correct, and when is "polished and perfect" correct?
-
-#### When have you over-engineered something, what did it cost, and how did you recognize it?
-
-#### If you had one day to build and deploy a feature end-to-end, how would you sequence the work?
-
-#### What would you explicitly skip to hit that deadline?
-
-#### When have you disagreed with a product or business decision because the engineering cost did not justify the outcome?
-
-### Unfamiliar and legacy stacks
-
-#### When have you shipped a real feature in a language or framework you had never used professionally before?
-
-#### How did you become productive quickly in that unfamiliar stack?
-
-#### What would you do in the first 30 minutes after inheriting an undocumented legacy codebase built on a homemade framework?
-
-#### When is rewriting a bad legacy pattern correct?
-
-#### When is matching the existing pattern deliberately the better choice?
-
-#### If a legacy codebase has no tests and you must ship today, what minimum testing do you add?
-
-#### What do you explicitly leave untested?
-
-### Ownership, failure, and async work
-
-#### What incident or outage have you been responsible for or central to resolving?
-
-#### What broke, what did you do during the incident, and what changed afterward?
-
-#### When have you shipped something wrong and discovered it through a user or metric before anyone told you?
-
-#### What was your first move?
-
-#### When have you made a significant engineering decision entirely asynchronously?
-
-#### How did you make sure an async decision did not go sideways?
-
-#### When have you pushed back respectfully on someone more senior and changed the outcome?
-
-#### What is the most technically ambitious thing you have shipped entirely on your own?
-
-### Company and product literacy
-
-#### What problems do Better Stack's uptime monitoring, incident management, log management, tracing, and status-page products solve?
-
-#### Who pays for each of those products?
-
-#### What "day two" feature would you add to one of those products to increase retention, and why?
-
-#### How does Better Stack compete with larger observability vendors despite having far fewer employees?
-
-#### Why Better Stack specifically rather than observability in the abstract?
-
-### Working style and fit
-
-#### What is your reaction to a deliberately harsh and ambiguous interview process used as a self-selection filter?
-
-#### Why would you still choose to participate in that process?
-
-#### What work environment or management style have you actively disliked, and why?
-
-#### If there were effectively no formal code review before shipping, what professional habit would you adopt to compensate?
-
-#### Would you choose a "hardcore mode" of substantially more hours for substantially more pay, and what conditions would have to be true?
-
 ## Databases, Transactions & Storage
 
 ### Transactions and isolation
@@ -822,6 +746,10 @@ featured: true
 
 #### When should a functional or expression index be used?
 
+#### Can you write a three-table SQL join with a `WHERE` clause and `ORDER BY` that genuinely benefits from a composite index, and which columns belong in that index, in what order?
+
+#### Which index would you choose for a frequently range-queried timestamp versus a frequently equality-queried status field, and why?
+
 ### Replication and partitioning
 
 #### Why use a read replica?
@@ -859,6 +787,36 @@ featured: true
 #### How do you backfill a large table without saturating the primary database?
 
 #### How do you verify that a backfill is complete and correct before enforcing a new constraint?
+
+## Distributed Transactions & Sagas
+
+### Beyond a single database
+
+#### Why does a transaction that spans two independently deployed services need a different mechanism than a single database's ACID transaction?
+
+#### What does two-phase commit guarantee, and why is it rarely used across service boundaries in practice?
+
+### The saga pattern
+
+#### What is the saga pattern, and how does it replace atomicity with a sequence of local transactions and compensations?
+
+#### What is the difference between choreography-based and orchestration-based sagas?
+
+#### What is a compensating transaction, and why is it not simply the inverse of the original operation?
+
+#### What happens when a compensating transaction itself fails partway through?
+
+#### How do you keep a long-running saga's intermediate state observable so an operator can tell where it stalled?
+
+#### When is eventual consistency across a saga an acceptable trade-off for the business, and when is it not?
+
+### The transactional outbox
+
+#### What is the transactional outbox pattern, and what problem does it solve when a service must both write to its database and publish an event atomically?
+
+#### How does a change-data-capture process typically implement the outbox pattern in production?
+
+#### Why is "dual write to the database and the message broker" unsafe without an outbox or equivalent mechanism?
 
 ## Distributed Consistency & Coordination
 
@@ -1000,6 +958,38 @@ featured: true
 
 #### Why should retry backoff include jitter?
 
+## Real-Time Systems & WebSockets
+
+### Choosing a transport
+
+#### When should WebSockets be chosen over Server-Sent Events, long polling, or plain request/response?
+
+#### What does SSE give up compared with WebSockets, and when is that trade-off acceptable?
+
+### Connections at scale
+
+#### How does a WebSocket connection survive a load balancer, and what does "sticky session" mean in that context?
+
+#### What happens to in-flight WebSocket connections during a rolling deployment?
+
+#### How many concurrent long-lived connections can a single application server realistically hold, and what resource actually limits that number?
+
+#### How do you scale WebSocket fan-out so a message published by one server reaches clients connected to every other server?
+
+#### What role does a pub/sub backplane such as Redis play in a horizontally scaled WebSocket architecture?
+
+#### How do you detect and clean up a dead WebSocket connection that never sent a proper close frame?
+
+### Presence and collaboration
+
+#### What is a presence system, and how do you make it eventually consistent without a client's disconnect silently leaving it stale forever?
+
+#### How would you design conflict resolution for two users editing the same document concurrently over a real-time connection?
+
+#### What does an operational transform or CRDT-based approach give a collaborative editor that last-write-wins does not?
+
+#### How should a real-time client behave during a reconnect: replay missed events, request a fresh snapshot, or both?
+
 ## Browser Security, CORS & Web Boundaries
 
 ### Same-origin policy and CORS
@@ -1114,6 +1104,24 @@ featured: true
 
 #### What is the confused-deputy problem?
 
+### Service-to-service authentication and zero trust
+
+#### Why is a shared network perimeter an insufficient trust boundary between services inside it?
+
+#### What does mutual TLS provide that one-way TLS does not?
+
+#### How does a service mesh's sidecar proxy provide mTLS and service identity without changing application code?
+
+#### What is SPIFFE/SPIRE, and what problem does a workload identity standard solve that static API keys do not?
+
+#### How should a service authenticate to a downstream service: a shared secret, a short-lived signed token, or mTLS, and what does each cost operationally?
+
+#### What does "zero trust" actually change about how a request is authorized once it is already inside the network?
+
+#### How do you rotate service-to-service credentials without an outage?
+
+#### What is the blast radius difference between a leaked long-lived API key and a leaked short-lived workload token?
+
 ### Secrets and key management
 
 #### Where should application secrets be stored?
@@ -1125,6 +1133,44 @@ featured: true
 #### What is the difference between encryption at rest and application-level encryption?
 
 #### How do you avoid leaking secrets through logs, traces, crash reports, or CI systems?
+
+## Data Privacy & Compliance
+
+### What counts as personal data
+
+#### What is the difference between data the law treats as personal data and data an engineering team informally treats as sensitive?
+
+#### What is the difference between anonymization and pseudonymization, and why can pseudonymized data still be personal data under GDPR?
+
+#### Why can a well-intentioned analytics pipeline become a compliance liability faster than the primary application does?
+
+### Erasure and retention
+
+#### How do you honor a right-to-erasure request against an immutable audit log or an event-sourced system without breaking replay or audit guarantees?
+
+#### What is crypto-shredding, and how does it let a system satisfy erasure without rewriting immutable storage?
+
+#### How long should data actually be retained, and who should own that decision: engineering, legal, or product?
+
+#### How do you design a database schema so that a right-to-erasure request touches a bounded, known set of tables instead of requiring a full-schema audit?
+
+### Data in motion and at rest
+
+#### What is data minimization, and how does it change what a service logs or caches by default?
+
+#### How should personal data be handled differently in production logs, traces, and crash reports than in the primary datastore?
+
+#### What privacy review should happen before a new field of user data is added to an event that fans out to a dozen downstream consumers?
+
+### Residency, consent, and vendors
+
+#### What does data residency require of a multi-region architecture, and how does it interact with active-active and active-passive topologies?
+
+#### How does consent state propagate through a system that caches aggressively, and what happens if a cache serves content for a user who has just withdrawn consent?
+
+#### What does a data processing agreement obligate a vendor to do, and why does that matter when choosing a third-party subprocessor?
+
+#### How should a data breach be detected, and what does an engineering team need to have ready before legal notification deadlines apply?
 
 ## Rate Limiting, Admission Control & Overload
 
@@ -1418,6 +1464,8 @@ featured: true
 
 #### How do you decide which complexity should be deliberately deferred?
 
+#### Given a vague one-paragraph feature brief with no acceptance criteria, what do you build first, and what do you intentionally leave out?
+
 ### Design drills
 
 #### How would you design a webhook-delivery platform with retries, idempotency, signing, rate limiting, delivery history, and customer-configurable endpoints?
@@ -1438,7 +1486,7 @@ featured: true
 
 #### How would you design a news feed or activity feed?
 
-#### How would you design a real-time collaborative editing system?
+#### How would you design a real-time collaborative editing system, covering connection scaling, conflict resolution, and reconnection?
 
 #### How would you design a job scheduler that guarantees jobs are not silently lost?
 
@@ -1455,6 +1503,10 @@ featured: true
 #### How would you design a consent-management service where policy changes must propagate globally within a defined SLO?
 
 #### How would you design a BFF that depends on multiple unreliable downstream services but must render useful partial results?
+
+#### How would you design a GDPR-compliant data-deletion pipeline for a system with a primary database, a search index, an analytics warehouse, and third-party subprocessors?
+
+#### How would you design a retrieval-augmented generation system for querying a large, frequently updated internal document set, covering ingestion, indexing, and staleness?
 
 ## Capacity Planning, Performance & Economics
 
@@ -1541,6 +1593,28 @@ featured: true
 #### When can lazy loading make UX worse?
 
 #### How do browser caches, CDNs, preload, preconnect, and resource priorities affect rendering?
+
+#### How would you preprocess roughly 40 GB of data client-side without loading it all into memory, and where would streaming, Web Workers, chunking, or IndexedDB fit into that design?
+
+### Internationalization and time
+
+#### Why should a server store all timestamps in UTC and convert to local time only at the display layer?
+
+#### What goes wrong when a scheduled job or cron expression is defined in local time across a daylight-saving transition?
+
+#### How should a recurring calendar event be stored so it displays correctly in a time zone that observes daylight saving differently than the one it was created in?
+
+#### What is the difference between a fixed UTC offset and an IANA time zone identifier, and why does only one of them survive a daylight-saving change correctly?
+
+#### How does ICU message formatting handle pluralization and gendered strings across languages that a simple string-interpolation approach cannot?
+
+#### What breaks in a fixed-width UI layout when English source strings are translated into a language that runs 30 to 50 percent longer?
+
+#### What does right-to-left layout require beyond mirroring text direction?
+
+#### How should currency, date, and number formatting be localized without hardcoding a single locale's conventions?
+
+#### Where should translated strings live so that a translation update does not require a code deployment?
 
 ### Accessibility
 
@@ -1690,6 +1764,8 @@ featured: true
 
 #### How do you communicate a complex design differently to engineers, product managers, executives, and operations teams?
 
+#### When have you made a significant engineering decision entirely asynchronously, and how did you make sure it did not go sideways without real-time discussion?
+
 ### Ownership and leverage
 
 #### What does Staff-level ownership look like beyond writing difficult code?
@@ -1707,6 +1783,8 @@ featured: true
 #### How do you create opportunities for other engineers to lead?
 
 #### How do you measure the impact of technical leadership?
+
+#### How do you evaluate whether another engineer is ready for more scope or a promotion, using evidence rather than tenure?
 
 ### Trade-offs and judgment
 
@@ -1799,3 +1877,23 @@ featured: true
 #### How do you recognize when engineering quality is becoming perfectionism?
 
 #### How do you recognize when speed is creating dangerous debt?
+
+### Unfamiliar and legacy systems
+
+#### When have you shipped a real feature in a language or framework you had never used professionally before, and how did you become productive quickly?
+
+#### What would you do in the first 30 minutes after inheriting an undocumented legacy codebase built on an unfamiliar or homemade framework?
+
+#### When is rewriting a bad legacy pattern the correct call, and when is deliberately matching the existing pattern the better choice?
+
+#### If a legacy codebase has no tests and you must ship today, what minimum testing do you add, and what do you explicitly leave untested?
+
+#### How do you build enough trust in an unfamiliar codebase's behavior to change it confidently before you have full test coverage?
+
+### Working style
+
+#### What work environment or management style have you actively disliked, and why?
+
+#### How do you prefer to receive critical feedback on your technical work?
+
+#### What kind of team or company culture brings out your best work, based on evidence from a real past role rather than a hypothetical preference?
