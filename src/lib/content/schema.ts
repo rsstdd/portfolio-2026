@@ -25,7 +25,16 @@ export const projectSchema = z.object({
    * home page to keep unfinished work off the front page automatically.
    */
   verified: z.boolean().default(true),
-  ogImage: z.string().optional(),
+});
+
+/** One entry in content/blog/*.mdx */
+export const blogPostSchema = z.object({
+  title: z.string(),
+  summary: z.string().max(200),
+  tags: z.array(z.string()).min(1),
+  date: z.coerce.date(),
+  /** Set only when a post is revised after its original publish date. */
+  updated: z.coerce.date().optional(),
 });
 
 /**
@@ -54,7 +63,6 @@ export const aboutSchema = z.object({
   portrait: z.string().optional(),
   portraitAlt: z.string().optional(),
   updated: z.coerce.date(),
-  location: z.string().optional(),
 });
 
 /** content/cv.mdx — single source for both the /cv page and the exported PDF. */
@@ -73,5 +81,6 @@ export const cvSchema = z.object({
 
 export type Home = z.infer<typeof homeSchema>;
 export type Project = z.infer<typeof projectSchema>;
+export type BlogPost = z.infer<typeof blogPostSchema>;
 export type About = z.infer<typeof aboutSchema>;
 export type Cv = z.infer<typeof cvSchema>;

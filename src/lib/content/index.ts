@@ -1,16 +1,16 @@
-import path from "path";
-import fs from "fs";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import {
   type About,
-  aboutSchema,
+  type BlogPost,
   type Cv,
-  cvSchema,
   type Home,
-  homeSchema,
   type Project,
+  aboutSchema,
+  blogPostSchema,
+  cvSchema,
+  homeSchema,
   projectSchema,
 } from "./schema";
 
@@ -31,8 +31,10 @@ import {
  */
 const CONTENT_DIR = join(process.cwd(), "content");
 const PROJECTS_DIR = join(CONTENT_DIR, "projects");
+const BLOG_DIR = join(CONTENT_DIR, "blog");
 
 export type LoadedProject = Project & { slug: string; body: string };
+export type LoadedBlogPost = BlogPost & { slug: string; body: string };
 export type LoadedAbout = About & { body: string };
 export type LoadedCv = Cv & { body: string };
 export interface DesignSystemContent {
@@ -100,6 +102,32 @@ export function getProject(slug: string): LoadedProject | undefined {
 /** For generateStaticParams, which needs slugs without parsing every body. */
 export function getProjectSlugs(): string[] {
   return readdirSync(PROJECTS_DIR)
+    .filter((f) => f.endsWith(".mdx"))
+    .map((f) => f.replace(/\.mdx$/, ""));
+}
+
+/** All blog posts, newest first. No featured concept: a blog is chronological. */
+export function getBlogPosts(): LoadedBlogPost[] {
+  return readdirSync(BLOG_DIR)
+    .filter((f) => f.endsWith(".mdx"))
+    .map((file) => {
+      const { data, body } = read(join(BLOG_DIR, file));
+      try {
+        return { ...blogPostSchema.parse(data), slug: file.replace(/\.mdx$/, ""), body };
+      } catch (e) {
+        return fail(`blog/${file}`, e);
+      }
+    })
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+}
+
+export function getBlogPost(slug: string): LoadedBlogPost | undefined {
+  return getBlogPosts().find((p) => p.slug === slug);
+}
+
+/** For generateStaticParams, which needs slugs without parsing every body. */
+export function getBlogPostSlugs(): string[] {
+  return readdirSync(BLOG_DIR)
     .filter((f) => f.endsWith(".mdx"))
     .map((f) => f.replace(/\.mdx$/, ""));
 }
