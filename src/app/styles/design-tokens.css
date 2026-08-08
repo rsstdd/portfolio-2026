@@ -155,7 +155,7 @@
   /* Geometry and containers */
   --radius-none: 0;
   --radius-xs: 2px;
-  --container-prose: 70ch;
+  --container-prose: 90ch;
   --container-content: 70rem;
   --container-wide: 87.5rem;
   --page-gutter: clamp(1.25rem, 4vw, 2.5rem);
