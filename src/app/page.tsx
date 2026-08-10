@@ -31,7 +31,7 @@ export default function HomePage() {
       <JsonLd data={personJsonLd()} />
 
       <section className="pt-16 pb-24 md:pt-32 md:pb-32">
-        <p className="font-mono text-overline uppercase text-muted">
+        <p className="mono uppercase text-muted">
           {site.name} · {site.role} · {site.location}
         </p>
 
@@ -42,12 +42,12 @@ export default function HomePage() {
         <p className="mt-6 max-w-prose text-body-lg text-muted">{home.intro}</p>
 
         {site.availability ? (
-          <p className="mt-4 font-mono text-caption text-accent-text">{site.availability}</p>
+          <p className="mt-4 mono caption text-accent-text">{site.availability}</p>
         ) : null}
 
         <Link
           href={home.ctaHref}
-          className="group mt-10 inline-flex items-center gap-3 font-mono text-overline uppercase text-accent-text"
+          className="group mt-10 inline-flex items-center gap-3 mono text-overline uppercase text-accent-text"
         >
           <span
             aria-hidden
@@ -70,7 +70,7 @@ export default function HomePage() {
 
         <Link
           href="/projects"
-          className="mt-8 inline-block font-mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+          className="mt-8 inline-block mono text-muted transition-colors duration-(--duration-fast) hover:text-ink"
         >
           All projects
         </Link>

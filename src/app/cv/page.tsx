@@ -53,7 +53,7 @@ export default function CvPage() {
           </div>
         </dl>
 
-        <p className="no-print mt-6 font-mono text-caption text-muted">
+        <p className="no-print mt-6 mono caption text-muted">
           Print this page for a PDF. Layout and content come from one source, so the document
           matches what you see.
         </p>

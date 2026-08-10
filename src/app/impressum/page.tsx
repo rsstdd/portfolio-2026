@@ -60,7 +60,7 @@ export default function ImpressumPage() {
     >
       <header className="max-w-prose">
         {/* English chrome label, matching /privacy. */}
-        <p lang="en" className="font-mono text-overline uppercase text-muted">
+        <p lang="en" className="mono text-overline uppercase text-muted">
           Legal
         </p>
         <h1 className="mt-2 font-display text-display font-semibold">Impressum</h1>
@@ -75,7 +75,7 @@ export default function ImpressumPage() {
       {addressIncomplete ? (
         <p
           lang="en"
-          className="mt-8 max-w-prose border border-error px-4 py-3 font-mono text-caption text-error"
+          className="mt-8 max-w-prose border border-error px-4 py-3 mono caption text-error"
         >
           Not ready to deploy: the address below is still a placeholder. § 5 DDG requires a full
           street address, and a P.O. box does not satisfy it. Set it in src/lib/site.ts.

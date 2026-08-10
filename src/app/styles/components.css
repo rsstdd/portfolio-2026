@@ -130,8 +130,9 @@
    * Object: Standalone Link (Structure + Skin)
    * ------------------------------------------------------------------------ */
  .link-standalone,
- a.link-standalone {
-  font-family: var(--font-mono);
+ a.link-standalone,
+ .link-standalone--no-flag {
+  font-family: var(--mono);
   font-weight: 600;
   font-size: var(--text-small);
   letter-spacing: var(--tracking-overline);

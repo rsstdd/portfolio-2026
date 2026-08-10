@@ -6,7 +6,7 @@ export default function NotFound() {
       id="main"
       className="mx-auto flex max-w-content flex-col items-start px-5 pt-24 pb-32 md:px-8 lg:px-10"
     >
-      <p className="font-mono text-overline uppercase text-muted">404</p>
+      <p className="mono text-overline uppercase text-muted">404</p>
 
       <h1 className="mt-2 font-display text-display font-semibold text-balance">
         No entry at this datum.
@@ -18,7 +18,7 @@ export default function NotFound() {
 
       <Link
         href="/"
-        className="group mt-10 inline-flex items-center gap-3 font-mono text-overline uppercase text-accent-text"
+        className="group mt-10 inline-flex items-center gap-3 mono text-overline uppercase text-accent-text"
       >
         <span
           aria-hidden

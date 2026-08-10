@@ -39,7 +39,7 @@ export default function AboutPage() {
       <JsonLd data={personJsonLd()} />
 
       <header className="max-w-prose">
-        <p className="font-mono text-overline overline uppercase text-muted">About</p>
+        <p className="mono text-overline overline uppercase text-muted">About</p>
 
         <h1 className="mt-2 text-balance font-display text-display font-semibold">{site.name}</h1>
 
@@ -59,11 +59,11 @@ export default function AboutPage() {
               aria-label="Profile links"
               className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-line pt-6"
             >
-              <Link href="/cv" className="font-mono text-overline uppercase text-accent-text">
+              <Link href="/cv" className="mono text-overline uppercase text-accent-text">
                 View CV
               </Link>
 
-              <a href={site.github} className="font-mono text-overline uppercase text-accent-text">
+              <a href={site.github} className="mono text-overline uppercase text-accent-text">
                 GitHub
               </a>
             </nav>

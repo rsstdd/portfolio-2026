@@ -36,13 +36,13 @@ export default async function BlogPostPage({ params }: Params) {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <Link
         href="/blog"
-        className="font-mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+        className="link-standalone--no-flag transition-colors duration-(--duration-fast) hover:text-ink"
       >
         ← All notes
       </Link>
 
       <header className="mt-8 max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">{post.tags.join(" · ")}</p>
+        <p className="text-overline uppercase text-muted">{post.tags.join(" · ")}</p>
 
         <h1 className="mt-2 font-display text-display font-semibold text-balance">
           {post.title}
@@ -59,7 +59,7 @@ export default async function BlogPostPage({ params }: Params) {
           {post.updated ? (
             <div className="flex gap-2">
               <dt className="sr-only">Updated</dt>
-              <dd>updated {post.updated.toISOString().slice(0, 10)}</dd>
+              <dd className="mono">updated {post.updated.toISOString().slice(0, 10)}</dd>
             </div>
           ) : null}
         </dl>

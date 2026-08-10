@@ -25,7 +25,7 @@ export default function ProjectsPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
-        <p className="font-mono overline uppercase text-muted">Projects</p>
+        <p className="mono overline uppercase text-muted">Projects</p>
         <h1 className="mt-2 font-display text-display font-semibold text-balance">Selected work</h1>
         <p className="mt-4 text-body-lg text-muted">
           Every project is documented with evidence, technical decisions, and
@@ -47,7 +47,7 @@ export default function ProjectsPage() {
                 <h2 className="font-display text-h2 font-semibold group-hover:text-accent-text">
                   {project.title}
                 </h2>
-                <p className="mt-1 font-mono text-caption uppercase text-muted">
+                <p className="mt-1 mono caption uppercase text-muted">
                   {project.stack.slice(0, 3).join(" · ")}
                 </p>
               </div>
@@ -56,14 +56,14 @@ export default function ProjectsPage() {
                 <p className="text-muted">{project.summary}</p>
               </div>
 
-              <p className="font-mono text-caption tabular-nums text-muted md:w-28 md:text-right">
+              <p className="mono caption tabular-nums text-muted md:w-28 md:text-right">
                 {project.verified ? project.date.getUTCFullYear() : "in progress"}
               </p>
             </Link>
           </li>
         ))}
       </ul>
-      <p className="mt-8 max-w-prose font-mono text-caption text-muted">
+      <p className="mt-8 max-w-prose mono caption text-muted">
         Not everything I have written is included. Some repositories are private,
         and some are practice.
       </p>

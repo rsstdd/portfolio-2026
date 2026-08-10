@@ -28,7 +28,7 @@ export default function PrivacyPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">Legal</p>
+        <p className="mono text-overline uppercase text-muted">Legal</p>
         <h1 className="mt-2 font-display text-display font-semibold">Privacy</h1>
         <p className="mt-4 text-body-lg text-muted">
           This site sets no cookies and runs no analytics. The detail below explains precisely what
