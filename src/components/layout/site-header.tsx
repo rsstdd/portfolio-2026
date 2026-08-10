@@ -30,7 +30,7 @@ export function SiteHeader() {
       */}
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-100 focus:border focus:border-line focus:bg-surface focus:px-4 focus:py-2 focus:font-mono focus:text-overline focus:uppercase"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-100 focus:border focus:border-line focus:bg-surface focus:px-4 focus:py-2 focus:mono focus:text-overline focus:uppercase"
       >
         Skip to content
       </a>
@@ -42,7 +42,7 @@ export function SiteHeader() {
         >
           <Link
             href="/"
-            className="font-mono text-overline uppercase transition-colors duration-(--duration-fast) hover:text-accent-text"
+            className="mono uppercase transition-colors duration-(--duration-fast) hover:text-accent-text"
           >
             {site.name}
           </Link>
@@ -52,7 +52,7 @@ export function SiteHeader() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="font-mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+                  className="mono uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
                 >
                   {link.label}
                 </Link>

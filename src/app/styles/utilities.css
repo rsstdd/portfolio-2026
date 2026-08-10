@@ -99,9 +99,10 @@
    * USE CASES: Category tags above titles, section index identifiers (e.g., "SEC // 01"),
    * telemetry readouts, technical spec category headers.
    */
-  .datum-overline {
+  .datum-overline,
+  .text-overline {
     color: var(--text-muted);
-    font-family: var(--font-mono);
+    font-family: var(--mono);
     font-size: var(--text-overline);
     font-weight: 600;
     letter-spacing: var(--tracking-overline);
@@ -132,7 +133,7 @@
    * USE CASES: Data tables, timestamps, dimensions, coordinates, serial numbers.
    */
   .mono {
-    font-family: var(--font-mono);
+    font-family: var(--mono);
     font-size: var(--text-small);
     line-height: var(--leading-small);
     /* OpenType: Slashed zero ('0') to distinguish from uppercase 'O' */
@@ -154,4 +155,8 @@
     line-height: var(--leading-small);
     color: var(--text-muted);
   }
+
+  /* .text-mmuted {
+    color: var(--text-muted);
+  } */
 }

@@ -55,13 +55,13 @@ export default async function ProjectPage({ params }: Params) {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <Link
         href="/projects"
-        className="font-mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+        className="mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
       >
         ← All projects
       </Link>
 
       <header className="mt-8 max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
+        <p className="mono text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
 
         <h1 className="mt-2 font-display text-display font-semibold text-balance">
           {project.title}

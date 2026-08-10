@@ -73,7 +73,7 @@ export default function DesignSystemPage() {
    <div className="flex justify-end w-full">
     <label
      htmlFor="theme-toggle"
-     className="cursor-pointer select-none font-mono text-overline uppercase text-muted transition-colors hover:text-ink"
+     className="cursor-pointer select-none mono text-overline uppercase text-muted transition-colors hover:text-ink"
     >
      <span className="peer-checked:hidden">Toggle dark</span>
      <span className="hidden peer-checked:inline">Toggle light</span>

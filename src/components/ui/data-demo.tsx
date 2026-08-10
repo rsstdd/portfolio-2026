@@ -34,19 +34,19 @@ export function DataDemo({ rows = [] }: IDataDemoProps) {
    <table className="w-full max-w-[640px] text-[0.9375rem] [font-variant-numeric:tabular-nums] border-collapse mt-8">
     <thead>
      <tr>
-      <th scope="col" className="text-left font-semibold text-[0.8125rem] font-mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">Model</th>
-      <th scope="col" className="text-right font-semibold text-[0.8125rem] font-mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">HP</th>
-      <th scope="col" className="text-right font-semibold text-[0.8125rem] font-mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">MTOW kg</th>
-      <th scope="col" className="text-right font-semibold text-[0.8125rem] font-mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">Range nm</th>
+      <th scope="col" className="text-left font-semibold text-[0.8125rem] mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">Model</th>
+      <th scope="col" className="text-right font-semibold text-[0.8125rem] mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">HP</th>
+      <th scope="col" className="text-right font-semibold text-[0.8125rem] mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">MTOW kg</th>
+      <th scope="col" className="text-right font-semibold text-[0.8125rem] mono tracking-wider uppercase text-[var(--text-muted)] p-3 border-b border-[var(--color-line)]">Range nm</th>
      </tr>
     </thead>
     <tbody>
      {rows.map((row) => (
       <tr key={row.model} className="hover:bg-[var(--well)]">
        <td className="p-3 border-b border-[var(--color-line)]">{row.model}</td>
-       <td className="num text-right font-mono text-[0.875rem] [font-feature-settings:'zero'] p-3 border-b border-[var(--color-line)]">{row.hp}</td>
-       <td className="num text-right font-mono text-[0.875rem] [font-feature-settings:'zero'] p-3 border-b border-[var(--color-line)]">{row.mtow}</td>
-       <td className="num text-right font-mono text-[0.875rem] [font-feature-settings:'zero'] p-3 border-b border-[var(--color-line)]">{row.range}</td>
+       <td className="num text-right mono text-[0.875rem] [font-feature-settings:'zero'] p-3 border-b border-[var(--color-line)]">{row.hp}</td>
+       <td className="num text-right mono text-[0.875rem] [font-feature-settings:'zero'] p-3 border-b border-[var(--color-line)]">{row.mtow}</td>
+       <td className="num text-right mono text-[0.875rem] [font-feature-settings:'zero'] p-3 border-b border-[var(--color-line)]">{row.range}</td>
       </tr>
      ))}
     </tbody>

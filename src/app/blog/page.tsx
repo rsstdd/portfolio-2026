@@ -23,7 +23,7 @@ export default function BlogPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
-        <p className="font-mono overline uppercase text-muted">Notes</p>
+        <p className="mono overline uppercase text-muted">Notes</p>
         <h1 className="mt-2 font-display text-display font-semibold text-balance">Engineering notes</h1>
         <p className="mt-4 text-body-lg text-muted">
           Working notes on security, systems, and the practice of engineering with AI, written to
@@ -42,7 +42,7 @@ export default function BlogPage() {
                 <h2 className="font-display text-h2 font-semibold group-hover:text-accent-text">
                   {post.title}
                 </h2>
-                <p className="mt-1 font-mono text-caption uppercase text-muted">
+                <p className="mt-1 mono caption uppercase text-muted">
                   {post.tags.slice(0, 3).join(" · ")}
                 </p>
               </div>
@@ -51,7 +51,7 @@ export default function BlogPage() {
                 <p className="text-muted">{post.summary}</p>
               </div>
 
-              <p className="font-mono text-caption tabular-nums text-muted md:w-28 md:text-right">
+              <p className="mono caption tabular-nums text-muted md:w-28 md:text-right">
                 {post.date.toISOString().slice(0, 10)}
               </p>
             </Link>
@@ -65,10 +65,10 @@ export default function BlogPage() {
       */}
       {posts.length === 0 ? (
         <p className="mt-8 max-w-prose text-muted">
-          No notes yet. Add one under <code className="font-mono">content/blog</code>.
+          No notes yet. Add one under <code className="mono">content/blog</code>.
         </p>
       ) : (
-        <p className="mt-8 max-w-prose font-mono text-caption text-muted">
+        <p className="mt-8 max-w-prose mono caption text-muted">
           Posted as topics come up in real work, not on a schedule.
         </p>
       )}

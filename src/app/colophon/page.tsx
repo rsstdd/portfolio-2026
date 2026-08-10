@@ -53,12 +53,12 @@ export default function ColophonPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
-        <p className="font-mono text-overline uppercase text-muted">
+        <p className="mono text-overline uppercase text-muted">
           <Term
             id="colophon-definition"
             note={
               <>
-                <i lang="grc-Latn" className="font-mono not-italic">
+                <i lang="grc-Latn" className="mono not-italic">
                   kolophōn
                 </i>
                 , from the Greek for <i>finishing stroke</i>. A <dfn>colophon</dfn> is the note
@@ -96,17 +96,17 @@ export default function ColophonPage() {
           <table className="mt-8 w-full border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-line pb-3 pr-4 text-left font-mono text-overline uppercase text-muted">Pair</th>
-                <th className="border-b border-line pb-3 pr-4 text-right font-mono text-overline uppercase text-muted">Ratio</th>
-                <th className="border-b border-line pb-3 pr-4 text-right font-mono text-overline uppercase text-muted">Level</th>
+                <th className="border-b border-line pb-3 pr-4 text-left mono text-overline uppercase text-muted">Pair</th>
+                <th className="border-b border-line pb-3 pr-4 text-right mono text-overline uppercase text-muted">Ratio</th>
+                <th className="border-b border-line pb-3 pr-4 text-right mono text-overline uppercase text-muted">Level</th>
               </tr>
             </thead>
             <tbody>
               {contrast.map(([pair, ratio, level]) => (
                 <tr key={pair}>
                   <td className="py-2">{pair}</td>
-                  <td className="py-2 text-right font-mono tabular-nums">{ratio}</td>
-                  <td className="py-2 text-right font-mono">{level}</td>
+                  <td className="py-2 text-right mono tabular-nums">{ratio}</td>
+                  <td className="py-2 text-right mono">{level}</td>
                 </tr>
               ))}
             </tbody>
@@ -117,7 +117,7 @@ export default function ColophonPage() {
           </DataPlate>
 
           <p className="mt-6">
-            <a href="/design" className="font-mono text-overline uppercase text-accent-text">
+            <a href="/design" className="mono text-overline uppercase text-accent-text">
               View the design system
             </a>
           </p>
@@ -145,7 +145,7 @@ export default function ColophonPage() {
             nothing about a visit is shared with anyone.
           </p>
           <p className="mt-6">
-            <a href={`${site.github}/portfolio`} className="font-mono text-overline uppercase text-accent-text">
+            <a href={`${site.github}/portfolio`} className="mono text-overline uppercase text-accent-text">
               View the source
             </a>
           </p>
