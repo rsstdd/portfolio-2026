@@ -31,28 +31,24 @@ export default function HomePage() {
       <JsonLd data={personJsonLd()} />
 
       <section className="pt-16 pb-24 md:pt-32 md:pb-32">
-        <p className="mono uppercase text-muted">
+        <p className="datum-overline text-muted">
           {site.name} · {site.role} · {site.location}
         </p>
 
-        <h1 className="mt-3 max-w-[20ch] font-display text-display-xl font-semibold text-balance">
+        <h1 className="mt-3 h1 display-xl">
           {home.headline}
         </h1>
 
         <p className="mt-6 max-w-prose text-body-lg text-muted">{home.intro}</p>
 
         {site.availability ? (
-          <p className="mt-4 mono caption text-accent-text">{site.availability}</p>
+          <p className="mt-4 mono caption">{site.availability}</p>
         ) : null}
 
         <Link
           href={home.ctaHref}
-          className="group mt-10 inline-flex items-center gap-3 mono text-overline uppercase text-accent-text"
+          className="group mt-10 inline-flex items-center gap-3 link-standalone text-accent-text"
         >
-          <span
-            aria-hidden
-            className="h-0.5 w-4 bg-accent transition-[width] duration-(--duration-base) ease-(--ease-standard) group-hover:w-7"
-          />
           {home.ctaLabel}
         </Link>
       </section>

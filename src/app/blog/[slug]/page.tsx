@@ -44,7 +44,7 @@ export default async function BlogPostPage({ params }: Params) {
       <header className="mt-8 max-w-prose">
         <p className="text-overline uppercase text-muted">{post.tags.join(" · ")}</p>
 
-        <h1 className="mt-2 font-display text-display font-semibold text-balance">
+        <h1 className="mt-3 h1 display-xl">
           {post.title}
         </h1>
 

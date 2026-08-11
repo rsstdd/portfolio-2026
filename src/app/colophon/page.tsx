@@ -72,7 +72,7 @@ export default function ColophonPage() {
             Colophon
           </Term>
         </p>
-        <h1 className="h1 mt-2">How this site is built</h1>
+        <h1 className="mt-3 h1 display-xl">How this site is built</h1>
         <p className="measure mt-4 text-muted">What the site is built from, and why each piece is there.</p>
       </header>
 
