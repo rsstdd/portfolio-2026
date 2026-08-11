@@ -16,9 +16,9 @@ export function ProjectCard({ project }: { project: LoadedProject }) {
   return (
     <Link
       href={`/projects/${project.slug}`}
-      className="group flex flex-col border border-line bg-surface p-6 transition-[transform,box-shadow] duration-(--duration-fast) ease-(--ease-standard) hover:-translate-y-0.5 hover:shadow-md border-[var(--color-line)]"
+      className="group flex flex-col border bg-surface p-6 transition-[transform,box-shadow] duration-(--duration-fast) ease-(--ease-standard) hover:-translate-y-0.5 hover:shadow-md border-[var(--color-line)]"
     >
-      <p className="mono text-overline uppercase text-muted">
+      <p className="mono uppercase text-muted">
         {project.stack.slice(0, 2).join(" · ")}
       </p>
 
