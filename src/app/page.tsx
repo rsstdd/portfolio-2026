@@ -31,7 +31,7 @@ export default function HomePage() {
       <JsonLd data={personJsonLd()} />
 
       <section className="pt-16 pb-24 md:pt-32 md:pb-32">
-        <p className="datum-overline text-muted">
+        <p className="datum-overline mono text-muted">
           {site.name} · {site.role} · {site.location}
         </p>
 
@@ -42,7 +42,7 @@ export default function HomePage() {
         <p className="mt-6 max-w-prose text-body-lg text-muted">{home.intro}</p>
 
         {site.availability ? (
-          <p className="mt-4 mono caption">{site.availability}</p>
+          <p className="mt-4 mono uppercase caption">{site.availability}</p>
         ) : null}
 
         <Link
