@@ -31,7 +31,7 @@ export default function HomePage() {
       <JsonLd data={personJsonLd()} />
 
       <section className="pt-16 pb-24 md:pt-32 md:pb-32">
-        <p className="datum-overline mono text-muted">
+        <p className="mono uppercase text-muted">
           {site.name} · {site.role} · {site.location}
         </p>
 
