@@ -102,7 +102,7 @@
   .datum-overline,
   .text-overline {
     color: var(--text-muted);
-    font-family: var(--mono);
+    font-family: var(--font-mono);
     font-size: var(--text-overline);
     font-weight: 600;
     letter-spacing: var(--tracking-overline);
@@ -133,7 +133,7 @@
    * USE CASES: Data tables, timestamps, dimensions, coordinates, serial numbers.
    */
   .mono {
-    font-family: var(--mono);
+    font-family: var(--font-mono);
     font-size: var(--text-small);
     line-height: var(--leading-small);
     /* OpenType: Slashed zero ('0') to distinguish from uppercase 'O' */
@@ -151,12 +151,12 @@
    * USE CASES: Image captions, chart labels, form helper text, copyright notices.
    */
   .caption {
-    font-size: var(--text-small);
+    font-size: var(--text-caption);
     line-height: var(--leading-small);
     color: var(--text-muted);
   }
 
-  /* .text-mmuted {
+  .text-mmuted {
     color: var(--text-muted);
-  } */
+  }
 }

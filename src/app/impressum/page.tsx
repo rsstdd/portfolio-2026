@@ -63,7 +63,7 @@ export default function ImpressumPage() {
         <p lang="en" className="mono text-overline uppercase text-muted">
           Legal
         </p>
-        <h1 className="mt-2 font-display text-display font-semibold">Impressum</h1>
+        <h1 className="mt-3 h1 display-xl">Impressum</h1>
       </header>
 
       {/*

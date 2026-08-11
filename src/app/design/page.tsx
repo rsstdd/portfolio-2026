@@ -82,7 +82,7 @@ export default function DesignSystemPage() {
 
    <header className="max-w-prose">
     <p className="datum-overline">{overline}</p>
-    <h1 className="h1 display-xl mt-2">{title}</h1>
+    <h1 className="mt-3 h1 display-xl">{title}</h1>
     <p className="body-lg measure mt-4">{description}</p>
    </header>
 

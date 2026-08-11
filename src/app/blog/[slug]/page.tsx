@@ -44,20 +44,20 @@ export default async function BlogPostPage({ params }: Params) {
       <header className="mt-8 max-w-prose">
         <p className="text-overline uppercase text-muted">{post.tags.join(" · ")}</p>
 
-        <h1 className="mt-2 font-display text-display font-semibold text-balance">
+        <h1 className="mt-3 h1 display-xl">
           {post.title}
         </h1>
 
         <p className="mt-4 text-body-lg text-muted">{post.summary}</p>
 
         {/* Data plate: same pattern as the project page, published/updated only. */}
-        <dl className="data-plate mt-8 flex flex-wrap gap-x-6 gap-y-1">
+        <dl className="data-plate mono mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
             <dt className="sr-only">Published</dt>
             <dd>{post.date.toISOString().slice(0, 10)}</dd>
           </div>
           {post.updated ? (
-            <div className="flex gap-2">
+            <div className="mono flex gap-2">
               <dt className="sr-only">Updated</dt>
               <dd className="mono">updated {post.updated.toISOString().slice(0, 10)}</dd>
             </div>

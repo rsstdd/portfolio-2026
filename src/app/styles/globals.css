@@ -5,21 +5,20 @@
 @import "./components.css";
 @import "./prose.css";
 
-
 /* ==========================================================================
    Datum Design System — Base Layer & Behavioral Defaults
    ========================================================================== */
 
 @layer base {
-
   /* 1. Root & document defaults */
+
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* 2. High-contrast selection (Inverted monochrome, avoiding accent spend) */
+  /* 2. High-contrast selection (inverted monochrome, avoiding accent spend) */
   ::selection {
     background-color: var(--selection-bg);
     color: var(--selection-text);
@@ -42,7 +41,7 @@
     outline-offset: 2px;
   }
 
-  /* 5. Monochromatic Link Chrome (State communicated via geometry, not hue) */
+  /* 5. Monochromatic link chrome (state communicated via geometry, not hue) */
   a {
     color: var(--link);
     text-decoration-color: var(--link-decoration);

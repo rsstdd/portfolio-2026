@@ -7,8 +7,7 @@ import { getProject, getProjectSlugs } from "@/lib/content";
 type Params = { params: Promise<{ slug: string }> };
 
 /**
- * Every project is known at build time, so every page is static. This is what
- * makes the site deployable to anything that serves files.
+ * Every project is known at build time, so every page is static.
  */
 export function generateStaticParams() {
   return getProjectSlugs().map((slug) => ({ slug }));
@@ -55,7 +54,7 @@ export default async function ProjectPage({ params }: Params) {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <Link
         href="/projects"
-        className="mono text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+        className="mono uppercase text-muted transition-colors duration-(--duration-fast)"
       >
         ← All projects
       </Link>
@@ -63,7 +62,7 @@ export default async function ProjectPage({ params }: Params) {
       <header className="mt-8 max-w-prose">
         <p className="mono text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
 
-        <h1 className="mt-2 font-display text-display font-semibold text-balance">
+        <h1 className="h1 mt-2 text-balance">
           {project.title}
         </h1>
 
@@ -74,7 +73,7 @@ export default async function ProjectPage({ params }: Params) {
           the site claims its project pages are checkable and a status that only
           exists in frontmatter is not checkable by a reader.
         */}
-        <dl className="data-plate mt-8 flex flex-wrap gap-x-6 gap-y-1">
+        <dl className="data-plate mono uppercase mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
             <dt className="sr-only">Role</dt>
             <dd>{project.role}</dd>

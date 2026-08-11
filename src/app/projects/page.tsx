@@ -26,7 +26,7 @@ export default function ProjectsPage() {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
         <p className="mono overline uppercase text-muted">Projects</p>
-        <h1 className="mt-2 font-display text-display font-semibold text-balance">Selected work</h1>
+        <h1 className="mt-3 h1 display-xl">Selected work</h1>
         <p className="mt-4 text-body-lg text-muted">
           Every project is documented with evidence, technical decisions, and
           measurable outcomes. If the work is incomplete or claims cannot be

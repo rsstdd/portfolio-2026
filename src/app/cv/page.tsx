@@ -24,7 +24,7 @@ export default function CvPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <header className="max-w-prose">
-        <h1 className="font-display text-display font-semibold">{cv.name}</h1>
+        <h1 className="mt-3 h1 display-xl">{cv.name}</h1>
         <p className="mt-2 text-body-lg text-muted">{cv.title}</p>
 
         <dl className="data-plate mt-6 grid gap-x-8 gap-y-1 sm:grid-cols-2">

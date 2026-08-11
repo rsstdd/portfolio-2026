@@ -41,7 +41,7 @@ export default function AboutPage() {
       <header className="max-w-prose">
         <p className="mono text-overline overline uppercase text-muted">About</p>
 
-        <h1 className="mt-2 text-balance font-display text-display font-semibold">{site.name}</h1>
+        <h1 className="mt-3 h1 display-xl">{site.name}</h1>
 
         <p className="mt-4 text-body-lg text-muted">{about.description}</p>
       </header>
