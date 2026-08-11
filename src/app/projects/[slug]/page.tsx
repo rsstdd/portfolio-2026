@@ -73,7 +73,7 @@ export default async function ProjectPage({ params }: Params) {
           the site claims its project pages are checkable and a status that only
           exists in frontmatter is not checkable by a reader.
         */}
-        <dl className="data-plate mono mt-8 flex flex-wrap gap-x-6 gap-y-1">
+        <dl className="data-plate mono uppercase mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
             <dt className="sr-only">Role</dt>
             <dd>{project.role}</dd>

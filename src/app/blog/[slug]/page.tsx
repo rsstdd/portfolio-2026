@@ -51,13 +51,13 @@ export default async function BlogPostPage({ params }: Params) {
         <p className="mt-4 text-body-lg text-muted">{post.summary}</p>
 
         {/* Data plate: same pattern as the project page, published/updated only. */}
-        <dl className="data-plate mt-8 flex flex-wrap gap-x-6 gap-y-1">
+        <dl className="data-plate mono mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
             <dt className="sr-only">Published</dt>
             <dd>{post.date.toISOString().slice(0, 10)}</dd>
           </div>
           {post.updated ? (
-            <div className="flex gap-2">
+            <div className="mono flex gap-2">
               <dt className="sr-only">Updated</dt>
               <dd className="mono">updated {post.updated.toISOString().slice(0, 10)}</dd>
             </div>
