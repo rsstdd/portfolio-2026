@@ -3,13 +3,12 @@ title: Aircraft
 summary: A full-stack aircraft catalog joining a Rust scraper, PostgreSQL, a typed Hono API, and a React 19 frontend across one validated schema boundary.
 role: Sole author
 stack: ["TypeScript", "React 19", "Hono", "Drizzle", "PostgreSQL", "Rust"]
-repo: https://github.com/rsstdd/aircraft
 featured: true
 date: 2026-08-01
 verified: false
 ---
 
-> **Status: in active development.** The design below is current. Planned sections are not yet built.
+> **Status: in active development, and the repository is not public.** The design below is current. Planned sections are not yet built, and nothing on this page can be checked against source until the repository is published.
 
 ## Context and scope
 
@@ -63,6 +62,8 @@ This is designed rather than demonstrated. The seed process is not built.
 ## Verification status
 
 Nothing here is verified. This page describes an architecture, not a running system, and the `verified` flag in its frontmatter says so.
+
+An earlier version of this page linked `github.com/rsstdd/aircraft` as its repository. No such repository exists, publicly or privately, so the link answered 404 for every reader who tried it. The link has been removed rather than repointed, because a claim with a broken anchor is worse than a claim with no anchor: the first looks checkable and is not.
 
 What will be checkable once it exists: whether a route-signature change actually fails the frontend build, whether the seed rejects malformed scraper output rather than passing it through, and whether the URL-driven state survives reload and back-navigation intact.
 

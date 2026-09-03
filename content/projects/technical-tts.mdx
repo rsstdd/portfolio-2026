@@ -2,7 +2,7 @@
 title: Technical TTS
 summary: A local-first Rust pipeline turning reviewed technical lessons into long-form audio, keyed by an explicitly enumerated synthesis identity so re-running verification never re-runs speech.
 role: Sole author
-stack: ["Rust", "Python", "Chatterbox", "whisper-rs", "FFmpeg", "BLAKE3"]
+stack: ["Rust", "Python", "Chatterbox", "FFmpeg", "BLAKE3"]
 repo: https://github.com/rsstdd/technical-tts
 featured: true
 date: 2026-09-03
@@ -13,7 +13,9 @@ verified: false
 
 ## Context and scope
 
-A local-first Rust application for converting reviewed technical lessons into long-form audio study guides, aimed at software-engineering education and repeated listening. Rust owns every durable decision. Chatterbox performs speech synthesis behind a versioned newline-delimited JSON protocol, a pinned in-process Whisper verifier performs post-render text-integrity triage, and FFmpeg handles encoding.
+A local-first Rust application for converting reviewed technical lessons into long-form audio study guides, aimed at software-engineering education and repeated listening. Rust owns every durable decision. Chatterbox performs speech synthesis behind a versioned newline-delimited JSON protocol, pinned exactly rather than by range because the lockfile is itself an input to the cache key, and FFmpeg handles encoding.
+
+The target architecture also places an in-process Whisper verifier after synthesis, for non-authoritative text-integrity triage. It is not built. No Whisper crate is a dependency of any crate in the workspace, and the private preview uses recorded human review as its correctness authority instead. What does exist is the identity separation that verifier would rely on, described next.
 
 The design problem is cost asymmetry. Synthesizing a segment is expensive, verifying one is cheap, and a naive cache key makes every verification change throw away hours of audio. Almost every structural decision in the project follows from separating those two identities.
 
@@ -23,9 +25,11 @@ The design problem is cost asymmetry. Synthesizing a segment is expensive, verif
 
 A synthesis identity is a BLAKE3 digest over the speech-affecting inputs of a segment. A verification identity is a separate digest sharing nothing with it but the canonical byte form. Changing an ASR setting therefore invalidates verification and leaves cached audio intact, because a structurally valid segment can remain cached while its verification is missing, stale, or under review.
 
+Both identity modules are implemented and tested. The consumer of the verification identity is not, so this separation is currently a property of the code that no running verifier exercises yet.
+
 The field list going into the synthesis digest is written out by hand rather than derived from the segment struct. A hash over the whole struct would silently absorb every field added later, and the property that display-only text stays out of the key would regress without a compile error. Naming each field makes adding one a decision somebody makes on purpose.
 
-A version constant on the identity definition is the single lever that invalidates every cache entry, and it has moved four times, each move recorded against the interface change that caused it.
+A version constant on the identity definition is the single lever that invalidates every cache entry. It has moved three times, from the six-field walking-skeleton identity to the complete input set, then when voice references resolved so the conditioning hash stopped serializing as absent, then when the model-artifacts hash made the key follow the model's bytes rather than the name of the acquisition they arrived under. Each move is recorded against the interface change that caused it.
 
 ### Canonical bytes
 
@@ -68,7 +72,9 @@ FFmpeg, ffprobe, and the `libmp3lame` encoder are preflighted before synthesis s
 
 ## Verification status
 
-Source-verified as an in-progress system. The identity module and its hand-enumerated field list, the canonical serialization rules, the durable rename ordering, and the job repository's bounded reads were all read in the repository rather than taken from its README.
+Source-verified as an in-progress system. The identity module and its hand-enumerated field list, the canonical serialization rules, the durable rename ordering, the job repository's bounded reads, the exactly-pinned worker dependencies, and the export path's independent derivation of both lossy formats from the master were all read in the repository rather than taken from its README.
+
+Corrected against an earlier version of this page: the Whisper verifier was described as an existing component performing triage. It is not built, and no Whisper crate appears in any workspace manifest. The README names a pinned version because it records the intended architecture, and its own status table says the verifier is not started; this page previously followed the former and contradicted itself against the latter. `whisper-rs` has also been removed from the listed stack, because the stack should name what the code depends on rather than what it plans to.
 
 Continuous integration runs formatting, Clippy with warnings denied, a Rust conventions check, Cargo manifest formatting, the Python worker protocol tests, and the workspace test suite with test binaries prebuilt and network egress denied at runtime. Evidence provenance and citation checks run as their own steps, which is unusual and is the point: the project treats its own claims as artifacts to be checked. Real Chatterbox rendering, ASR calibration, performance, and listening review run separately on a named reference machine rather than in CI.
 

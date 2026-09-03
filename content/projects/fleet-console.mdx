@@ -2,16 +2,20 @@
 title: Fleet console
 summary: A robot telemetry console that treats silence as an event, normalizing three vendor dialects into one canonical envelope and degrading freshness on a server-side sweep.
 role: Sole author
-stack: ["TypeScript", "React 19", "Material UI", "Zod", "Node.js", "Vitest", "Playwright"]
+stack: ["TypeScript", "React", "Material UI", "Zod", "Vite", "Playwright"]
 repo: https://github.com/rsstdd/fleet-console
 featured: true
-date: 2026-08-26
+date: 2026-09-03
 verified: true
 ---
 
 ## Context and scope
 
-A real-time operations console for robots supplied by three vendors that disagree about payload shape, units, timestamp format, status vocabulary, and which sensors they report at all. The system is a pnpm workspace of three packages: a contracts package holding the canonical envelope and the pure freshness function, a server holding the vendor adapters and the fan-out, and a React console.
+A real-time operations console for robots supplied by three vendors that disagree about payload shape, units, timestamp format, status vocabulary, and which sensors they report at all. Built as a take-home against a brief that allowed any one of the three tiers; the whole vertical slice was built instead, because the interesting questions are system-level.
+
+The repository is a pnpm workspace of five packages. `contracts` holds the canonical envelope, the capability schemas, and the pure freshness derivation. `adapters` holds one module per vendor dialect plus recorded fixtures. `simulator` produces the three dialects with fault injection. `server` runs ingest, the freshness sweep, and the fan-out. `web` is the console and is the actual deliverable.
+
+`adapters` is a separate package rather than a folder inside the server because it is the boundary that changes most often. Adding a vendor is one module and one fixture, with no edit to the canonical model.
 
 Two design problems govern the whole thing. The first is that a console driven only by arriving messages cannot notice a robot that stopped sending. The second is that normalizing away vendor differences is only correct where the differences are accidental, and lying where they are real.
 
@@ -19,67 +23,90 @@ Two design problems govern the whole thing. The first is that a console driven o
 
 ### Silence as an event
 
-Freshness is not derived when a message arrives, because nothing arrives to announce that a robot went quiet. It is derived on a recurring server sweep over each robot's `receivedAt`, which moves a robot through `live`, `stale`, and `unreachable` on the server's own clock and marks a delta whenever the state changes.
+Freshness is not derived when a message arrives, because nothing arrives to announce that a robot went quiet. It is derived on a recurring server sweep over each robot's receipt time, which moves a robot through `live`, `stale`, and `unreachable` on the server's own clock and marks a delta whenever the state changes.
 
-The derivation itself is a pure function in the contracts package that takes `now` as an argument rather than reading a clock, so the same code serves the sweep and the tests. Thresholds are configuration rather than constants: two seconds to leave `live`, ten to leave `stale`, swept every five hundred milliseconds. The policy schema rejects a live threshold above the stale threshold, because that ordering would make `stale` unreachable as a state.
+The derivation is split across two packages on purpose. The pure function, taking a receipt time, a clock reading, and two thresholds and returning one of four states, lives in `contracts` where it is a framework-independent unit test against an injected clock. The recurring sweep that calls it over the state store lives in `server`. Neither half lives in `web`, which receives the answer as a field on the envelope and renders it without running a competing timer.
 
-The sweep also measures its own lateness against the configured interval and reports a tick that ran more than a hundred milliseconds behind, so a starved event loop is visible rather than silently producing freshness computed at the wrong time.
+The shipped policy is two seconds to leave `live`, ten to leave `stale`, swept every five hundred milliseconds. The sweep interval sits beside the thresholds in configuration but is deliberately excluded from the policy type, because it describes how often the function is called rather than how the answer is computed. A robot nobody has heard from reads `unknown` rather than a guess, which is why a cold start with dropped robots leaves them `unknown` instead of degrading them.
 
-The browser displays the state the server sent and runs no competing timer of its own. A `receivedAt` of null yields `unknown` rather than a guess.
-
-When the stream itself drops, per-robot freshness is suppressed rather than frozen. The console cannot vouch for any reading once it stops receiving, so a banner says so and the readings blank out, which is a different claim from a row that has independently gone stale.
+When the stream itself drops, per-robot freshness is suppressed rather than frozen. The console cannot vouch for any reading once it stops receiving, so a banner says so, the rows retain their last-known values, and the summary heading becomes qualified. Connection state fails closed to disconnected. This is a different claim from a row that has independently gone stale, and telling those two apart is what deriving freshness server-side buys.
 
 ### Capabilities rather than vendor conditionals
 
-Every vendor maps onto one canonical core of identity, battery, position, status, and health. What genuinely differs travels as a declared capability, and the UI renders panels from the declarations. There is no vendor conditional anywhere in the web package, and a robot that stops declaring a capability stops rendering that panel.
+Every vendor maps onto one canonical core of identity, battery, position, status, and health. What genuinely differs travels as a declared capability, and the UI renders panels from the declarations. A vendor conditional inside a feature is treated as a defect rather than a style preference, and the fleet table renders all three dialects with no vendor branch. Vendor still appears as displayed data and as a filter value; what it does not do is select code paths.
 
-Capabilities carry a kind alongside their payload, splitting operator-facing readings from diagnostic ones so the technician view is a filter over the declarations rather than a second hardcoded list.
+Capabilities carry a kind alongside their payload, splitting operator-facing readings from diagnostic ones, and the console keys its panel registry off the operator set. Vendor A declares dock and lidar health, vendor B declares dock alone, and vendor C declares dock and water level. Absence is the interface: there are no disabled placeholders, so the console cannot offer an action the robot does not support.
 
-Two consequences of the model are visible in the adapters. Vendor B sends no sequence number at all, so its continuity reads "not evaluated" rather than zero gaps, because reporting zero would be a false statement to an operator. Vendor C sends an undocumented `firmware_channel`, which is accepted, counted in a ledger exposed at `/api/health`, and never invented into the canonical model.
+Vendor B's absences are load-bearing in both directions. It sends no sequence counter, and its timestamp is not one, because ordering by timestamp cannot separate a duplicate delivery from two events in the same millisecond. The adapter refuses to synthesize a counter from the timestamp, on the grounds that doing so would delete the exact ambiguity vendor B exists to demonstrate, so its continuity reads as not evaluated rather than as zero gaps. Reporting zero would be a false statement to an operator.
 
-Adapter payload schemas are deliberately loose rather than strict, so an unknown field is recorded rather than rejected, while the canonical envelope schemas are strict, so nothing undeclared reaches the console.
+Vendor C sends an undocumented `firmware_channel`. It is accepted, counted per adapter on the health endpoint, and never invented into the canonical model. On a measured forty-second run it was counted 235 times under vendor C, with A and B at zero.
+
+Two boundary rules make the model checkable rather than conventional. Sequence is a declared capability rather than an envelope field, because vendor B sends none. Raw vendor payload is retained for diagnosis but excluded from the fleet read model and the delta stream, served only on the single-robot endpoint as a separate type. The contracts package rejects an envelope carrying either.
 
 ### Joining the stream without a gap
 
-A console that fetches a snapshot and then opens a socket loses everything sent in between. This one opens the socket first and buffers up to a thousand frames, fetches the snapshot, then discards every buffered delta the snapshot already covers.
+A console that fetches a snapshot and then opens a socket loses everything sent in between, and the symptom is invisible: the row quietly stops updating rather than erroring. This one opens the socket first and buffers, fetches the snapshot, then discards every buffered frame the snapshot already covers and replays the rest in order.
 
-The comparison needs two fields on every frame: which flush produced it, and which server process. The flush sequence restarts at zero when the server restarts, so a delta from a different session cannot be compared against the snapshot at all. That case is detected and surfaced as a terminal state rather than silently applied.
+The comparison needs two fields on every frame: which flush produced it, and which server process. The flush sequence restarts when the server restarts, so a frame from a different runtime cannot be compared against the snapshot at all and is refused rather than applied. The reconciliation rule itself lives in `contracts` and is called by both sides rather than reimplemented on each.
 
-Reconnects use full-jitter exponential backoff, a one-second base doubling to a thirty-second ceiling with the whole delay multiplied by a random factor, so a restarted server is not stampeded by every client retrying in lockstep.
+Reconnects use full-jitter exponential backoff under a thirty-second ceiling, with a capped initial probe, so a restarted server is not stampeded by every client retrying in lockstep.
 
-### Package boundaries
+### Surfaces
 
-The contracts package sits at the bottom and imports nothing else in the workspace. The web package never imports the server; the two share contracts only. Both edges are lint-enforced rather than documented, which is the difference between a boundary and a convention.
+The console is four routes: a fleet table with freshness summary and site, vendor, freshness, and search filters; a site map plotting one site at a time as status-coloured, freshness-filled SVG markers over client-derived extents with no new dependencies; a robot detail page with capability panels, operator and technician personas, and a battery-history sparkline; and a component gallery in development builds only.
+
+Battery history is a bounded per-robot ring buffer rather than a database, served decimated to at most sixty extrema-preserving points over a fixed sixty-second window. Its capacity of 3,001 samples is derived rather than chosen: the simulator's validated ceiling of fifty readings per second times the sixty-second contract window, plus one so a sample on the inclusive boundary survives. The coupling runs both ways, and the source says so: raising the producer's ceiling without raising this shortens the covered window below what the contract promises. Faster input degrades coverage but cannot grow memory, because the buffer overwrites rather than expands. Detail pages fetch once on visit and then stay live by reconciling that robot's fleet row against the fetched detail, so no other robot's delta re-renders the page.
+
+Tenancy is theming and feature configuration rather than a security boundary, selected at build time. An unknown tenant value fails the build rather than falling back silently.
+
+### Boundaries
+
+The contracts package sits at the bottom and imports nothing else in the workspace. The web package never imports the server. Those edges are enforced with `eslint-plugin-boundaries` alongside a design-token lint that rejects raw hex, under TypeScript's strict type-checked preset, rather than being left as documentation. Numbered architecture decision records are the normative history, with a generated index and a continuous-integration check for consistency between them.
 
 ## Design decisions
 
 | Decision | Rationale |
 |---|---|
 | Derive freshness on a server sweep rather than on arrival | Silence produces no message, so an arrival-driven console would display a dead robot's last reading indefinitely. |
-| Pass `now` into the freshness function | Makes the derivation pure and directly testable, and keeps a hidden wall clock out of the one rule the console depends on most. |
+| Split the pure derivation from the sweep that calls it | The rule becomes a framework-independent unit test against an injected clock, and the console cannot grow a competing implementation of it. |
+| Keep the sweep interval out of the freshness policy type | It describes how often the function is called, not how the answer is computed, and including it would imply the derivation depends on it. |
 | Suppress per-robot freshness when the socket drops | A disconnected console cannot vouch for any reading, which is a different and larger claim than one row having gone stale. |
-| Declare capabilities rather than branch on vendor | Adding a vendor becomes an adapter, not an edit to the UI. Panels follow declarations, so a withdrawn capability stops rendering without a code change. |
-| Report vendor B continuity as "not evaluated" | Vendor B sends no sequence number, and reporting zero gaps would state something the data does not support. |
-| Loose adapter schemas, strict canonical schemas | Unknown vendor fields are recorded rather than dropped or rejected, while nothing undeclared reaches the console. |
-| Buffer the socket before fetching the snapshot | Fetching first loses every delta sent during the fetch. Buffering first makes the gap closable by comparison. |
-| Carry a server session id on every frame | Flush sequences restart with the process, so cross-session comparison is meaningless and must be detected rather than applied. |
+| Declare capabilities rather than branch on vendor | Adding a vendor is one adapter module and one fixture. Panels follow declarations, so a withdrawn capability stops rendering without a code change. |
+| Refuse to synthesize vendor B's missing sequence | A timestamp cannot separate a duplicate from a same-millisecond event, and manufacturing a counter would erase the ambiguity rather than resolve it. |
+| Report vendor B continuity as not evaluated | Reporting zero gaps would state something the data does not support. |
+| Count unknown vendor fields instead of dropping them | Quietly discarding data rots integrations, and a per-adapter counter makes the drift visible on the health endpoint. |
+| Keep raw payload out of the read model and delta stream | Diagnostic data has a different audience and a different exposure, and a schema that rejects it makes the exclusion checkable. |
+| Buffer the socket before fetching the snapshot | Fetching first loses every delta sent during the fetch, and the failure is invisible rather than loud. |
+| Carry a server session id on every frame | Flush sequences restart with the process, so cross-runtime comparison is meaningless and must be refused rather than applied. |
 | Full-jitter backoff on reconnect | A server restart otherwise produces synchronized retries from every connected client. |
-| Lint-enforce the package dependency graph | A documented boundary drifts. A checked one fails the build. |
+| Enforce the package graph and the token layer with lint | A documented boundary drifts. A checked one fails the build. |
 
 ## Verification status
 
-Source-verified. The freshness policy and its ordering check, the sweep and its lateness reporting, the delta fan-out with its per-client coalescing map, the capability kinds, the vendor B adapter's absent sequence field, the reconciliation comparison, and the full-jitter backoff were all read in the source rather than taken from the README.
+Source-verified against the current head of the repository. The freshness policy and its configuration, the split between the pure derivation and the sweep, the vendor B adapter's stated refusal to synthesize a sequence, the cold-start ordering module and its reconciliation, and the full-jitter reconnect were all read in the source rather than taken from the README.
 
-Continuous integration runs lint, typecheck, unit tests, and build. Playwright end-to-end tests run against the real stack with nothing mocked. Freshness degradation is checkable by hand: start the development stack, stop the simulator, and every row moves to stale and then unreachable while the connection banner stays quiet, because the socket is still open.
+The repository carries its own measurements, taken on 20 August 2026: 1,993 readings sent and 1,993 accepted over a forty-second run with no rejections; `{live: 47, unreachable: 3}` after dropping three named robots; and the 235 unknown-field counts described above. Playwright drives the real server, simulator, and built console through the degradation, outage, and server-restart scenarios in Chromium, Firefox, and WebKit, with nothing mocked. Recorded vendor fixtures are drift-gated, so a change in adapter output fails continuous integration rather than passing quietly.
 
-Not verified: behavior at fleet sizes beyond the manifest, throughput of the fan-out under many concurrent clients, or the console's responsiveness under sustained delta pressure. No benchmarks exist.
+One correction against the repository's own documentation: the README's vendor table says vendor B's adapter synthesizes ordering from its timestamp. The adapter does not, and its source says so explicitly and explains why synthesizing would be wrong. The adapter is the authority here, and this page follows it.
+
+Not verified independently: the measurements above are the repository's, reproduced from its records rather than re-run here. Throughput beyond the measured profile, fan-out behavior under many concurrent consoles, and the 500-robot load profile were not exercised.
 
 ## Known limitations
 
 ### Scope
 
-Authentication, persistence, horizontal scale, and command dispatch are not built. State is in-memory and bounded by the fleet manifest, and the fan-out assumes a single process. The console is read-only, which is why the property that the interface never authorizes an operation is cheap to hold here and would take real work to keep holding.
+Authentication, authorization, robot commissioning, and command dispatch are not built. Raw vendor payloads are served unauthenticated by recorded decision, the technician panel states that exposure on the surface, and production deployment is blocked until authentication supersedes it. Tenancy is theming and features, not a security boundary.
+
+State is in-memory and rebuildable, bounded by the fleet manifest, and the fan-out assumes one process. The seam for horizontal scale is named rather than built: ingest is stateless, and state and fan-out would partition.
+
+### Delivery
+
+The coalescing flush sends whole robot rows rather than field-level deltas, deferred until a measurement demanded finer granularity. The scale run showed the un-virtualized table absorbing full-row deltas within the frame budget, so it stayed. There is no backpressure on the fan-out yet, deferred on an open configuration question.
 
 ### Rendering
 
 The fleet table is not virtualized. At the measured fleet size a plain table stays responsive, and windowing would cost the keyboard and find-in-page behavior operators use. That trade changes at a few thousand rows.
+
+### Scale of the exercise
+
+Ten to fifteen hours against a brief that said a few. The author's own recorded judgment is that the project grew beyond the smallest useful demo and became harder to explain by attempting to prove too much, that some governance arrived before the build justified it, and that some abstractions appeared before repeated use did.

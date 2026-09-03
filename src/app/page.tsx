@@ -17,14 +17,18 @@ export default function HomePage() {
   const home = getHome();
 
   /*
-   * Featured and verified, capped at three. The `verified` filter keeps
+   * Featured and verified, capped at six. The `verified` filter keeps
    * unfinished work off the front page automatically: when aircraft ships and
    * its frontmatter flips, it takes the top slot with no edit here, because
    * getProjects sorts featured first and then newest.
+   *
+   * The cap is a ceiling rather than a target. Fewer than six qualifying
+   * projects renders fewer cards, which the three-column grid handles without
+   * a change here.
    */
   const featured = getProjects()
     .filter((p) => p.featured && p.verified)
-    .slice(0, 3);
+    .slice(0, 6);
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 md:px-8 lg:px-10">

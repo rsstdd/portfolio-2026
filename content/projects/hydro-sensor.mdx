@@ -1,6 +1,6 @@
 ---
 title: Hydro sensor
-summary: A Python edge agent that speaks the Atlas Scientific serial protocol over FTDI, temperature-compensates pH and conductivity, and fans telemetry out to independent sinks.
+summary: A Python edge agent that speaks the Atlas Scientific serial protocol over FTDI, reads pH, conductivity, and temperature probes by serial number, and fans telemetry out to independent sinks.
 role: Sole author
 stack: ["Python", "pylibftdi", "MongoDB", "CircleCI"]
 repo: https://github.com/rsstdd/hydro-sensor
@@ -25,9 +25,15 @@ Commands are terminated with a carriage return on send. Reads proceed byte by by
 
 The agent iterates a configured sensor list addressed by serial number, issues the read command to each, and parses the responses per sensor type: Celsius converted to Fahrenheit for temperature, conductivity split from parts per million for EC, and pH rounded.
 
-### Temperature compensation
+### Temperature compensation, attempted and not achieved
 
-One probe is flagged as the reference. Its temperature reading is pushed to the other probes with a `T,<temp>` command before they are read, because uncompensated pH and conductivity readings drift with water temperature and would otherwise be recorded as real change.
+One probe is flagged as the reference, and its reading is retained so that a `T,<temp>` command can push it to the other probes before they are read. The reason is sound: uncompensated pH and conductivity readings drift with water temperature and would otherwise be recorded as real change.
+
+The code does not do this. The compensation command is sent on the variable holding the current device, but that variable is not rebound to the pH or conductivity probe until after the command has already been sent, so `T,<temp>` always reaches the previously opened probe instead. Compensation goes to the temperature probe on the conductivity iteration and to the conductivity probe on the pH iteration, and neither the pH nor the conductivity probe ever receives it.
+
+The ordering also means the loop depends on the temperature probe being listed first. It is, so the run works, but a reordered sensor list would send a command on an unbound variable and fail.
+
+The readings this agent produced are therefore uncompensated. That is a defect in the implementation rather than a decision, and it is stated here because the reading it affects is the one the system existed to collect.
 
 ### Telemetry fan-out
 
@@ -59,7 +65,7 @@ One inversion in this design is worth stating, because it is the opposite of wha
 |---|---|
 | Implement the serial protocol directly | The probes expose a simple command protocol, and a hand-written reader made the timeout and error behavior explicit rather than inherited from a vendor abstraction. |
 | Read byte by byte to a carriage return, under timeout | The stream has no framing, so the terminator is the only reliable boundary, and the timeout is what prevents a silent probe from hanging the run. |
-| Push a reference temperature before reading pH and EC | Uncompensated readings drift with water temperature, so without this the agent records an artifact of the water rather than a change in the chemistry. |
+| Push a reference temperature before reading pH and EC | Uncompensated readings drift with water temperature, so without this the agent records an artifact of the water rather than a change in the chemistry. The intent is right and the implementation does not achieve it, as the section above describes. |
 | Handle each sink's errors independently | The reading is the valuable artifact. One failing service should cost that service's copy, not the reading. |
 | Append to a local file as the final sink | Preserves data through total network loss, which is the failure mode a device in a greenhouse actually experiences. |
 
@@ -68,6 +74,10 @@ One inversion in this design is worth stating, because it is the opposite of wha
 Source-verified. The dispatch path was read directly rather than taken from a summary.
 
 Confirmed in the source: the identity file lookup across two known paths, the enrichment with hostname, role, room, sensor group, version, and a UTC timestamp, the asserted 201 on the HTTP post, and independent error handling around each of the three sinks. A CircleCI configuration is present, and the agent ran against real hardware rather than a simulator.
+
+Corrected against an earlier description of this project: temperature compensation is not applied to the pH or conductivity probes. The `T,<temp>` command is issued before the device variable is rebound to the probe being read, so it always reaches the previously opened device. An earlier version of this page claimed the compensation worked, which the source does not support.
+
+Two further defects are visible in the same file. `get_sensor_data` calls `read_sensors` without returning its result, so it returns `None` to any caller, and `read_sensors` is invoked once at import time, so importing the module drives the hardware.
 
 Corrected against an earlier description of this project: readings are not written to a MongoDB collection per sensor type. The per-type collection is selected into a variable and then never used; the insert targets a single fixed `sensordata` collection. That is a defect in the code rather than a design choice, and it means sensor type is carried in the record rather than in the collection.
 
