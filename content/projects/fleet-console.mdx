@@ -1,0 +1,85 @@
+---
+title: Fleet console
+summary: A robot telemetry console that treats silence as an event, normalizing three vendor dialects into one canonical envelope and degrading freshness on a server-side sweep.
+role: Sole author
+stack: ["TypeScript", "React 19", "Material UI", "Zod", "Node.js", "Vitest", "Playwright"]
+repo: https://github.com/rsstdd/fleet-console
+featured: false
+date: 2026-08-26
+verified: true
+---
+
+## Context and scope
+
+A real-time operations console for robots supplied by three vendors that disagree about payload shape, units, timestamp format, status vocabulary, and which sensors they report at all. The system is a pnpm workspace of three packages: a contracts package holding the canonical envelope and the pure freshness function, a server holding the vendor adapters and the fan-out, and a React console.
+
+Two design problems govern the whole thing. The first is that a console driven only by arriving messages cannot notice a robot that stopped sending. The second is that normalizing away vendor differences is only correct where the differences are accidental, and lying where they are real.
+
+## System design
+
+### Silence as an event
+
+Freshness is not derived when a message arrives, because nothing arrives to announce that a robot went quiet. It is derived on a recurring server sweep over each robot's `receivedAt`, which moves a robot through `live`, `stale`, and `unreachable` on the server's own clock and marks a delta whenever the state changes.
+
+The derivation itself is a pure function in the contracts package that takes `now` as an argument rather than reading a clock, so the same code serves the sweep and the tests. Thresholds are configuration rather than constants: two seconds to leave `live`, ten to leave `stale`, swept every five hundred milliseconds. The policy schema rejects a live threshold above the stale threshold, because that ordering would make `stale` unreachable as a state.
+
+The sweep also measures its own lateness against the configured interval and reports a tick that ran more than a hundred milliseconds behind, so a starved event loop is visible rather than silently producing freshness computed at the wrong time.
+
+The browser displays the state the server sent and runs no competing timer of its own. A `receivedAt` of null yields `unknown` rather than a guess.
+
+When the stream itself drops, per-robot freshness is suppressed rather than frozen. The console cannot vouch for any reading once it stops receiving, so a banner says so and the readings blank out, which is a different claim from a row that has independently gone stale.
+
+### Capabilities rather than vendor conditionals
+
+Every vendor maps onto one canonical core of identity, battery, position, status, and health. What genuinely differs travels as a declared capability, and the UI renders panels from the declarations. There is no vendor conditional anywhere in the web package, and a robot that stops declaring a capability stops rendering that panel.
+
+Capabilities carry a kind alongside their payload, splitting operator-facing readings from diagnostic ones so the technician view is a filter over the declarations rather than a second hardcoded list.
+
+Two consequences of the model are visible in the adapters. Vendor B sends no sequence number at all, so its continuity reads "not evaluated" rather than zero gaps, because reporting zero would be a false statement to an operator. Vendor C sends an undocumented `firmware_channel`, which is accepted, counted in a ledger exposed at `/api/health`, and never invented into the canonical model.
+
+Adapter payload schemas are deliberately loose rather than strict, so an unknown field is recorded rather than rejected, while the canonical envelope schemas are strict, so nothing undeclared reaches the console.
+
+### Joining the stream without a gap
+
+A console that fetches a snapshot and then opens a socket loses everything sent in between. This one opens the socket first and buffers up to a thousand frames, fetches the snapshot, then discards every buffered delta the snapshot already covers.
+
+The comparison needs two fields on every frame: which flush produced it, and which server process. The flush sequence restarts at zero when the server restarts, so a delta from a different session cannot be compared against the snapshot at all. That case is detected and surfaced as a terminal state rather than silently applied.
+
+Reconnects use full-jitter exponential backoff, a one-second base doubling to a thirty-second ceiling with the whole delay multiplied by a random factor, so a restarted server is not stampeded by every client retrying in lockstep.
+
+### Package boundaries
+
+The contracts package sits at the bottom and imports nothing else in the workspace. The web package never imports the server; the two share contracts only. Both edges are lint-enforced rather than documented, which is the difference between a boundary and a convention.
+
+## Design decisions
+
+| Decision | Rationale |
+|---|---|
+| Derive freshness on a server sweep rather than on arrival | Silence produces no message, so an arrival-driven console would display a dead robot's last reading indefinitely. |
+| Pass `now` into the freshness function | Makes the derivation pure and directly testable, and keeps a hidden wall clock out of the one rule the console depends on most. |
+| Suppress per-robot freshness when the socket drops | A disconnected console cannot vouch for any reading, which is a different and larger claim than one row having gone stale. |
+| Declare capabilities rather than branch on vendor | Adding a vendor becomes an adapter, not an edit to the UI. Panels follow declarations, so a withdrawn capability stops rendering without a code change. |
+| Report vendor B continuity as "not evaluated" | Vendor B sends no sequence number, and reporting zero gaps would state something the data does not support. |
+| Loose adapter schemas, strict canonical schemas | Unknown vendor fields are recorded rather than dropped or rejected, while nothing undeclared reaches the console. |
+| Buffer the socket before fetching the snapshot | Fetching first loses every delta sent during the fetch. Buffering first makes the gap closable by comparison. |
+| Carry a server session id on every frame | Flush sequences restart with the process, so cross-session comparison is meaningless and must be detected rather than applied. |
+| Full-jitter backoff on reconnect | A server restart otherwise produces synchronized retries from every connected client. |
+| Lint-enforce the package dependency graph | A documented boundary drifts. A checked one fails the build. |
+
+## Verification status
+
+Source-verified. The freshness policy and its ordering check, the sweep and its lateness reporting, the delta fan-out with its per-client coalescing map, the capability kinds, the vendor B adapter's absent sequence field, the reconciliation comparison, and the full-jitter backoff were all read in the source rather than taken from the README.
+
+Continuous integration runs lint, typecheck, unit tests, and build. Playwright end-to-end tests run against the real stack with nothing mocked. Freshness degradation is checkable by hand: start the development stack, stop the simulator, and every row moves to stale and then unreachable while the connection banner stays quiet, because the socket is still open.
+
+Not verified: behavior at fleet sizes beyond the manifest, throughput of the fan-out under many concurrent clients, or the console's responsiveness under sustained delta pressure. No benchmarks exist.
+
+## Known limitations
+
+### Scope
+
+Authentication, persistence, horizontal scale, and command dispatch are not built. State is in-memory and bounded by the fleet manifest, and the fan-out assumes a single process. The console is read-only, which is why the property that the interface never authorizes an operation is cheap to hold here and would take real work to keep holding.
+
+### Rendering
+
+The fleet table is not virtualized. At the measured fleet size a plain table stays responsive, and windowing would cost the keyboard and find-in-page behavior operators use. That trade changes at a few thousand rows.

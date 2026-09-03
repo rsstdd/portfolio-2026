@@ -1,0 +1,110 @@
+---
+title: Aircraft management engine
+summary: A Rust and PostgreSQL ingestion backend where imported values stay non-canonical until a curator accepts them, built as a boundary-enforced hexagonal workspace.
+role: Sole author
+stack: ["Rust", "Axum", "SQLx", "PostgreSQL", "Tokio", "Just"]
+repo: https://github.com/rsstdd/aircraft-api-r
+featured: false
+date: 2026-09-03
+verified: false
+---
+
+> **Status: in active development.** The ingestion vertical slice, the database schema, and the HTTP perimeter are implemented. The product API is not. Sections below name which is which.
+
+## Context and scope
+
+A Rust 2024 and PostgreSQL backend for storing, curating, searching, and comparing aircraft data. The target design is a Cargo workspace under hexagonal architecture, with Axum at the HTTP boundary, SQLx at the persistence boundary, and SQL-first migrations as the canonical database history.
+
+The governing idea is that parsing successfully is not the same as being true. Provenance, source assertions, measurement conditions, and curation status are stored as first-class data, and an imported measurement stays pending and outside the canonical read model until a curator accepts it.
+
+What exists today is one complete vertical slice through that design: a PlanePHD ingestion CLI, twenty-five ordered migrations with a checksum-locked history, and an HTTP server that serves health, readiness, and version behind a real perimeter. Search, comparison, and the authenticated product API are not built.
+
+## System design
+
+### Layering, and how it is held
+
+Eight library crates plus two binaries separate deterministic domain rules, use cases and ports, HTTP adapters, SQLx repositories, source ingestion, typed configuration, and tracing setup. HTTP data-transfer objects, application inputs, domain values, and database rows are four separate representations with explicit conversions between them.
+
+The dependency direction is not a convention. A workspace automation task refuses forbidden edges, and the refusals are visible in the code they shape: the HTTP crate takes a readiness probe as a trait object rather than a connection pool, and takes its perimeter bounds as a plain value rather than as configuration, because the boundary check rejects both `aircraft_db` and `aircraft_config` in that crate. The design is enforced rather than described.
+
+### Ingestion
+
+The import path is ordered so that failure is bounded at every step:
+
+```text
+capture immutable input and compute SHA-256
+  -> preflight the complete artifact
+  -> open a bounded prepared-record stream
+  -> acquire the logical-import advisory lock
+  -> stage and promote records transactionally
+  -> preserve provenance, assertions, and curation flags
+  -> refresh the read model
+  -> commit the import and its audit result
+```
+
+The input is copied to an owner-only temporary artifact under a configurable size limit before anything parses it, and a SHA-256 is computed over the exact bytes. Logical import identity is the source slug, that content hash, the parser name, and the parser version together, so a repeat of an already-successful import returns the existing report rather than duplicating data.
+
+Every record is validated before the transaction opens, so a malformed file fails without holding a database transaction open across parsing work. Records then stream through a bounded channel into a single PostgreSQL transaction. A hard failure rolls back staged and promoted data while recording the failed attempt separately, which keeps the audit history complete without leaving partial aircraft data behind.
+
+Raw JSON is preserved and uncertain values emit stable issues rather than being silently coerced. Measurements keep their units and conditions.
+
+### Curation
+
+Imported assertions land pending. `curate list`, `accept`, `reject`, and `refresh` move them, and only acceptance publishes a value into the canonical search read model. The `refresh` command exists because a committed curation decision can leave its read-model refresh queued, and that outstanding work is retried explicitly rather than assumed to have happened.
+
+### The HTTP perimeter
+
+The server serves three routes and, in front of them, four bounds that refuse work before a handler runs: a body-size limit, a request deadline, a concurrency limit that sheds when saturated, and an explicit-origin CORS allow-list. Every refusal is an RFC 9457 problem document.
+
+Two of those bounds are written by hand rather than taken from `tower-http`, and the reason is stated in the source: `RequestBodyLimitLayer` and `TimeoutLayer` both answer with a bodyless response whose shape the caller cannot influence, which would publish exactly the empty `413` and `504` the project's HTTP decisions forbid.
+
+Every request carries an `X-Request-Id` correlation and emits one structured trace event. On SIGINT or SIGTERM the server refuses new work and drains in-flight requests within a configurable grace period.
+
+### Database posture
+
+Migrations are canonical SQL with a checksum-locked ledger, dependency-aware installation, seeds placed at their foreign-key boundaries, and post-install validation scripts. Applied versions are recorded in a migrations table rather than inferred.
+
+The runtime role is restricted and separate from the schema owner, and every pooled connection runs with an empty `search_path`, so the server's SQL must be schema-qualified or it does not resolve. The grant script also revokes `TEMPORARY` from `PUBLIC` and from the role itself, because a role's effective privilege is the sum of both and PostgreSQL has no per-role deny.
+
+The database URL is parsed while configuration loads rather than at first connection, and no rejection message quotes the value, because it carries a password.
+
+## Design decisions
+
+| Decision | Rationale |
+|---|---|
+| Keep imported values non-canonical until curated | A parser proving a value is well-formed is a different claim from a curator proving it is correct, and collapsing the two makes a specification database confidently wrong. |
+| Identify an import by source, content hash, parser, and parser version | Makes replay idempotent, and makes a parser change a genuinely new import rather than a duplicate of an old one. |
+| Validate the whole artifact before opening the transaction | A malformed file fails without holding a transaction open across parsing work. |
+| Enforce the hexagonal graph with an automation task | The shape survives contributors and time. The visible cost, ports and plain values where a pool or a settings struct would be shorter, is the enforcement working. |
+| Write the body-limit and timeout middleware by hand | The `tower-http` layers answer with bodyless responses, which would violate the requirement that every API failure is a problem document. |
+| Run the runtime role with an empty `search_path` | An unqualified name does not resolve, so a schema-qualification mistake fails immediately rather than resolving somewhere unintended. |
+| Parse the database URL at configuration load | A malformed URL fails while configuration loads rather than at the first connection, and the failure never quotes a password. |
+| SQL-first migrations with a checksum ledger | The schema history is the artifact, readable and reviewable, rather than a byproduct of an ORM's model definitions. |
+
+## Verification status
+
+Source-verified as an in-progress system. The crate layout, the ingestion ordering, the perimeter middleware, the authentication module, and the migration count were read in the repository rather than taken from its README.
+
+The ingestion path passed six deployment gates, including a parity run against the legacy SQL loader that justified retiring it. That gate is now a golden-snapshot regression check, which catches regressions but no longer validates the adapter against an independent implementation. Property tests over the normalizer cover the stated rules instead. Tests span deterministic domain units, application orchestration against fake ports, parser and normalization pinning, and repository and server-composition tests that install the canonical SQL into disposable PostgreSQL containers.
+
+The README's "not implemented yet" list is stale in two places, and this page states the repository rather than the summary: the Axum server composition root is buildable and runnable, and bearer authentication middleware exists. What remains true is that no route uses it. Health, readiness, and version are public, and the authentication layer is not applied anywhere.
+
+Not verified: production deployment, behavior under real ingestion volume, or any performance figure. There are no benchmarks, and target-environment qualification has not run.
+
+## Known limitations
+
+### Product surface
+
+There are no aircraft, search, comparison, or mission-scoring routes. Most of the domain and application layers beyond ingestion are scaffolded rather than implemented, and the repository surface beyond the ingestion repository is incomplete.
+
+### Authentication
+
+Implemented as a middleware and not applied. Authorization, rate limiting, and the remaining transport middleware are not complete.
+
+### Build and tooling
+
+SQLx compile-time query metadata is managed as a dependency but offline query checking is not part of the implemented workflow. The full test suite requires Docker, because the integration tests start disposable PostgreSQL containers.
+
+### Licensing
+
+The workspace is marked `UNLICENSED` and carries no license text, so no permission to use, modify, or distribute should be inferred.

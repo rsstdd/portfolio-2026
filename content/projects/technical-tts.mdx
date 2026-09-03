@@ -1,0 +1,99 @@
+---
+title: Technical TTS
+summary: A local-first Rust pipeline turning reviewed technical lessons into long-form audio, keyed by an explicitly enumerated synthesis identity so re-running verification never re-runs speech.
+role: Sole author
+stack: ["Rust", "Python", "Chatterbox", "whisper-rs", "FFmpeg", "BLAKE3"]
+repo: https://github.com/rsstdd/technical-tts
+featured: false
+date: 2026-09-03
+verified: false
+---
+
+> **Status: in active development.** The walking skeleton, the contract baseline, the Chatterbox worker, the packaging path, two authoring commands, and durable job recovery are implemented. The render command is not. Sections below name which is which.
+
+## Context and scope
+
+A local-first Rust application for converting reviewed technical lessons into long-form audio study guides, aimed at software-engineering education and repeated listening. Rust owns every durable decision. Chatterbox performs speech synthesis behind a versioned newline-delimited JSON protocol, a pinned in-process Whisper verifier performs post-render text-integrity triage, and FFmpeg handles encoding.
+
+The design problem is cost asymmetry. Synthesizing a segment is expensive, verifying one is cheap, and a naive cache key makes every verification change throw away hours of audio. Almost every structural decision in the project follows from separating those two identities.
+
+## System design
+
+### Two identities, deliberately unrelated
+
+A synthesis identity is a BLAKE3 digest over the speech-affecting inputs of a segment. A verification identity is a separate digest sharing nothing with it but the canonical byte form. Changing an ASR setting therefore invalidates verification and leaves cached audio intact, because a structurally valid segment can remain cached while its verification is missing, stale, or under review.
+
+The field list going into the synthesis digest is written out by hand rather than derived from the segment struct. A hash over the whole struct would silently absorb every field added later, and the property that display-only text stays out of the key would regress without a compile error. Naming each field makes adding one a decision somebody makes on purpose.
+
+A version constant on the identity definition is the single lever that invalidates every cache entry, and it has moved four times, each move recorded against the interface change that caused it.
+
+### Canonical bytes
+
+Identities hash a project-local canonical serialization rather than RFC 8785, on the stated grounds that no external implementation recomputes them. Object keys sort by UTF-8 byte order, whitespace is omitted, and control characters take lowercase escapes. Floating-point values are excluded from the format entirely, because none are required and their representation would add an encoding choice with no payoff.
+
+The object constructor takes a fixed array rather than an iterator, so an identity reads as a literal list of named fields at its call site, and it panics on a duplicate key rather than letting a map insert drop the earlier value and produce a key that names fewer inputs than the author wrote. That is the one direction of wrongness that would serve audio the key does not describe.
+
+### Durability
+
+Job state is a JSON document published atomically: contents are synchronized before a rename makes them authoritative, and the containing directory is synchronized after every authoritative rename. The filesystem operations sit behind a narrow trait used as a crash-injection seam, so recovery is tested against injected failures rather than argued about.
+
+Durable JSON is read under explicit byte ceilings before the deserializer sees it, ownership is locked per job, and an event is appended after each durable write. A loaded record that fails its checks is refused rather than trusted.
+
+### Lesson model
+
+The lesson format separates readable text from exact synthesis input. `display_text` preserves the reviewed transcript, `spoken_text` carries the deterministic rendering that goes to the model, and transformation records explain material differences between them. Protected terms prevent unsafe segmentation and declare approved ASR alternatives, and stable segment identifiers make cache reuse, review, and retakes precise.
+
+Seven versioned JSON schemas are generated from the Rust types that define them and checked against the committed files, so a type change that does not update a schema fails rather than drifting.
+
+### Packaging
+
+Both lossy outputs are encoded independently from the lossless master; one lossy format is never the source for another. The transcript, WebVTT captions, and chapter metadata are derived from the frame boundaries the assembly actually wrote rather than from the plan, so they cannot describe audio that was not produced. Every artifact is checksummed into a manifest, and the tool identities and effective argument lists are recorded alongside them.
+
+FFmpeg, ffprobe, and the `libmp3lame` encoder are preflighted before synthesis starts, so a missing encoder fails before the expensive work rather than after it.
+
+## Design decisions
+
+| Decision | Rationale |
+|---|---|
+| Keep synthesis and verification identities disjoint | Verification is cheap and synthesis is expensive. Sharing a key would make an ASR setting change discard hours of valid audio. |
+| Enumerate synthesis-key fields by hand | A struct-wide hash absorbs new fields silently, and the invariant that display text stays out of the key would regress with no compile error. |
+| Panic on a duplicate key in the canonical object builder | A silently dropped entry produces a key naming fewer inputs than written, which is the failure that serves audio the key does not describe. |
+| Exclude floating point from the canonical format | No identity input requires it, so including it would add a representation choice with no benefit and a real risk. |
+| Put Rust at every durable decision, Python only at the model | Model-specific code stays behind a versioned protocol, so the inference runtime cannot leak into the lesson domain. |
+| Synchronize file then rename then synchronize directory | Contents become durable before the rename makes them authoritative, which is the ordering that survives a crash mid-publication. |
+| Generate schemas from the Rust types and check them in | A type change that does not update its schema fails in CI rather than drifting apart from the published contract. |
+| Derive captions and chapters from written frame boundaries | Deriving them from the plan would let the package describe audio that was never assembled. |
+| Preflight the encoders before synthesis | A missing `libmp3lame` should cost seconds at startup, not a full render. |
+| Mark packages `private_preview` mechanically | Publication is refused by a typed error rather than by discipline, so an incomplete gate cannot be forgotten. |
+
+## Verification status
+
+Source-verified as an in-progress system. The identity module and its hand-enumerated field list, the canonical serialization rules, the durable rename ordering, and the job repository's bounded reads were all read in the repository rather than taken from its README.
+
+Continuous integration runs formatting, Clippy with warnings denied, a Rust conventions check, Cargo manifest formatting, the Python worker protocol tests, and the workspace test suite with test binaries prebuilt and network egress denied at runtime. Evidence provenance and citation checks run as their own steps, which is unusual and is the point: the project treats its own claims as artifacts to be checked. Real Chatterbox rendering, ASR calibration, performance, and listening review run separately on a named reference machine rather than in CI.
+
+The README is behind the repository in one respect worth naming: durable job state and recovery landed after it was last revised, so the status table understates what exists.
+
+Not verified: natural-speech quality at length, throughput on any machine other than the reference one, or long-form soak behavior. Full-box performance qualification has not run, and the ASR verifier is not started.
+
+## Known limitations
+
+### Product surface
+
+Two authoring commands exist, `lesson new` and `lesson validate`, and nothing else. There is no render, resume, retake, inspect, export, or cache command. The published command list in the README under "planned" is architectural intent, not deferred work in progress.
+
+### Verification
+
+The ASR verifier is not started. The private preview uses recorded human review as its correctness authority instead, which removes the native ASR toolchain from the critical path without changing the target architecture.
+
+### Voice configuration
+
+Version one uses a single owner-recorded instructor voice. The lesson domain keeps two pedagogical roles, instructor and learner, but learner questions are rendered as instructor-voiced rhetorical prompts. Two speakers would require a second approved profile and a new accepted decision record.
+
+### Environment
+
+The development and runtime target is Ubuntu 24.04 under WSL2, and the repository, models, and caches must live on the Linux filesystem rather than a mounted Windows drive. Hardened recovery and loudness normalization are not implemented.
+
+### Licensing
+
+The workspace declares `MIT OR Apache-2.0`, but the license text files are not present. Chatterbox, model weights, voice references, Whisper models, and FFmpeg carry separate terms that have not all been recorded.
