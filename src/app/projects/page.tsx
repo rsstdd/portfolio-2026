@@ -11,10 +11,15 @@ export const metadata: Metadata = {
 /**
  * Projects index.
  *
- * A flat list rather than a filterable grid. Eight entries do not need
+ * A flat list rather than a filterable grid. Eleven entries do not need
  * filtering, and filter chips would require the client component this site does
  * not have. Ordering is featured-first then newest, decided in the loader so
  * every page agrees.
+ *
+ * Every project is listed, including unverified ones. The home page filters on
+ * `verified` and this page deliberately does not: omitting unfinished work here
+ * would silently drop it from the only page that claims to list it, and the
+ * date column already labels it "in progress" instead of a year.
  *
  * Rows rather than cards, because a list gives each project a full line of
  * summary, and the summary is what makes someone click.
@@ -28,16 +33,14 @@ export default function ProjectsPage() {
         <p className="mono overline uppercase text-muted">Projects</p>
         <h1 className="mt-3 h1 display-xl">Selected work</h1>
         <p className="mt-4 text-body-lg text-muted">
-          Every project is documented with evidence, technical decisions, and
-          measurable outcomes. If the work is incomplete or claims cannot be
-          verified, I state that explicitly.
+          Unfinished work is listed here too, dated as in progress rather than
+          by year. Each page states what was read in the source, what was
+          measured, and what was not.
         </p>
       </header>
 
       <ul className="mt-16 border-t border-line">
-        {projects
-          .filter(project => project.verified)
-          .map((project) => (
+        {projects.map((project) => (
           <li key={project.slug}>
             <Link
               href={`/projects/${project.slug}`}
