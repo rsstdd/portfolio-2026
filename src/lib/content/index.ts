@@ -71,7 +71,7 @@ function fail(file: string, error: unknown): never {
   throw new Error(`Invalid frontmatter in content/${file}:\n${detail}`);
 }
 
-/** All projects, featured first and then newest. */
+/** All projects: featured first, ranked before unranked, then newest. */
 export function getProjects(): LoadedProject[] {
   return readdirSync(PROJECTS_DIR)
     .filter((f) => f.endsWith(".mdx"))
@@ -91,6 +91,18 @@ export function getProjects(): LoadedProject[] {
       // Ordering lives here rather than in each page, because every consumer
       // wants the same order and duplicating it invites them to drift.
       if (a.featured !== b.featured) return a.featured ? -1 : 1;
+
+      // Among featured projects an explicit rank wins, because recency does
+      // not track strength and the date field must keep saying when the work
+      // happened. A featured project with no rank sorts after every ranked
+      // one rather than interleaving, so adding a rank is what promotes a
+      // project and forgetting one never silently demotes another.
+      if (a.featured && a.featuredRank !== b.featuredRank) {
+        if (a.featuredRank === undefined) return 1;
+        if (b.featuredRank === undefined) return -1;
+        return a.featuredRank - b.featuredRank;
+      }
+
       return b.date.getTime() - a.date.getTime();
     });
 }

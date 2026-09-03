@@ -18,6 +18,17 @@ export const projectSchema = z.object({
   repo: z.url().optional(),
   live: z.url().optional(),
   featured: z.boolean().default(false),
+  /**
+   * Explicit position among featured projects, 1 being first. Optional: a
+   * featured project without one sorts after every ranked project, by date.
+   *
+   * This exists because recency is a poor proxy for strength. The newest
+   * project is not reliably the best evidence of what someone can do, and
+   * encoding a judgment in the date field would mean falsifying when the work
+   * happened. Ranking is a separate claim from chronology, so it gets a
+   * separate field.
+   */
+  featuredRank: z.number().int().positive().optional(),
   date: z.coerce.date(),
   /**
    * False for anything not substantiated from source. Rendered in the data
