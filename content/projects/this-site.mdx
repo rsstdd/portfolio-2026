@@ -3,10 +3,11 @@ title: This portfolio site
 summary: A statically generated Next.js 16 portfolio with MDX content in git, no client components, and a content schema that fails the build rather than rendering a blank card.
 role: Sole author
 stack: ["Next.js 16", "React 19", "TypeScript", "MDX"]
-repo: https://github.com/rsstdd/portfolio
-featured: false
+repo: https://github.com/rsstdd/portfolio-2026
+featured: true
+featuredRank: 7
 date: 2026-07-29
-verified: false
+verified: true
 ---
 
 > **Status: in active development.**
@@ -21,11 +22,13 @@ The scope is deliberately small, because the point is not the site but the const
 
 ### Rendering
 
-Static generation covers every route. Dynamic rendering requires a stated reason, and no route currently has one.
+Every page route is statically generated, either as prerendered content or through `generateStaticParams`. One route is not: the per-project tab icon at `projects/[slug]/icon.tsx` is server-rendered on demand, because it has no `generateStaticParams` of its own. Its sibling `page.tsx` has one, which is what makes the omission easy to miss. It is an oversight rather than a decision, and it is named here rather than rounded down to "every route is static."
 
 ### Content pipeline
 
-Roughly forty lines of loader read the filesystem, parse frontmatter with `gray-matter`, and validate it against a Zod schema. Content lives at the repository root rather than under `src`, because it is data rather than code and keeping it out of `src` means the TypeScript, linter, and test globs never need a special case for prose.
+One loader reads the filesystem, parses frontmatter with `gray-matter`, and validates it against a Zod schema. Content lives at the repository root rather than under `src`, because it is data rather than code and keeping it out of `src` means the TypeScript, linter, and test globs never need a special case for prose.
+
+The loader is 188 lines, of which 136 are code and 36 are comment, exporting ten functions across projects, blog posts, and five single-file content types. It is one file and it is legible, but it is not the forty lines an earlier version of this page claimed.
 
 ### Claim tracking
 
@@ -43,22 +46,36 @@ The same principle governs the missing-file case: an absent content file raises 
 
 | Decision | Rationale |
 |---|---|
-| Static first, dynamic only with a stated reason | The site needs crawlable pages, link previews, and predictable delivery. Static generation meets those requirements without runtime rendering. |
-| A small custom MDX loader | The loader is about forty lines and stays legible in one file. A content library would remove little code while adding an abstraction to debug through. |
+| Static first, dynamic only with a stated reason | The site needs crawlable pages, link previews, and predictable delivery. Static generation meets those requirements without runtime rendering. The one dynamic route is an oversight against this rule rather than an exception granted under it. |
+| A small custom MDX loader | The loader stays in one legible file. A content library would remove little code while adding an abstraction to debug through. |
 | A `verified` field in the content schema | Project claims are marked verified or unverified in the same file that holds the copy, so an unsupported claim is either marked or removed rather than quietly asserted. |
 | No database or CMS | One author edits content as files and reviews changes as diffs. Another persistence layer would be infrastructure looking for a problem. |
 
 ## Verification status
 
-Deployed and serving. The client-component count, the static-generation claim, and the JavaScript payload are all checkable against a production build, and the colophon states them.
+Source-verified against the repository, which is the one case where the source is the same tree that renders this page.
 
-Not yet verified: the colophon's measurements section is still marked unmeasured, because the numbers must come from a production build and a Lighthouse run against the deployed site rather than from a development server, which reports development runtime weight and would be misleading.
+Confirmed: Next.js 16.2.12 and React 19.2.4 in the manifest; zero occurrences of `"use client"` anywhere under `src`, matching both the colophon's claim and the empty client-component budget table in `REPO_LAYOUT.md` §4, which also carries the rule that any future island needs a row and a one-sentence justification; `gray-matter` and Zod in the content pipeline; content directories at the repository root; the `verified` field rendering into the data plate on each project page; a malformed frontmatter error that names the file rather than only the field; a missing-file error that names the path and the fix instead of surfacing a raw `ENOENT`; and `https://rsstdd.com` answering 200.
+
+Corrected against an earlier version of this page, all three found by checking rather than by reading the page back:
+
+The repository link pointed at `rsstdd/portfolio`, which is a different and private repository. It answered 404 for every reader. This site is `rsstdd/portfolio-2026`, which is public, and the link now points there.
+
+The loader was described as roughly forty lines. It is 188.
+
+Every route was described as statically generated with no dynamic route holding a stated reason. One route is dynamic, as the build output has been reporting all along.
+
+Not yet verified: the colophon's measurements section is still marked unmeasured, because the numbers must come from a production build and a Lighthouse run against the deployed site rather than from a development server, which reports development runtime weight and would be misleading. That work is now unblocked, because the site is deployed.
 
 ## Known limitations
 
 ### Completeness
 
 Still in development. Several project pages are shorter than the template they follow, and the measurements section is unfinished.
+
+### Self-checking
+
+The three corrections above are the argument against this site's own thesis, and they are left in rather than quietly fixed. A site built on checkable claims still shipped a dead repository link, a line count off by a factor of four, and a static-generation claim its own build output contradicted on every run. The claims were checkable; nobody was checking them. Nothing in the build enforces that a project page still matches the source it describes.
 
 ### Self-reference
 
