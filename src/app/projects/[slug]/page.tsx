@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mdx } from "@/components/content/mdx";
+import { GitHubMark } from "@/components/ui";
 import { getProject, getProjectSlugs } from "@/lib/content";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -104,8 +105,9 @@ export default async function ProjectPage({ params }: Params) {
               <dd>
                 <a
                   href={project.repo}
-                  className="underline decoration-1 underline-offset-[3px] transition-[text-decoration-color] duration-(--duration-fast) hover:decoration-accent hover:decoration-2"
+                  className="inline-flex items-center gap-1.5 underline decoration-1 underline-offset-[3px] transition-[text-decoration-color] duration-(--duration-fast) hover:decoration-accent hover:decoration-2"
                 >
+                  <GitHubMark />
                   Source
                 </a>
               </dd>

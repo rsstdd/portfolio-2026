@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SectionRule, DataPlate, Term } from "@/components/ui";
+import { SectionRule, DataPlate, GitHubMark, Term } from "@/components/ui";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -145,7 +145,11 @@ export default function ColophonPage() {
             nothing about a visit is shared with anyone.
           </p>
           <p className="mt-6">
-            <a href={`${site.github}/portfolio`} className="mono text-overline uppercase text-accent-text">
+            <a
+              href={`${site.github}/portfolio-2026`}
+              className="mono text-overline uppercase text-accent-text inline-flex items-center gap-1.5"
+            >
+              <GitHubMark />
               View the source
             </a>
           </p>

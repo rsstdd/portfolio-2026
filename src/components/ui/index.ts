@@ -2,6 +2,7 @@ export { ControlsDemo } from "./controls-demo";
 export { DataDemo } from "./data-demo";
 export { DataPlate } from "./data-plate";
 export { ElevationDemo } from "./elevation-demo";
+export { GitHubMark } from "./github-mark";
 export { Section } from "./section";
 export { SectionRule } from "./section-rule";
 export { SwatchGrid } from "./swatch-grid";
