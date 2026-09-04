@@ -159,7 +159,8 @@
     content: "";
   }
 
-  .link-standalone:hover {
+  .link-standalone:hover,
+  .link-standalone--no-flag:hover {
     text-decoration: underline;
     text-decoration-color: var(--accent-text);
   }

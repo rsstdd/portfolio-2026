@@ -145,9 +145,14 @@ export default function ColophonPage() {
             nothing about a visit is shared with anyone.
           </p>
           <p className="mt-6">
+            {/*
+              `--no-flag` because the mark is this link's leading element. The
+              datum tick and the GitHub mark both occupy that slot, and a link
+              wearing both reads as two design languages arguing.
+            */}
             <a
               href={`${site.github}/portfolio-2026`}
-              className="mono text-overline uppercase text-accent-text inline-flex items-center gap-1.5"
+              className="link-standalone--no-flag gap-1.5"
             >
               <GitHubMark />
               View the source

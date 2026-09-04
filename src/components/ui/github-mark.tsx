@@ -1,6 +1,14 @@
 /**
  * The GitHub mark, for links that point at source.
  *
+ * This is the only icon on the site, by decision rather than by accident, and
+ * `DESIGN_SYSTEM.md` §6 records it as the single sanctioned exception to the
+ * iconography rule. It is a filled brand mark in a system that otherwise
+ * specifies outlined stroke glyphs, so it earns its place by being the one
+ * symbol a reader recognizes faster than the word next to it. Adding a second
+ * icon would turn a deliberate exception into an inconsistent icon set, which
+ * is the state the rule exists to prevent.
+ *
  * Inline SVG rather than an icon font or a sprite sheet, because one icon does
  * not justify either, and inline markup costs no extra request and no runtime.
  * A Server Component like everything else here: it renders to static markup.
@@ -8,6 +16,11 @@
  * Sized in `em` so it tracks whatever type size the link sits in, and filled
  * with `currentColor` so it inherits both the link colour and the hover state
  * without a second rule to keep in sync.
+ *
+ * Where it accompanies a standalone link, that link uses
+ * `link-standalone--no-flag` rather than `link-standalone`: the datum tick and
+ * this mark are both leading marks, and a link wearing both reads as an
+ * unresolved argument between two design languages.
  *
  * `aria-hidden` because every current caller pairs the mark with a visible text
  * label. A caller that wants an icon-only link must supply its own accessible
