@@ -38,12 +38,12 @@ export default function AboutPage() {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
       <JsonLd data={personJsonLd()} />
 
-      <header className="max-w-prose">
-        <p className="mono text-overline overline uppercase text-muted">About</p>
+      <header>
+        <p className="text-overline uppercase text-muted">About</p>
 
-        <h1 className="mt-3 h1 display-xl">{site.name}</h1>
+        <h1 className="mt-3 display">{site.name}</h1>
 
-        <p className="mt-4 text-body-lg text-muted">{about.description}</p>
+        <p className="mt-4 max-w-prose body-lg text-muted">{about.description}</p>
       </header>
 
       <section className="mt-16">
@@ -59,11 +59,11 @@ export default function AboutPage() {
               aria-label="Profile links"
               className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-line pt-6"
             >
-              <Link href="/cv" className="mono text-overline uppercase text-accent-text">
+              <Link href="/cv" className="link-standalone">
                 View CV
               </Link>
 
-              <a href={site.github} className="mono text-overline uppercase text-accent-text">
+              <a href={site.github} className="link-standalone">
                 GitHub
               </a>
             </nav>

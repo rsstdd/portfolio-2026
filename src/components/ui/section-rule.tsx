@@ -18,9 +18,7 @@ export function SectionRule({
   return (
     <div className={`rule rule--datum ${className}`}>
       {label ? (
-        <p
-          className="mono text-overline overline uppercase text-muted"
-        >
+        <p className="text-overline uppercase text-muted">
           {index ? `${index} — ` : null}
           {label}
         </p>

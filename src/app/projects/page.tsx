@@ -29,10 +29,10 @@ export default function ProjectsPage() {
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
-      <header className="max-w-prose">
-        <p className="mono overline uppercase text-muted">Projects</p>
-        <h1 className="mt-3 h1 display-xl">Selected work</h1>
-        <p className="mt-4 text-body-lg text-muted">
+      <header>
+        <p className="text-overline uppercase text-muted">Projects</p>
+        <h1 className="mt-3 display">Selected work</h1>
+        <p className="mt-4 max-w-prose body-lg text-muted">
           Unfinished work is listed here too, dated as in progress rather than
           by year. Each page states what was read in the source, what was
           measured, and what was not.

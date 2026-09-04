@@ -58,12 +58,12 @@ export default function ImpressumPage() {
       lang="de"
       className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10"
     >
-      <header className="max-w-prose">
+      <header>
         {/* English chrome label, matching /privacy. */}
-        <p lang="en" className="mono text-overline uppercase text-muted">
+        <p lang="en" className="text-overline uppercase text-muted">
           Legal
         </p>
-        <h1 className="mt-3 h1 display-xl">Impressum</h1>
+        <h1 className="mt-3 display">Impressum</h1>
       </header>
 
       {/*
@@ -116,7 +116,7 @@ export default function ImpressumPage() {
         </p>
       </div>
 
-      <p className="data-plate mt-12 max-w-prose">
+      <p className="data-plate mt-12 max-w-prose text-muted">
         Zuletzt geprüft: 2026-07-30 · Der deutsche Text ist maßgeblich ·{" "}
         <a
           href="/privacy"

@@ -33,10 +33,26 @@
      Object: Data Plate (Structural Container for tabular/mono metadata)
      ------------------------------------------------------------------------ */
 
+  /*
+   * The instrument placard motif from DESIGN_SYSTEM.md 4.3: a hairline, then a
+   * mono caption. The typography is part of the object rather than something
+   * every call site re-adds, because half of them did not: four data plates
+   * rendered in body sans, which made the same motif read two different ways
+   * on the same site.
+   *
+   * Colour is left to the caller. Some plates are chrome and take `text-muted`;
+   * some carry a link and stay at ink.
+   */
   .data-plate {
     margin-top: var(--space-2);
     padding-top: var(--space-2);
     border-top: 1px solid var(--border-line);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    /* Slashed zero and tabular figures: these blocks are mostly dates. */
+    font-feature-settings: "zero";
+    font-variant-numeric: tabular-nums;
   }
 
   /* ------------------------------------------------------------------------
@@ -136,6 +152,16 @@
      Object: Standalone Link (Structure + Skin)
      ------------------------------------------------------------------------ */
 
+  /*
+   * DESIGN_SYSTEM.md 5: "Standalone: overline style in mono, orange-text, with
+   * a leading tick rather than a trailing arrow." Sized from the overline
+   * tokens so it matches the eyebrows it sits among, rather than from
+   * --text-small, which is a step larger.
+   *
+   * The --no-flag variant drops the tick for links that lead with the GitHub
+   * mark or a back arrow instead. Both marks claim the same slot, and a link
+   * may wear only one.
+   */
   .link-standalone,
   a.link-standalone,
   .link-standalone--no-flag {
@@ -143,9 +169,10 @@
     align-items: center;
     color: var(--accent-text);
     font-family: var(--font-mono);
-    font-size: var(--text-small);
+    font-size: var(--text-overline);
     font-weight: 600;
     letter-spacing: var(--tracking-overline);
+    line-height: var(--leading-overline);
     text-decoration: none;
     text-transform: uppercase;
   }
@@ -163,6 +190,33 @@
   .link-standalone--no-flag:hover {
     text-decoration: underline;
     text-decoration-color: var(--accent-text);
+  }
+
+  /* ------------------------------------------------------------------------
+     Object: Theme Toggle Label
+     ------------------------------------------------------------------------ */
+
+  /*
+   * The design page's dark-theme switch is a checkbox read by
+   * `:root:has(#theme-toggle:checked)` in design-tokens.css. Its label copy has
+   * to follow the same signal: Tailwind's `peer-checked:` compiles to a sibling
+   * combinator, and these spans sit two levels inside the input's sibling, so
+   * the variant never matched and the label read "Toggle dark" in both themes.
+   */
+  .when-light {
+    display: inline;
+  }
+
+  .when-dark {
+    display: none;
+  }
+
+  :root:has(#theme-toggle:checked) .when-light {
+    display: none;
+  }
+
+  :root:has(#theme-toggle:checked) .when-dark {
+    display: inline;
   }
 
   /* ------------------------------------------------------------------------
@@ -206,6 +260,14 @@
     background: none;
     color: inherit;
     font: inherit;
+    /*
+     * `font` does not carry text-transform, and the UA stylesheet sets
+     * `text-transform: none` on form controls. Without this an inline term
+     * inside an uppercase eyebrow rendered in mixed case, which is what the
+     * Colophon label did.
+     */
+    text-transform: inherit;
+    letter-spacing: inherit;
     text-decoration: underline;
     text-decoration-color: var(--border-line);
     text-decoration-style: dotted;
@@ -300,13 +362,45 @@
     }
   }
 
-  @media print {
-    .term-note {
-      display: none;
-    }
+}
 
-    .term-trigger {
-      text-decoration: none;
-    }
+/* ==========================================================================
+   Print
+   ========================================================================== */
+
+/*
+ * The CV page is the export path: it says "print this page for a PDF" and
+ * AGENTS.md requires the result to be one page. That only holds if the site
+ * chrome is dropped, so these rules are load-bearing rather than a polish
+ * pass. `.no-print` marks copy that addresses a reader on screen and has no
+ * business in the document.
+ *
+ * Deliberately outside every cascade layer. Unlayered styles beat layered ones
+ * regardless of specificity, which is what lets `display: none` here win
+ * against a Tailwind display utility in the utilities layer without reaching
+ * for `!important`.
+ */
+@media print {
+  .term-note {
+    display: none;
+  }
+
+  .term-trigger {
+    text-decoration: none;
+  }
+
+  .no-print,
+  body > header,
+  body > footer {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  a {
+    text-decoration: none;
   }
 }

@@ -36,30 +36,30 @@ export default async function BlogPostPage({ params }: Params) {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <Link
         href="/blog"
-        className="link-standalone--no-flag transition-colors duration-(--duration-fast) hover:text-ink"
+        className="link-standalone--no-flag"
       >
         ← All notes
       </Link>
 
-      <header className="mt-8 max-w-prose">
+      <header className="mt-8">
         <p className="text-overline uppercase text-muted">{post.tags.join(" · ")}</p>
 
-        <h1 className="mt-3 h1 display-xl">
+        <h1 className="mt-3 display">
           {post.title}
         </h1>
 
-        <p className="mt-4 text-body-lg text-muted">{post.summary}</p>
+        <p className="mt-4 max-w-prose body-lg text-muted">{post.summary}</p>
 
         {/* Data plate: same pattern as the project page, published/updated only. */}
-        <dl className="data-plate mono mt-8 flex flex-wrap gap-x-6 gap-y-1">
+        <dl className="data-plate mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
             <dt className="sr-only">Published</dt>
             <dd>{post.date.toISOString().slice(0, 10)}</dd>
           </div>
           {post.updated ? (
-            <div className="mono flex gap-2">
+            <div className="flex gap-2">
               <dt className="sr-only">Updated</dt>
-              <dd className="mono">updated {post.updated.toISOString().slice(0, 10)}</dd>
+              <dd>updated {post.updated.toISOString().slice(0, 10)}</dd>
             </div>
           ) : null}
         </dl>

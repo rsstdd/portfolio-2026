@@ -28,14 +28,26 @@
   margin-top: 2em;
  }
 
- .prose-datum a {
+ /*
+  * DESIGN_SYSTEM.md 5: "In prose: ink, 1px underline offset 3px; hover thickens
+  * to 2px orange." The resting decoration colour comes from --link-decoration
+  * in base.css.
+  *
+  * `.prose-link` is the same treatment for a single link outside an MDX body.
+  * It shares this rule rather than restating it, because the design page's
+  * typography specimen exists to show what a prose link does, and a specimen
+  * that drifts from the thing it documents is worse than no specimen.
+  */
+ .prose-datum a,
+ .prose-link {
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
   transition: text-decoration-color var(--duration-fast) var(--ease-standard);
  }
 
- .prose-datum a:hover {
+ .prose-datum a:hover,
+ .prose-link:hover {
   text-decoration-color: var(--accent);
   text-decoration-thickness: 2px;
  }

@@ -62,7 +62,7 @@ export default function DesignSystemPage() {
  };
 
  return (
-  <main id="main" className="relative max-w-content mx-auto px-6 pt-10 pb-24">
+  <main id="main" className="relative mx-auto max-w-content px-5 pt-12 pb-24 md:px-8 md:pt-16 lg:px-10">
    <input
     id="theme-toggle"
     type="checkbox"
@@ -73,24 +73,30 @@ export default function DesignSystemPage() {
    <div className="flex justify-end w-full">
     <label
      htmlFor="theme-toggle"
-     className="cursor-pointer select-none mono text-overline uppercase text-muted transition-colors hover:text-ink"
+     className="cursor-pointer select-none text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
     >
-     <span className="peer-checked:hidden">Toggle dark</span>
-     <span className="hidden peer-checked:inline">Toggle light</span>
+     <span className="when-light">Toggle dark</span>
+     <span className="when-dark">Toggle light</span>
     </label>
    </div>
 
-   <header className="max-w-prose">
-    <p className="datum-overline">{overline}</p>
-    <h1 className="mt-3 h1 display-xl">{title}</h1>
-    <p className="body-lg measure mt-4">{description}</p>
+   <header>
+    <p className="datum-overline text-muted">{overline}</p>
+    <h1 className="mt-3 display">{title}</h1>
+    <p className="measure mt-4 body-lg text-muted">{description}</p>
    </header>
 
    <article className="mt-16">
-    <Mdx source={body} components={pageComponents} />
+    {/*
+     * `max-w-none` releases the 65ch cap .prose-datum applies. That cap is the
+     * measure for running text, and the specimens below are grids, a table, and
+     * a swatch wall rather than text. The prose inside the MDX keeps the cap by
+     * wearing `.measure` itself.
+     */}
+    <Mdx source={body} components={pageComponents} className="max-w-none" />
    </article>
 
-   <p className="data-plate mt-16 max-w-prose">
+   <p className="data-plate mt-16 max-w-prose text-muted">
     Updated {updated.toISOString().slice(0, 10)}
    </p>
   </main>

@@ -21,11 +21,19 @@
   /* international orange: UI, large text, marks (3.63:1) */
   --orange-text: #b13f0d;
 
-  /* Links remain in the monochrome chrome; state uses geometry, not hue. */
+  /*
+   * Links remain in the monochrome chrome; state uses geometry, not hue.
+   *
+   * The resting underline is ink, per the Link entry in DESIGN_SYSTEM.md 5:
+   * "In prose: ink, 1px underline offset 3px; hover thickens to 2px orange."
+   * It used to be --accent-text, which spent the one accent moment principle 3
+   * allows per view on every link in a paragraph, and left hover with only a
+   * thickness change to communicate with.
+   */
   --link: var(--text);
   --link-visited: var(--text);
   --link-hover: var(--text);
-  --link-decoration: var(--accent-text);
+  --link-decoration: var(--text);
 
   /* Feedback colours are body-text safe on all declared dark surfaces. */
   --success: #3e6b3a;
@@ -155,7 +163,8 @@
   /* Geometry and containers */
   --radius-none: 0;
   --radius-xs: 2px;
-  --container-prose: 90ch;
+  /* 65ch: body text never exceeds it (DESIGN_SYSTEM.md 2.3 and the table in 3). */
+  --container-prose: 65ch;
   --container-content: 70rem;
   --container-wide: 87.5rem;
   --page-gutter: clamp(1.25rem, 4vw, 2.5rem);

@@ -55,19 +55,19 @@ export default async function ProjectPage({ params }: Params) {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <Link
         href="/projects"
-        className="mono uppercase text-muted transition-colors duration-(--duration-fast)"
+        className="link-standalone--no-flag"
       >
         ← All projects
       </Link>
 
-      <header className="mt-8 max-w-prose">
-        <p className="mono text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
+      <header className="mt-8">
+        <p className="text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
 
-        <h1 className="h1 mt-2 text-balance">
+        <h1 className="display mt-2 text-balance">
           {project.title}
         </h1>
 
-        <p className="mt-4 text-body-lg text-muted">{project.summary}</p>
+        <p className="mt-4 max-w-prose body-lg text-muted">{project.summary}</p>
 
         {/*
           Data plate. Renders the claim level rather than hiding it, because the
@@ -80,7 +80,7 @@ export default async function ProjectPage({ params }: Params) {
           The progress entry is omitted when the work is done, so a finished
           project's plate stays terse.
         */}
-        <dl className="data-plate mono uppercase mt-8 flex flex-wrap gap-x-6 gap-y-1">
+        <dl className="data-plate uppercase mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
             <dt className="sr-only">Role</dt>
             <dd>{project.role}</dd>

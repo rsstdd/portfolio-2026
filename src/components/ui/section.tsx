@@ -11,7 +11,7 @@ export function Section({ index, overline, title, children }: SectionProps) {
  return (
   <section className="rule rule--datum mt-16 pt-6">
    {/* Aligning the overline styling with SectionRule */}
-   <p className="mono text-overline overline uppercase text-muted">
+   <p className="text-overline uppercase text-muted">
     {index ? `${index} — ` : null}
     {overline}
    </p>

@@ -16,19 +16,19 @@ export function ProjectCard({ project }: { project: LoadedProject }) {
   return (
     <Link
       href={`/projects/${project.slug}`}
-      className="group flex flex-col border bg-surface p-6 transition-[transform,box-shadow] duration-(--duration-fast) ease-(--ease-standard) hover:-translate-y-0.5 hover:shadow-md border-[var(--color-line)]"
+      className="group flex flex-col border border-line bg-surface p-6 transition-[transform,box-shadow] duration-(--duration-fast) ease-(--ease-standard) hover:-translate-y-0.5 hover:shadow-md"
     >
-      <p className="mono uppercase text-muted">
+      <p className="text-overline uppercase text-muted">
         {project.stack.slice(0, 2).join(" · ")}
       </p>
 
-      <h3 className="mt-1.5 font-sans text-h3 font-semibold group-hover:text-accent-text">
+      <h3 className="mt-1.5 h3 group-hover:text-accent-text">
         {project.title}
       </h3>
 
-      <p className="mt-2 flex-1 text-sm text-muted">{project.summary}</p>
+      <p className="mt-2 flex-1 small text-muted">{project.summary}</p>
 
-      <p className="mono data-plate uppercase mt-6">
+      <p className="data-plate mt-6 uppercase">
         {project.date.getUTCFullYear()}
         {project.complete ? null : " · in progress"}
       </p>

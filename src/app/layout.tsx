@@ -14,12 +14,18 @@ import "./styles/globals.css";
  * and it removes a render-blocking round trip as a side effect.
  *
  * Each family is exposed as a CSS variable that globals.css maps onto the
- * Datum font tokens. Weights are pinned to the three the design system defines,
- * because every extra weight is a font file a visitor pays for.
+ * Datum font tokens. Weights are pinned to what the design system actually
+ * uses, because every extra weight is a font file a visitor pays for.
+ *
+ * Sans carries 500 because DESIGN_SYSTEM.md 2.1 lists it and 5 spends it on
+ * buttons, input labels, and tags. Without the file those rules were being
+ * synthesized or silently rounded to 400. Serif ships 600 only: 2.1 permits
+ * 400, but nothing on this site sets a 400-weight serif, and an unused weight
+ * is a download for nobody.
  */
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["400", "500", "600"],
   variable: "--font-plex-sans",
   display: "swap",
 });
@@ -69,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       data-scroll-behavior="smooth"
       className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable}`}
     >
-      <body className="flex min-h-dvh flex-col bg-bg text-ink antialiased transition-colors duration-200">
+      <body className="flex min-h-dvh flex-col bg-bg text-ink antialiased transition-colors duration-(--duration-base)">
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />

@@ -23,11 +23,11 @@ export default function CvPage() {
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
-      <header className="max-w-prose">
-        <h1 className="mt-3 h1 display-xl">{cv.name}</h1>
-        <p className="mt-2 text-body-lg text-muted">{cv.title}</p>
+      <header>
+        <h1 className="display">{cv.name}</h1>
+        <p className="mt-2 max-w-prose body-lg text-muted">{cv.title}</p>
 
-        <dl className="data-plate mt-6 grid gap-x-8 gap-y-1 sm:grid-cols-2">
+        <dl className="data-plate mt-6 grid max-w-prose gap-x-8 gap-y-1 sm:grid-cols-2">
           <div className="flex gap-2">
             <dt className="text-muted">Location</dt>
             <dd>{cv.location}</dd>
@@ -53,7 +53,7 @@ export default function CvPage() {
           </div>
         </dl>
 
-        <p className="no-print mt-6 mono caption text-muted">
+        <p className="no-print mt-6 max-w-prose mono caption text-muted">
           Print this page for a PDF. Layout and content come from one source, so the document
           matches what you see.
         </p>
@@ -63,7 +63,7 @@ export default function CvPage() {
         <Mdx source={cv.body} />
       </article>
 
-      <p className="data-plate mt-16 max-w-prose">
+      <p className="data-plate mt-16 max-w-prose text-muted">
         Updated {cv.updated.toISOString().slice(0, 10)}
       </p>
     </main>

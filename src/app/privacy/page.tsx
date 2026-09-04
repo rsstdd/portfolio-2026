@@ -27,10 +27,10 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
-      <header className="max-w-prose">
-        <p className="mono text-overline uppercase text-muted">Legal</p>
-        <h1 className="mt-3 h1 display-xl">Privacy</h1>
-        <p className="mt-4 text-body-lg text-muted">
+      <header>
+        <p className="text-overline uppercase text-muted">Legal</p>
+        <h1 className="mt-3 display">Privacy</h1>
+        <p className="mt-4 max-w-prose body-lg text-muted">
           This site sets no cookies and runs no analytics. The detail below explains precisely what
           that leaves, which is server logs and any email you choose to send.
         </p>
@@ -101,7 +101,7 @@ export default function PrivacyPage() {
         </p>
       </div>
 
-      <p className="data-plate mt-12 max-w-prose">
+      <p className="data-plate mt-12 max-w-prose text-muted">
         Last reviewed 2026-07-30 · Host: {site.host.name} ·{" "}
         <a
           href="/impressum"

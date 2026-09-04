@@ -9,53 +9,9 @@
    Datum Design System — Base Layer & Behavioral Defaults
    ========================================================================== */
 
-@layer base {
-  /* 1. Root & document defaults */
-
-  html {
-    font-family: var(--font-sans);
-    scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* 2. High-contrast selection (inverted monochrome, avoiding accent spend) */
-  ::selection {
-    background-color: var(--selection-bg);
-    color: var(--selection-text);
-  }
-
-  /* 3. Base body canvas & typography defaults */
-  body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: var(--font-sans);
-    font-size: var(--text-body);
-    line-height: var(--leading-body);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* 4. Accessible focus ring bound to International Orange / Dark Accent */
-  :focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-
-  /* 5. Monochromatic link chrome (state communicated via geometry, not hue) */
-  a {
-    color: var(--link);
-    text-decoration-color: var(--link-decoration);
-    text-underline-offset: 0.2em;
-    transition:
-      color var(--duration-fast) var(--ease-standard),
-      text-decoration-color var(--duration-fast) var(--ease-standard);
-  }
-
-  a:visited {
-    color: var(--link-visited);
-  }
-
-  a:hover {
-    color: var(--link-hover);
-  }
-}
+/*
+ * The base layer lives in ./base.css, imported above. It used to be duplicated
+ * verbatim below this line; the copy is gone rather than kept in sync by hand.
+ *
+ * Print rules live in ./components.css, next to the components they hide.
+ */

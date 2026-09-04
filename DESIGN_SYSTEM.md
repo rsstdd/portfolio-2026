@@ -209,7 +209,7 @@ Unchanged: `cubic-bezier(0.2, 0, 0, 1)`, 120/200/320ms, underlines slide, cards 
 
 **Density modes.** Marketing (portfolio, photography chrome): sections 96 to 128, display type permitted. Application (aircraft): sections 24 to 48, no display type below the page title, density wins ties.
 
-**Iconography.** Lucide, 20px, 1.75px stroke, ink-muted default. Filled and outlined variants never mix.
+**Iconography.** There is no icon set. The portfolio ships exactly one icon, described below, and every other label is a word. Should a future surface genuinely need a set, it is Lucide at 20px, 1.75px stroke, ink-muted default, with filled and outlined variants never mixed; nothing installs it today, and Lucide has removed brand marks, so it could not supply the one icon this site does use.
 
 **The one icon.** The GitHub mark on source links is the site's only icon, and it is a deliberate exception to the rule above rather than an oversight: it is a filled brand mark in a system that otherwise specifies outlined stroke glyphs. It earns the exception by being the one symbol a reader recognizes faster than the word beside it, and it holds only while it stays alone. A second icon would convert a considered exception into an inconsistent icon set, which is the state the iconography rule exists to prevent, so the answer to "can we add an icon for X" is no unless X displaces this one. It is sized in `em` and filled with `currentColor` so it inherits the type size and colour of its link. Where it leads a standalone link, that link takes `link-standalone--no-flag`, because the datum tick and the mark both claim the leading slot and a link may wear only one.
 

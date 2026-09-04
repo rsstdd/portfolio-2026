@@ -22,10 +22,10 @@ export default function BlogPage() {
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
-      <header className="max-w-prose">
-        <p className="mono overline uppercase text-muted">Notes</p>
-        <h1 className="mt-3 h1 display-xl">Engineering notes</h1>
-        <p className="mt-4 text-body-lg text-muted">
+      <header>
+        <p className="text-overline uppercase text-muted">Notes</p>
+        <h1 className="mt-3 display">Engineering notes</h1>
+        <p className="mt-4 max-w-prose body-lg text-muted">
           Working notes on security, systems, and the practice of engineering with AI, written to
           be checked, not taken on faith.
         </p>

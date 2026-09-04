@@ -38,23 +38,23 @@ export default function HomePage() {
       <JsonLd data={personJsonLd()} />
 
       <section className="pt-16 pb-24 md:pt-32 md:pb-32">
-        <p className="mono uppercase text-muted">
+        <p className="text-overline uppercase text-muted">
           {site.name} · {site.role} · {site.location}
         </p>
 
-        <h1 className="mt-3 h1 display-xl">
+        <h1 className="mt-3 display-xl">
           {home.headline}
         </h1>
 
-        <p className="mt-6 max-w-prose text-body-lg text-muted">{home.intro}</p>
+        <p className="mt-6 max-w-prose body-lg text-muted">{home.intro}</p>
 
         {site.availability ? (
-          <p className="mt-4 mono uppercase caption">{site.availability}</p>
+          <p className="mt-4 mono caption uppercase text-muted">{site.availability}</p>
         ) : null}
 
         <Link
           href={home.ctaHref}
-          className="group mt-10 inline-flex items-center gap-3 link-standalone text-accent-text"
+          className="mt-10 link-standalone"
         >
           {home.ctaLabel}
         </Link>
@@ -73,7 +73,7 @@ export default function HomePage() {
 
         <Link
           href="/projects"
-          className="mt-8 inline-block mono text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+          className="mt-8 inline-block text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
         >
           All projects
         </Link>
@@ -81,7 +81,7 @@ export default function HomePage() {
 
       {home.footnote ? (
         <section className="pb-8">
-          <p className="data-plate max-w-prose">
+          <p className="data-plate max-w-prose text-muted">
             {home.footnote}
             {home.footnoteLinkHref && home.footnoteLinkLabel ? (
               <>

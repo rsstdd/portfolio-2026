@@ -52,8 +52,8 @@ const datumCopy = "Datum takes its name from the fixed reference plane used in a
 export default function ColophonPage() {
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
-      <header className="max-w-prose">
-        <p className="mono text-overline uppercase text-muted">
+      <header>
+        <p className="text-overline uppercase text-muted">
           <Term
             id="colophon-definition"
             note={
@@ -72,8 +72,8 @@ export default function ColophonPage() {
             Colophon
           </Term>
         </p>
-        <h1 className="mt-3 h1 display-xl">How this site is built</h1>
-        <p className="measure mt-4 text-muted">What the site is built from, and why each piece is there.</p>
+        <h1 className="mt-3 display">How this site is built</h1>
+        <p className="measure mt-4 body-lg text-muted">What the site is built from, and why each piece is there.</p>
       </header>
 
       <section className="mt-16">
@@ -96,9 +96,9 @@ export default function ColophonPage() {
           <table className="mt-8 w-full border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-line pb-3 pr-4 text-left mono text-overline uppercase text-muted">Pair</th>
-                <th className="border-b border-line pb-3 pr-4 text-right mono text-overline uppercase text-muted">Ratio</th>
-                <th className="border-b border-line pb-3 pr-4 text-right mono text-overline uppercase text-muted">Level</th>
+                <th className="border-b border-line pb-3 pr-4 text-left text-overline uppercase text-muted">Pair</th>
+                <th className="border-b border-line pb-3 pr-4 text-right text-overline uppercase text-muted">Ratio</th>
+                <th className="border-b border-line pb-3 pr-4 text-right text-overline uppercase text-muted">Level</th>
               </tr>
             </thead>
             <tbody>
@@ -117,7 +117,7 @@ export default function ColophonPage() {
           </DataPlate>
 
           <p className="mt-6">
-            <a href="/design" className="mono text-overline uppercase text-accent-text">
+            <a href="/design" className="link-standalone">
               View the design system
             </a>
           </p>

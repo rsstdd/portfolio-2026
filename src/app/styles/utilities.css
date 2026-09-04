@@ -10,6 +10,11 @@
    * RATIONALE: High-level editorial hierarchy uses IBM Plex Serif (--font-display)
    * to establish an editorial, publication feel. Heading level .h3 shifts to
    * IBM Plex Sans (--font-sans) to reduce visual weight for technical sub-sections.
+   *
+   * These classes are mutually exclusive. Stacking two of them (`h1 display-xl`)
+   * does not blend them: both are single-class selectors in the same cascade
+   * layer, so whichever is written later in this file silently wins and the
+   * other is dead weight. Pick one per element.
    * ------------------------------------------------------------------------ */
 
   /**
@@ -18,7 +23,8 @@
    * PURPOSE: Fluid, maximum-impact display type. Scales automatically via CSS clamp()
    * from 2.75rem (mobile) up to 4.5rem (desktop).
    *
-   * USE CASES: Landing page hero titles, photography gallery splash headings.
+   * USE CASES: DESIGN_SYSTEM.md 2.2 allows one hero statement per site. On this
+   * site that is the home page headline. Every other page title uses .display.
    */
   .display-xl {
     font-family: var(--font-display);
@@ -28,12 +34,12 @@
   }
 
   /**
-   * .display — Section Banner Display
+   * .display — Page Title
    *
    * PURPOSE: Secondary fluid display title. Scales automatically via CSS clamp()
    * from 2.25rem (mobile) up to 3.25rem (desktop).
    *
-   * USE CASES: Project showcase title headers, major landing section intro titles.
+   * USE CASES: The h1 of any page that is not the home page.
    */
   .display {
     font-family: var(--font-display);
@@ -43,11 +49,12 @@
   }
 
   /**
-   * .h1 — Page Primary Heading
+   * .h1 — Section Heading
    *
-   * PURPOSE: Standard non-fluid 2rem serif page header.
+   * PURPOSE: Standard non-fluid 2rem serif heading.
    *
-   * USE CASES: Article titles, page titles, standalone document headers.
+   * USE CASES: Section headings inside a page. Page titles use .display, per
+   * the scale table in DESIGN_SYSTEM.md 2.2.
    */
   .h1 {
     font-family: var(--font-display);
@@ -86,36 +93,75 @@
   }
 
   /* ------------------------------------------------------------------------
+   * Body Scale
+   *
+   * The sans half of the scale, so that a call site can name a size from
+   * DESIGN_SYSTEM.md 2.2 rather than reaching for a Tailwind default that
+   * happens to be close. `.small` and `.body-lg` existed in the design preview
+   * and were referenced from components before they were ever defined here.
+   * ------------------------------------------------------------------------ */
+
+  /**
+   * .body-lg — Lead Paragraph
+   *
+   * USE CASES: The standfirst under a page title. One per page.
+   */
+  .body-lg {
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-body-lg);
+  }
+
+  /**
+   * .small — Secondary UI Text
+   *
+   * USE CASES: Card summaries, helper text, anything a step below body.
+   */
+  .small {
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+
+  /* ------------------------------------------------------------------------
    * Micro-typography & Layout Helpers
    * ------------------------------------------------------------------------ */
 
   /**
-   * .datum-overline — Signature Micro-Typography Label
+   * .datum-overline / .text-overline — Signature Micro-Typography Label
    *
-   * PURPOSE: Implements the Datum system's signature technical annotation mark.
-   * Combines tracked uppercase mono text with a literal CSS overline to anchor
-   * metadata blocks.
+   * PURPOSE: The system's eyebrow. Tracked uppercase mono above a serif
+   * heading, which DESIGN_SYSTEM.md 2.2 calls the system's most recognizable
+   * habit and the way an engineering document labels a section.
    *
-   * USE CASES: Category tags above titles, section index identifiers (e.g., "SEC // 01"),
-   * telemetry readouts, technical spec category headers.
+   * "Overline" here is the typographic sense of the word, a line of type set
+   * above a heading, not `text-decoration-line: overline`. The literal rule was
+   * previously drawn above every eyebrow on the site, which is not one of the
+   * three datum motifs in 4.3 and which caused call sites to drop the class
+   * rather than wear the line. Removing it is what lets one eyebrow treatment
+   * be used everywhere.
+   *
+   * Colour is deliberately not set. It was, and because this rule is emitted
+   * after Tailwind's colour utilities it silently beat `text-accent-text` at
+   * every accent call site. Composition is the point of a utility: pass
+   * `text-muted` or `text-accent-text` alongside.
+   *
+   * USE CASES: Category tags above titles, section index identifiers
+   * (e.g. "01 — Catalog"), nav labels, telemetry readouts.
    */
   .datum-overline,
   .text-overline {
-    color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: var(--text-overline);
     font-weight: 600;
     letter-spacing: var(--tracking-overline);
     line-height: var(--leading-overline);
-    text-decoration-line: overline;
     text-transform: uppercase;
   }
 
   /**
    * .measure — Typographic Line-Length Cap
    *
-   * PURPOSE: Restricts long-form text to an optimal reading measure (~65ch)
-   * to prevent line-tracking eye fatigue on wide desktop screens.
+   * PURPOSE: Restricts long-form text to the 65ch measure DESIGN_SYSTEM.md 2.3
+   * sets, to prevent line-tracking eye fatigue on wide desktop screens.
    *
    * USE CASES: Article body paragraphs, documentation text containers, bio text.
    */
@@ -143,20 +189,19 @@
   }
 
   /**
-   * .caption — Secondary / Helper Text
+   * .caption — Data-plate and Footnote Text
    *
-   * PURPOSE: De-emphasized small text to establish visual hierarchy without
-   * competing with body copy.
+   * PURPOSE: The smallest step of the scale, at the line height
+   * DESIGN_SYSTEM.md 2.2 specifies for it (1.4, not body's 1.5).
    *
-   * USE CASES: Image captions, chart labels, form helper text, copyright notices.
+   * Colour is not set here, for the same reason as .text-overline: this rule
+   * is emitted after Tailwind's colour utilities, so a `caption` that carried
+   * its own colour overrode `text-error` on the one call site that needed it.
+   *
+   * USE CASES: Image captions, chart labels, form helper text, footnotes.
    */
   .caption {
     font-size: var(--text-caption);
-    line-height: var(--leading-small);
-    color: var(--text-muted);
-  }
-
-  .text-mmuted {
-    color: var(--text-muted);
+    line-height: var(--leading-caption);
   }
 }
