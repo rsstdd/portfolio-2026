@@ -1,8 +1,8 @@
 ---
 title: Technical TTS
-summary: A local-first Rust pipeline turning reviewed technical lessons into long-form audio, keyed by an explicitly enumerated synthesis identity so re-running verification never re-runs speech.
+summary: A local-first Rust pipeline driving a neural speech model, engineered so a stochastic generator renders reproducibly and every input that can change the audio is named in the cache key.
 role: Sole author
-stack: ["Rust", "Python", "Chatterbox", "FFmpeg", "BLAKE3"]
+stack: ["Rust", "Python", "Chatterbox", "PyTorch", "FFmpeg", "BLAKE3"]
 repo: https://github.com/rsstdd/technical-tts
 featured: true
 featuredRank: 5
@@ -15,23 +15,41 @@ complete: false
 
 ## Context and scope
 
-A local-first Rust application for converting reviewed technical lessons into long-form audio study guides, aimed at software-engineering education and repeated listening. Rust owns every durable decision. Chatterbox performs speech synthesis behind a versioned newline-delimited JSON protocol, pinned exactly rather than by range because the lockfile is itself an input to the cache key, and FFmpeg handles encoding.
+A local-first system that turns reviewed technical lessons into long-form narrated audio, aimed at software-engineering education and repeated listening. Speech comes from Chatterbox, a neural text-to-speech model running on PyTorch. Everything around the model is Rust: 80 source files across four crates, which own lesson validation, planning, cache identity, job state, crash recovery, PCM assembly, and packaging.
 
-The target architecture also places an in-process Whisper verifier after synthesis, for non-authoritative text-integrity triage. It is not built. No Whisper crate is a dependency of any crate in the workspace, and the private preview uses recorded human review as its correctness authority instead. What does exist is the identity separation that verifier would rely on, described next.
+The division is deliberate and total. Python exists only inside the inference process. Rust owns every durable decision, and the model runtime reaches it through a versioned newline-delimited JSON protocol, so no PyTorch type, tensor, or exception ever appears in the lesson domain.
 
-The design problem is cost asymmetry. Synthesizing a segment is expensive, verifying one is cheap, and a naive cache key makes every verification change throw away hours of audio. Almost every structural decision in the project follows from separating those two identities.
+The engineering problem is not calling a model. It is that a neural generator is stochastic and expensive while everything downstream of it wants to be reproducible and cheap. A single lesson is hours of synthesis, so regenerating audio because an unrelated setting moved is the failure mode that makes the tool unusable. Almost every decision below follows from that.
 
 ## System design
 
+### Making a stochastic model reproducible
+
+A sampling model given identical text twice returns different audio. The pipeline makes it repeatable, and the difficulty is that the randomness has three separate sources.
+
+Every global generator a render draws from is seeded together: Python's `random`, NumPy, and `torch.manual_seed`. NumPy's legacy generator accepts only 32 bits, so the seed is reduced for it, while the unreduced 64-bit value is what enters the cache key.
+
+Seeding happens before the model is constructed, not only before each take. Model construction itself draws random values, so a worker that seeded per request would draw those once, unseeded, and carry them for its entire lifetime. Two workers given the same seed would then render the same request differently, which is the kind of defect that survives testing because each worker is internally consistent.
+
+Seeding then repeats per take, because generation advances the RNG state. Without it, a second take under one seed would sample from wherever the first one stopped, and the seed would describe only the first.
+
+Torch thread counts are pinned alongside the seeds, because parallel reduction order changes floating-point results.
+
+### The cache key names the model, not the call
+
+A synthesis identity is a BLAKE3 digest over every input that can change the audio. The model-side half of that is ten fields: the worker bundle hash, the model repository, the model revision, the tokenizer revision, a hash over the model artifact bytes, the language tag, a determinism class, the seed, the generation parameters, and a conditioning hash per voice.
+
+The model artifacts hash is the one worth naming. An earlier version keyed on the name of the acquisition the weights arrived under, which meant a repository could serve different bytes under one label and the cache would not notice. Keying on the bytes makes the audio follow the model that produced it.
+
+The field list is written out by hand rather than derived from a struct, because a hash over the whole struct would silently absorb every field added later, and the property that display-only text stays out of the key would regress without a compile error. Naming each field makes adding one a decision somebody makes on purpose.
+
+A version constant on the identity definition is the single lever that invalidates every cache entry. It has moved three times, each move recorded against the interface change that caused it.
+
 ### Two identities, deliberately unrelated
 
-A synthesis identity is a BLAKE3 digest over the speech-affecting inputs of a segment. A verification identity is a separate digest sharing nothing with it but the canonical byte form. Changing an ASR setting therefore invalidates verification and leaves cached audio intact, because a structurally valid segment can remain cached while its verification is missing, stale, or under review.
+A verification identity is a separate digest sharing nothing with the synthesis identity but the canonical byte form. Changing a speech-recognition setting therefore invalidates verification and leaves hours of cached audio intact, because a structurally valid segment can remain cached while its verification is missing, stale, or under review.
 
 Both identity modules are implemented and tested. The consumer of the verification identity is not, so this separation is currently a property of the code that no running verifier exercises yet.
-
-The field list going into the synthesis digest is written out by hand rather than derived from the segment struct. A hash over the whole struct would silently absorb every field added later, and the property that display-only text stays out of the key would regress without a compile error. Naming each field makes adding one a decision somebody makes on purpose.
-
-A version constant on the identity definition is the single lever that invalidates every cache entry. It has moved three times, from the six-field walking-skeleton identity to the complete input set, then when voice references resolved so the conditioning hash stopped serializing as absent, then when the model-artifacts hash made the key follow the model's bytes rather than the name of the acquisition they arrived under. Each move is recorded against the interface change that caused it.
 
 ### Canonical bytes
 
@@ -39,15 +57,33 @@ Identities hash a project-local canonical serialization rather than RFC 8785, on
 
 The object constructor takes a fixed array rather than an iterator, so an identity reads as a literal list of named fields at its call site, and it panics on a duplicate key rather than letting a map insert drop the earlier value and produce a key that names fewer inputs than the author wrote. That is the one direction of wrongness that would serve audio the key does not describe.
 
+### Holding a protocol open across a model runtime
+
+The worker speaks one JSON frame per line over stdin and stdout, and two of its rules exist specifically because a machine-learning dependency is on the other side.
+
+Frames are bounded before allocation rather than after, so an unterminated line cannot make the process allocate megabytes and complain afterwards.
+
+More pointedly, the worker duplicates the real stdout for protocol writes and then points file descriptor 1 at stderr. An ordinary `print`, or a C library writing to fd 1 from inside a model load, would otherwise land between two frames and corrupt the channel. A convention that diagnostics go to stderr is not enforceable against a dependency; taking the descriptor away is. Torch and Chatterbox are imported lazily for the same reason, since the import costs seconds and hundreds of megabytes and would otherwise be paid by processes that only need to refuse a request.
+
+Unknown protocol fields are refused at every depth rather than ignored, because a field the worker cannot honor would otherwise leave the requester believing it had been applied.
+
+### Voice rights as a gate, not a policy document
+
+A voice profile is usable only while its consent is granted, its rights decision is approved, the requested use falls inside the recorded scope, and the recorded checksums agree. Profile load fails closed on any of those, and revoked consent disables new use immediately. Cloning the voice of a public figure is prohibited outright.
+
+This is enforced in the type system rather than described in a README, which matters for a tool that generates synthetic speech from a reference recording.
+
 ### Durability
 
 Job state is a JSON document published atomically: contents are synchronized before a rename makes them authoritative, and the containing directory is synchronized after every authoritative rename. The filesystem operations sit behind a narrow trait used as a crash-injection seam, so recovery is tested against injected failures rather than argued about.
 
 Durable JSON is read under explicit byte ceilings before the deserializer sees it, ownership is locked per job, and an event is appended after each durable write. A loaded record that fails its checks is refused rather than trusted.
 
+Failure is modelled rather than stringly typed: the runtime carries twelve separate error domains, including model artifacts, worker bundle, voice profile, rights, cache, and publication, so a refusal names who owns the remedy.
+
 ### Lesson model
 
-The lesson format separates readable text from exact synthesis input. `display_text` preserves the reviewed transcript, `spoken_text` carries the deterministic rendering that goes to the model, and transformation records explain material differences between them. Protected terms prevent unsafe segmentation and declare approved ASR alternatives, and stable segment identifiers make cache reuse, review, and retakes precise.
+The lesson format separates readable text from exact synthesis input. `display_text` preserves the reviewed transcript, `spoken_text` carries the deterministic rendering that goes to the model, and transformation records explain material differences between them. Protected terms prevent unsafe segmentation and declare approved recognition alternatives, and stable segment identifiers make cache reuse, review, and retakes precise.
 
 Seven versioned JSON schemas are generated from the Rust types that define them and checked against the committed files, so a type change that does not update a schema fails rather than drifting.
 
@@ -61,28 +97,31 @@ FFmpeg, ffprobe, and the `libmp3lame` encoder are preflighted before synthesis s
 
 | Decision | Rationale |
 |---|---|
-| Keep synthesis and verification identities disjoint | Verification is cheap and synthesis is expensive. Sharing a key would make an ASR setting change discard hours of valid audio. |
+| Seed before model construction, then again per take | Construction draws random values and generation advances the state, so seeding at only one of the two points produces workers that are each internally consistent and disagree with one another. |
+| Put the model bytes in the cache key | A repository can serve different weights under one label. Keying on the acquisition name would let the audio and the model that produced it drift apart silently. |
+| Keep synthesis and verification identities disjoint | Verification is cheap and synthesis is expensive. Sharing a key would make a recognition setting change discard hours of valid audio. |
 | Enumerate synthesis-key fields by hand | A struct-wide hash absorbs new fields silently, and the invariant that display text stays out of the key would regress with no compile error. |
 | Panic on a duplicate key in the canonical object builder | A silently dropped entry produces a key naming fewer inputs than written, which is the failure that serves audio the key does not describe. |
 | Exclude floating point from the canonical format | No identity input requires it, so including it would add a representation choice with no benefit and a real risk. |
-| Put Rust at every durable decision, Python only at the model | Model-specific code stays behind a versioned protocol, so the inference runtime cannot leak into the lesson domain. |
+| Take file descriptor 1 away from the model runtime | A dependency writing to stdout during a model load would corrupt the protocol stream, and a convention cannot prevent that where a descriptor reassignment can. |
+| Import Torch lazily | The import costs seconds and hundreds of megabytes, and a process that only needs to refuse a malformed request should not pay it. |
+| Fail voice-profile load closed | Consent, scope, and checksum are conditions for use rather than metadata about it, and synthetic speech from a real person's recording is where that distinction matters most. |
+| Keep Python inside the inference process only | Model-specific code stays behind a versioned protocol, so the inference runtime cannot leak into the lesson domain. |
 | Synchronize file then rename then synchronize directory | Contents become durable before the rename makes them authoritative, which is the ordering that survives a crash mid-publication. |
-| Generate schemas from the Rust types and check them in | A type change that does not update its schema fails in CI rather than drifting apart from the published contract. |
 | Derive captions and chapters from written frame boundaries | Deriving them from the plan would let the package describe audio that was never assembled. |
-| Preflight the encoders before synthesis | A missing `libmp3lame` should cost seconds at startup, not a full render. |
 | Mark packages `private_preview` mechanically | Publication is refused by a typed error rather than by discipline, so an incomplete gate cannot be forgotten. |
 
 ## Verification status
 
-Source-verified as an in-progress system. The identity module and its hand-enumerated field list, the canonical serialization rules, the durable rename ordering, the job repository's bounded reads, the exactly-pinned worker dependencies, and the export path's independent derivation of both lossy formats from the master were all read in the repository rather than taken from its README.
+Source-verified as an in-progress system. The identity module and its hand-enumerated field list, the ten-field synthesis context, the seeding sequence and its stated reasoning, the descriptor reassignment in the worker protocol, the voice-profile consent gate, the twelve error domains, the canonical serialization rules, the durable rename ordering, and the export path's independent derivation of both lossy formats from the master were all read in the repository rather than taken from its README.
 
-Corrected against an earlier version of this page: the Whisper verifier was described as an existing component performing triage. It is not built, and no Whisper crate appears in any workspace manifest. The README names a pinned version because it records the intended architecture, and its own status table says the verifier is not started; this page previously followed the former and contradicted itself against the latter. `whisper-rs` has also been removed from the listed stack, because the stack should name what the code depends on rather than what it plans to.
+Dependencies are pinned exactly rather than by range, and the reason is structural: the production lockfile is itself an input to the synthesis key, so a range would let the audio a key names change without the key changing. Confirmed in the worker manifest: `chatterbox-tts==0.1.2`, `torch==2.10.0+cpu`, `torchaudio==2.10.0+cpu`, `numpy==2.5.2`, `soundfile==0.14.0`.
 
-Continuous integration runs formatting, Clippy with warnings denied, a Rust conventions check, Cargo manifest formatting, the Python worker protocol tests, and the workspace test suite with test binaries prebuilt and network egress denied at runtime. Evidence provenance and citation checks run as their own steps, which is unusual and is the point: the project treats its own claims as artifacts to be checked. Real Chatterbox rendering, ASR calibration, performance, and listening review run separately on a named reference machine rather than in CI.
+Continuous integration runs formatting, Clippy with warnings denied, a Rust conventions check, Cargo manifest formatting, the Python worker protocol tests, and the workspace test suite with test binaries prebuilt and network egress denied at runtime. Evidence provenance and citation checks run as their own steps, which is unusual and is the point: the project treats its own claims as artifacts to be checked. Real Chatterbox rendering, calibration, performance, and listening review run separately on a named reference machine rather than in CI.
 
-The README is behind the repository in one respect worth naming: durable job state and recovery landed after it was last revised, so the status table understates what exists.
+Corrected against an earlier version of this page: the Whisper verifier was described as an existing component performing triage. It is not built, and no Whisper crate appears in any workspace manifest. The README names a pinned version because it records the intended architecture, and its own status table says the verifier is not started.
 
-Not verified: natural-speech quality at length, throughput on any machine other than the reference one, or long-form soak behavior. Full-box performance qualification has not run, and the ASR verifier is not started.
+Not verified: natural-speech quality at length, throughput on any machine other than the reference one, or long-form soak behavior. Full-box performance qualification has not run.
 
 ## Known limitations
 
@@ -92,7 +131,11 @@ Two authoring commands exist, `lesson new` and `lesson validate`, and nothing el
 
 ### Verification
 
-The ASR verifier is not started. The private preview uses recorded human review as its correctness authority instead, which removes the native ASR toolchain from the critical path without changing the target architecture.
+The speech-recognition verifier is not started. The private preview uses recorded human review as its correctness authority instead, which removes that toolchain from the critical path without changing the target architecture.
+
+### Reproducibility, honestly bounded
+
+The seeding work makes a render repeatable on one machine with one pinned environment. It does not make it repeatable across hardware. The build targets CPU inference, and floating-point reduction order still varies with thread count and instruction set, which is why the determinism class is a recorded field rather than an assumption.
 
 ### Voice configuration
 
@@ -104,4 +147,4 @@ The development and runtime target is Ubuntu 24.04 under WSL2, and the repositor
 
 ### Licensing
 
-The workspace declares `MIT OR Apache-2.0`, but the license text files are not present. Chatterbox, model weights, voice references, Whisper models, and FFmpeg carry separate terms that have not all been recorded.
+The workspace declares `MIT OR Apache-2.0`, but the license text files are not present. Chatterbox, model weights, voice references, and FFmpeg carry separate terms that have not all been recorded.
