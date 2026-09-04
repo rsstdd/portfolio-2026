@@ -59,7 +59,7 @@ export default function ProjectsPage() {
                 <p className="text-muted">{project.summary}</p>
               </div>
 
-              <p className="mono caption tabular-nums text-muted md:w-28 md:text-right">
+              <p className="mono caption uppercase tabular-nums text-muted md:w-28 md:text-right">
                 {project.complete ? project.date.getUTCFullYear() : "in progress"}
               </p>
             </Link>

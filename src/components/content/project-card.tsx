@@ -28,7 +28,7 @@ export function ProjectCard({ project }: { project: LoadedProject }) {
 
       <p className="mt-2 flex-1 text-sm text-muted">{project.summary}</p>
 
-      <p className="mono data-plate mt-6">
+      <p className="mono data-plate uppercase mt-6">
         {project.date.getUTCFullYear()}
         {project.complete ? null : " · in progress"}
       </p>
