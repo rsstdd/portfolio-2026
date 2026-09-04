@@ -55,8 +55,8 @@ export default function PrivacyPage() {
         <p>
           Fonts are self-hosted and served from this domain rather than from a font CDN, so loading
           a page does not disclose your IP address to any third party. There are no embedded videos,
-          maps, social widgets, or comment systems. The pages are static files, and the site ships
-          no client-side JavaScript.
+          maps, social widgets, or comment systems. Every page is a static file, and nothing on it
+          requests anything from anyone but this domain.
         </p>
 
         <h2>Hosting and server logs</h2>

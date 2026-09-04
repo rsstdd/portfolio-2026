@@ -63,23 +63,6 @@ export default function DesignSystemPage() {
 
  return (
   <main id="main" className="relative mx-auto max-w-content px-5 pt-12 pb-24 md:px-8 md:pt-16 lg:px-10">
-   <input
-    id="theme-toggle"
-    type="checkbox"
-    className="peer sr-only"
-    aria-label="Toggle dark theme"
-   />
-
-   <div className="flex justify-end w-full">
-    <label
-     htmlFor="theme-toggle"
-     className="cursor-pointer select-none text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
-    >
-     <span className="when-light">Toggle dark</span>
-     <span className="when-dark">Toggle light</span>
-    </label>
-   </div>
-
    <header>
     <p className="datum-overline text-muted">{overline}</p>
     <h1 className="mt-3 display">{title}</h1>

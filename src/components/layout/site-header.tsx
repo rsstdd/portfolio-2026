@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { ThemeControl } from "./theme-control";
 
 const links = [
   { href: "/projects", label: "Projects" },
@@ -19,6 +20,11 @@ const links = [
  * The nav wraps rather than collapsing into a menu, because four short labels
  * fit on one line at every realistic width and a hamburger would introduce the
  * client component this file exists to avoid.
+ *
+ * The theme control sits here rather than on /design because the dark palette
+ * is a first-class theme in DESIGN_SYSTEM.md 7, and a theme reachable from one
+ * page is a theme nobody sees. It is also a Server Component: see
+ * ./theme-control.tsx for why radios and what the approach cannot do.
  */
 export function SiteHeader() {
   return (
@@ -47,18 +53,25 @@ export function SiteHeader() {
             {site.name}
           </Link>
 
-          <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5">
-            {links.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-5">
+            <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5">
+              {links.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-overline uppercase text-muted transition-colors duration-(--duration-fast) hover:text-ink"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Hairline divider: the theme control is chrome, not navigation. */}
+            <span aria-hidden className="hidden h-3 w-px bg-line sm:block" />
+
+            <ThemeControl />
+          </div>
         </nav>
       </header>
     </>

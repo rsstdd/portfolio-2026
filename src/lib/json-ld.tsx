@@ -59,8 +59,8 @@ export function personJsonLd() {
  * Renders a JSON-LD block.
  *
  * A plain script tag in a Server Component, which is the supported approach in
- * the App Router and ships no client JavaScript. It does not belong in a client
- * component and does not need one.
+ * the App Router. The block is serialized at build time and needs no client
+ * component to render, which is the whole reason it is written this way.
  *
  * The `<` escape is not optional even though every value here comes from
  * `site.ts` and is trusted today. A closing script tag appearing inside the

@@ -1,11 +1,19 @@
 import type { MetadataRoute } from "next";
-import { getProjects } from "@/lib/content";
+import { getBlogPosts, getProjects } from "@/lib/content";
 import { site } from "@/lib/site";
 
 const baseUrl = new URL(site.url).origin;
 
+/*
+ * Every indexable route, generated from the loader rather than listed by hand.
+ *
+ * /privacy and /impressum are deliberately absent: both set
+ * `robots: { index: false }`, so listing them here would ask search engines to
+ * index pages the pages themselves decline.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const projects = getProjects();
+  const posts = getBlogPosts();
 
   const staticRoutes = [
     {
@@ -29,7 +37,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/blog`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/colophon`,
+      changeFrequency: "yearly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/design`,
       changeFrequency: "yearly",
       priority: 0.5,
     },
@@ -43,5 +61,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  return [...staticRoutes, ...projectRoutes];
+  const postRoutes = posts.map(
+    (post): MetadataRoute.Sitemap[number] => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updated ?? post.date,
+      changeFrequency: "yearly",
+      // Flat, unlike projects: blogPostSchema has no `featured` field to rank on.
+      priority: 0.6,
+    }),
+  );
+
+  return [...staticRoutes, ...projectRoutes, ...postRoutes];
 }

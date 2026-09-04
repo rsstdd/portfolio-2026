@@ -47,7 +47,7 @@ export default function AboutPage() {
       </header>
 
       <section className="mt-16">
-        <SectionRule index="01" label="Profile" />
+        <SectionRule index="01" label="Profile" as="h2" />
 
         <div className={"mt-8 grid items-start gap-1 max-w-prose"}>
           <div>

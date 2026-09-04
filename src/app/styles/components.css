@@ -193,33 +193,6 @@
   }
 
   /* ------------------------------------------------------------------------
-     Object: Theme Toggle Label
-     ------------------------------------------------------------------------ */
-
-  /*
-   * The design page's dark-theme switch is a checkbox read by
-   * `:root:has(#theme-toggle:checked)` in design-tokens.css. Its label copy has
-   * to follow the same signal: Tailwind's `peer-checked:` compiles to a sibling
-   * combinator, and these spans sit two levels inside the input's sibling, so
-   * the variant never matched and the label read "Toggle dark" in both themes.
-   */
-  .when-light {
-    display: inline;
-  }
-
-  .when-dark {
-    display: none;
-  }
-
-  :root:has(#theme-toggle:checked) .when-light {
-    display: none;
-  }
-
-  :root:has(#theme-toggle:checked) .when-dark {
-    display: inline;
-  }
-
-  /* ------------------------------------------------------------------------
      Objects: Form Elements
      ------------------------------------------------------------------------ */
 

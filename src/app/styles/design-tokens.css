@@ -64,30 +64,87 @@
   /* Elevation */
   --shadow-tint: 34 31 26;
   /* warm ink, never pure black */
+
+  /*
+   * Dark primitives. Declared once here, mapped onto the semantic tokens by the
+   * rules below. The values live in exactly one place so the two mappings that
+   * follow cannot drift apart on a palette change; only the mapping repeats,
+   * and a mistake there is visible on the first render.
+   *
+   * Ratios per DESIGN_SYSTEM.md 1.2: text 14.65, muted 6.55, accent 5.37.
+   */
+  --dark-bg: #191611;
+  --dark-surface: #221e18;
+  --dark-well: #26221b;
+  --dark-line: #3a352c;
+  --dark-line-essential: #746b5d;
+  --dark-text: #ede7db;
+  --dark-text-muted: #a39b8c;
+  --dark-brand-hover: #fbf9f5;
+  /* The accent lifted one step, so it is body-safe on dark rather than UI-only. */
+  --dark-accent: #e8632c;
+  --dark-success: #82b37c;
+  --dark-warn: #f0a35a;
+  --dark-error: #ed7a72;
 }
 
+/*
+ * Theme resolution, in cascade order.
+ *
+ * The site is light by default (`:root` above). Dark applies in three cases:
+ * an explicit `data-theme` attribute, an explicit choice from the header
+ * control, or the system preference while the control is left on "system".
+ *
+ * The control is three radio inputs rather than one checkbox because a
+ * checkbox can only express "force dark": someone whose OS is set to dark had
+ * no way back to light. Radios give all three states and still need no
+ * JavaScript, which is what keeps the zero-client-component rule intact.
+ *
+ * The cost, stated on /colophon rather than left to be discovered: a CSS-only
+ * control has nowhere to persist. An explicit choice survives in-session
+ * navigation and resets to the system default on reload.
+ */
 [data-theme="dark"],
-:root:has(#theme-toggle:checked) {
-  /* Primitives and mapped semantics, dark (photography default) */
-  --bg: #191611;
-  --surface: #221e18;
-  --well: #26221b;
-  --border-line: #3a352c;
-  --border-essential: #746b5d;
-  --text: #ede7db;
-  --text-muted: #a39b8c;
-  --brand: #ede7db;
-  --brand-hover: #fbf9f5;
-  --on-brand: #191611;
-  --accent: #e8632c;
-  /* lifted one step: body-safe on dark (5.37:1) */
-  --accent-text: #e8632c;
-  --focus-ring: #e8632c;
-  --success: #82b37c;
-  --warn: #f0a35a;
-  --error: #ed7a72;
-
+:root:has(#theme-dark:checked) {
+  --bg: var(--dark-bg);
+  --surface: var(--dark-surface);
+  --well: var(--dark-well);
+  --border-line: var(--dark-line);
+  --border-essential: var(--dark-line-essential);
+  --text: var(--dark-text);
+  --text-muted: var(--dark-text-muted);
+  --brand: var(--dark-text);
+  --brand-hover: var(--dark-brand-hover);
+  --on-brand: var(--dark-bg);
+  --accent: var(--dark-accent);
+  --accent-text: var(--dark-accent);
+  --focus-ring: var(--dark-accent);
+  --success: var(--dark-success);
+  --warn: var(--dark-warn);
+  --error: var(--dark-error);
   --shadow-tint: 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:has(#theme-system:checked) {
+    --bg: var(--dark-bg);
+    --surface: var(--dark-surface);
+    --well: var(--dark-well);
+    --border-line: var(--dark-line);
+    --border-essential: var(--dark-line-essential);
+    --text: var(--dark-text);
+    --text-muted: var(--dark-text-muted);
+    --brand: var(--dark-text);
+    --brand-hover: var(--dark-brand-hover);
+    --on-brand: var(--dark-bg);
+    --accent: var(--dark-accent);
+    --accent-text: var(--dark-accent);
+    --focus-ring: var(--dark-accent);
+    --success: var(--dark-success);
+    --warn: var(--dark-warn);
+    --error: var(--dark-error);
+    --shadow-tint: 0 0 0;
+  }
 }
 
 @theme inline {

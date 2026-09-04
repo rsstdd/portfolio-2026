@@ -221,7 +221,7 @@ Unchanged: `cubic-bezier(0.2, 0, 0, 1)`, 120/200/320ms, underlines slide, cards 
 
 |                 | portfolio                | aircraft                               | photography                  |
 | --------------- | ------------------------ | -------------------------------------- | ---------------------------- |
-| Theme           | Light                    | Light                                  | **Dark by default**          |
+| Theme           | Light default, switchable | Light                                  | **Dark by default**          |
 | Density         | Marketing                | Application                            | Marketing chrome, minimal    |
 | Display type    | Hero `display-xl`        | Page title only                        | Gallery titles only          |
 | Orange budget   | Datum ticks + active nav | Favourite and optimistic states        | Focus and active states only |
@@ -230,6 +230,8 @@ Unchanged: `cubic-bezier(0.2, 0, 0, 1)`, 120/200/320ms, underlines slide, cards 
 | Container       | content                  | wide (table)                           | wide (galleries)             |
 
 Siblings, not triplets, as before. What changed is whose siblings they are.
+
+**The portfolio's theme control.** Light is the default and dark is a first-class alternative, offered as three radio inputs in the header: system, light, dark. Radios rather than a checkbox because a checkbox can only express "force dark", which leaves someone whose operating system is set to dark with no way back. The tokens resolve in `design-tokens.css` through `:root:has()` plus a `prefers-color-scheme` query, so the control needs no JavaScript and no client component. Its one limitation is that CSS has nowhere to persist a choice, so an explicit selection resets to the system default on reload; that is stated on `/colophon` rather than left to be discovered.
 
 ---
 

@@ -5,7 +5,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Colophon",
   description:
-    "How this site is built: Next.js 16, static generation, MDX in git, no client JavaScript.",
+    "How this site is built: Next.js 16, static generation, MDX in git, zero client components.",
 };
 
 const stack = [
@@ -20,6 +20,10 @@ const stack = [
   [
     "Zero client components",
     "Every file is a Server Component. Each candidate island was rejected with a reason recorded in the file rather than in a commit message.",
+  ],
+  [
+    "A theme control with no memory",
+    "System, light, and dark are three radio inputs read by a CSS :has() selector, so the switch costs no JavaScript. It also has nowhere to store a choice: an explicit selection survives navigation within a session and resets to the system default on reload. Persisting it needs localStorage, which needs a client component, which costs more than the defect does.",
   ],
   [
     "MDX parsed by about a hundred owned lines",
@@ -77,7 +81,7 @@ export default function ColophonPage() {
       </header>
 
       <section className="mt-16">
-        <SectionRule index="01" label="Stack" />
+        <SectionRule index="01" label="Stack" as="h2" />
         <dl className="mt-8 max-w-prose">
           {stack.map(([name, why]) => (
             <div key={name} className="border-b border-line py-4">
@@ -89,7 +93,7 @@ export default function ColophonPage() {
       </section>
 
       <section className="mt-24">
-        <SectionRule index="02" label="Datum" />
+        <SectionRule index="02" label="Datum" as="h2" />
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">{datumCopy}</p>
 
@@ -125,11 +129,11 @@ export default function ColophonPage() {
       </section>
 
       <section className="mt-24">
-        <SectionRule index="03" label="Measurements" />
+        <SectionRule index="03" label="Measurements" as="h2" />
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">
-            Not yet measured. These will carry real numbers once the site is deployed, and they will
-            say so plainly if any of them disappoint.
+            Not yet measured. When these carry real numbers they will say so plainly if any of
+            them disappoint.
           </p>
           <DataPlate>
             JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not yet measured
@@ -138,7 +142,7 @@ export default function ColophonPage() {
       </section>
 
       <section className="mt-24">
-        <SectionRule index="04" label="Source" />
+        <SectionRule index="04" label="Source" as="h2" />
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">
             The repository is public. Fonts are self-hosted, and there are no third-party requests, so

@@ -129,6 +129,8 @@ Track it in one place, and the place is this file:
 
 Every addition gets a row here and a one-sentence justification comment above its `"use client"`. The colophon claims zero client components, so the claim needs somewhere to be checked.
 
+The nearest thing to an island is `layout/theme-control.tsx`, and it is not one. The theme switch is three radio inputs read by a `:root:has()` selector in `design-tokens.css`, so it renders as static markup and the budget above stays empty. It buys that with the one thing CSS cannot do, which is remember: a choice resets to the system default on reload. Anything that needs storage needs a row in the table.
+
 ## 5. Import conventions
 
 - `@/lib/...`, `@/components/...` for everything crossing a directory. Relative imports only within the same directory.
