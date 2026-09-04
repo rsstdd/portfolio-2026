@@ -30,7 +30,7 @@ export function ProjectCard({ project }: { project: LoadedProject }) {
 
       <p className="mono data-plate mt-6">
         {project.date.getUTCFullYear()}
-        {project.verified ? null : " · in progress"}
+        {project.complete ? null : " · in progress"}
       </p>
     </Link>
   );

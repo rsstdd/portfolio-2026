@@ -32,10 +32,24 @@ export const projectSchema = z.object({
   date: z.coerce.date(),
   /**
    * False for anything not substantiated from source. Rendered in the data
-   * plate so the claim level is visible rather than implied, and used by the
-   * home page to keep unfinished work off the front page automatically.
+   * plate so the claim level is visible rather than implied, and required by
+   * the home page: an unchecked claim does not belong on the front page.
+   *
+   * This asks one question only, "has someone read the code and confirmed what
+   * this page says". It deliberately says nothing about whether the project is
+   * finished, which is `complete` below.
    */
   verified: z.boolean().default(true),
+  /**
+   * False while the project is still being built.
+   *
+   * Split from `verified` because the two came apart in practice: a page can
+   * describe an unfinished system accurately, and conflating the two forced a
+   * choice between calling checked work unchecked and calling unfinished work
+   * finished. Ranked, checked, in-progress work now reaches the front page
+   * while still being labelled honestly wherever a status is shown.
+   */
+  complete: z.boolean().default(true),
   ogImage: z.string().optional(),
 });
 

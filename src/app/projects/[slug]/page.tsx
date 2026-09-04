@@ -69,9 +69,15 @@ export default async function ProjectPage({ params }: Params) {
         <p className="mt-4 text-body-lg text-muted">{project.summary}</p>
 
         {/*
-          Data plate. Renders the `verified` flag rather than hiding it, because
-          the site claims its project pages are checkable and a status that only
+          Data plate. Renders the claim level rather than hiding it, because the
+          site claims its project pages are checkable and a status that only
           exists in frontmatter is not checkable by a reader.
+
+          `verified` and `complete` are separate entries because they answer
+          different questions. Checked-and-unfinished is a real and common
+          state, and one combined label would have to lie about one half of it.
+          The progress entry is omitted when the work is done, so a finished
+          project's plate stays terse.
         */}
         <dl className="data-plate mono uppercase mt-8 flex flex-wrap gap-x-6 gap-y-1">
           <div className="flex gap-2">
@@ -83,9 +89,15 @@ export default async function ProjectPage({ params }: Params) {
             <dd>{project.date.toISOString().slice(0, 10)}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="sr-only">Status</dt>
-            <dd>{project.verified ? "code-verified" : "in progress"}</dd>
+            <dt className="sr-only">Claims</dt>
+            <dd>{project.verified ? "code-verified" : "unverified"}</dd>
           </div>
+          {project.complete ? null : (
+            <div className="flex gap-2">
+              <dt className="sr-only">Progress</dt>
+              <dd>in progress</dd>
+            </div>
+          )}
           {project.repo ? (
             <div className="flex gap-2">
               <dt className="sr-only">Repository</dt>

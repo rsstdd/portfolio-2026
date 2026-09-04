@@ -17,10 +17,13 @@ export default function HomePage() {
   const home = getHome();
 
   /*
-   * Featured and verified, capped at six. The `verified` filter keeps
-   * unfinished work off the front page automatically: when aircraft ships and
-   * its frontmatter flips, it takes the top slot with no edit here, because
-   * getProjects sorts featured first and then newest.
+   * Featured and verified, capped at six, in the order `featuredRank` sets.
+   *
+   * The filter is `verified` and deliberately not `complete`: the bar for the
+   * front page is that someone has checked the claims against the source, not
+   * that the work is finished. Unfinished work still says so on its card, so
+   * excluding it here would hide checked work to avoid a label that already
+   * exists.
    *
    * The cap is a ceiling rather than a target. Fewer than six qualifying
    * projects renders fewer cards, which the three-column grid handles without
