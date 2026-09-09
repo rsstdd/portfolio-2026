@@ -72,6 +72,20 @@ export const blogPostSchema = z.object({
   featured: z.boolean().default(false),
   /** Social card. Falls back to the site default. Mirrors `projectSchema`. */
   ogImage: z.string().optional(),
+  /**
+   * The organisation a post is about, when it is about one.
+   *
+   * Emitted as schema.org `about`, which is what associates the post with that
+   * company as an entity rather than leaving the name as loose text. Relevant
+   * for a post like the Better Stack interview log, where the whole value of
+   * the page is that it is about a specific, searchable company.
+   */
+  about: z
+    .object({
+      name: z.string(),
+      url: z.url(),
+    })
+    .optional(),
 });
 
 /**

@@ -116,6 +116,14 @@ export function blogPostingJsonLd(post: LoadedBlogPost) {
     author: { "@id": PERSON_ID },
     publisher: { "@id": PERSON_ID },
     image: `${site.url}${post.ogImage ?? "/images/og/default.png"}`,
+    /*
+     * Names the subject as an entity rather than as a string in the body. A
+     * post about a named company otherwise leaves a search engine to infer the
+     * association from prose, which it may or may not do.
+     */
+    ...(post.about
+      ? { about: { "@type": "Organization", name: post.about.name, url: post.about.url } }
+      : {}),
   };
 }
 
