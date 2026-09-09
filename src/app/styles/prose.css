@@ -103,36 +103,6 @@
     padding: 0;
   }
 
-  /*
-   * Syntax highlighting.
-   *
-   * Shiki runs at build time with `defaultColor: false`, so every token carries
-   * both `--shiki-light` and `--shiki-dark` and the choice is made here rather
-   * than baked into the markup. The three selectors mirror the theme switch in
-   * design-tokens.css exactly: explicit dark, explicit light, and system.
-   *
-   * The code block keeps the Datum well and hairline rather than Shiki's own
-   * background, so a highlighted block still sits in the page the way an
-   * unhighlighted one did.
-   */
-  .prose-datum pre.shiki,
-  .prose-datum pre.shiki span {
-    color: var(--shiki-light);
-    background: transparent;
-  }
-
-  [data-theme="dark"] .prose-datum pre.shiki,
-  [data-theme="dark"] .prose-datum pre.shiki span {
-    color: var(--shiki-dark);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .prose-datum pre.shiki,
-    :root:not([data-theme="light"]) .prose-datum pre.shiki span {
-      color: var(--shiki-dark);
-    }
-  }
-
   .prose-datum table {
     width: 100%;
     border-collapse: collapse;

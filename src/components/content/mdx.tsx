@@ -26,6 +26,54 @@ const registry = {
   Term,
 };
 
+const datumSyntaxTheme = {
+  name: "datum",
+  type: "light" as const,
+  colors: {
+    "editor.background": "var(--well)",
+    "editor.foreground": "var(--text)",
+  },
+  tokenColors: [
+    {
+      scope: ["comment", "punctuation.definition.comment", "string.quoted.docstring.multi"],
+      settings: { foreground: "var(--text-muted)", fontStyle: "italic" },
+    },
+    {
+      scope: [
+        "keyword",
+        "storage.type",
+        "storage.modifier",
+        "storage.control",
+        "entity.name.tag",
+        "punctuation.definition.tag",
+      ],
+      settings: { foreground: "var(--accent-text)" },
+    },
+    {
+      scope: ["string", "string.quoted", "string.regexp", "constant.numeric", "constant.language"],
+      settings: { foreground: "var(--brand-hover)" },
+    },
+    {
+      scope: [
+        "entity.name.function",
+        "support.function",
+        "entity.name.type",
+        "support.type",
+        "entity.other.attribute-name",
+      ],
+      settings: { foreground: "var(--text)", fontStyle: "bold" },
+    },
+    {
+      scope: ["punctuation", "meta.brace", "keyword.operator"],
+      settings: { foreground: "var(--text-muted)" },
+    },
+    {
+      scope: "invalid",
+      settings: { foreground: "var(--error)" },
+    },
+  ],
+};
+
 type MdxProps = {
   source: string;
   className?: string;
@@ -69,19 +117,13 @@ export function Mdx({ source, className = "", components = {} }: MdxProps) {
                * pass. No client JavaScript, so the zero-client-components rule
                * is untouched and a code block costs the reader nothing.
                *
-               * `min-light`/`min-dark` because DESIGN_SYSTEM.md allows one
-               * accent per view: a saturated theme would put ten more in every
-               * code block and fight the monochrome chrome around it.
-               *
-               * `defaultColor: false` emits `--shiki-light` and `--shiki-dark`
-               * as CSS variables rather than baking one theme into the markup,
-               * which is what lets prose.css follow the theme control.
+               * The theme emits Datum's semantic CSS variables, so the same
+               * highlighted markup follows the site's light and dark modes.
                */
               [
                 rehypeShiki,
                 {
-                  themes: { light: "min-light", dark: "min-dark" },
-                  defaultColor: false,
+                  theme: datumSyntaxTheme,
                 },
               ],
             ],
