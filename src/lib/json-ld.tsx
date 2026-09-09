@@ -71,8 +71,14 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
     <script
       type="application/ld+json"
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: the only supported
-      // way to emit a JSON-LD block; the payload is escaped and locally sourced.
+      /*
+       * The directive below has to be a single line immediately above the
+       * offending prop. It was previously wrapped across two comment lines,
+       * which put a line between the directive and the code and stopped the
+       * suppression applying at all — so this rule has been failing lint, and
+       * the explanation was doing none of the work it was written to do.
+       */
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: the only supported way to emit a JSON-LD block, and the payload is escaped and locally sourced
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data).replace(/</g, "\\u003c"),
       }}

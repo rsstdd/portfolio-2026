@@ -18,7 +18,7 @@
  * Usage: node scripts/render-og.mjs [--check]
  *   --check  render and compare against the committed PNGs without writing.
  */
-import { readFile, readdir, writeFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
@@ -79,13 +79,16 @@ async function main() {
      * set. Loading first makes the check answer "is this face available",
      * which is the question worth asking.
      */
-    const missing = await page.evaluate(async (faces) => {
-      await Promise.all(
-        faces.map(([f, w]) => document.fonts.load(`${w} 64px "${f}"`).catch(() => {})),
-      );
-      await document.fonts.ready;
-      return faces.filter(([f, w]) => !document.fonts.check(`${w} 64px "${f}"`));
-    }, FACES.map(([f, w]) => [f, w]));
+    const missing = await page.evaluate(
+      async (faces) => {
+        await Promise.all(
+          faces.map(([f, w]) => document.fonts.load(`${w} 64px "${f}"`).catch(() => {})),
+        );
+        await document.fonts.ready;
+        return faces.filter(([f, w]) => !document.fonts.check(`${w} 64px "${f}"`));
+      },
+      FACES.map(([f, w]) => [f, w]),
+    );
     if (missing.length > 0) {
       throw new Error(
         `Fonts did not load for ${name}: ${missing.map(([f, w]) => `${f} ${w}`).join(", ")}.\n` +
@@ -97,7 +100,7 @@ async function main() {
     const target = join(CARDS, name.replace(/\.svg$/, ".png"));
     const before = await readFile(target).catch(() => null);
 
-    if (before && before.equals(png)) {
+    if (before?.equals(png)) {
       console.log(`  unchanged  ${name}`);
       continue;
     }
