@@ -247,8 +247,7 @@
     text-decoration-thickness: 1px;
     text-underline-offset: 0.18em;
     cursor: pointer;
-    transition:
-      text-decoration-color var(--duration-fast) var(--ease-standard);
+    transition: text-decoration-color var(--duration-fast) var(--ease-standard);
   }
 
   .term-trigger:hover,
@@ -334,7 +333,6 @@
       }
     }
   }
-
 }
 
 /* ==========================================================================

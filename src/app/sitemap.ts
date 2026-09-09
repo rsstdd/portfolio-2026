@@ -1,5 +1,12 @@
 import type { MetadataRoute } from "next";
-import { getAbout, getBlogPosts, getCv, getDesignSystem, getProjects, getTags } from "@/lib/content";
+import {
+  getAbout,
+  getBlogPosts,
+  getCv,
+  getDesignSystem,
+  getProjects,
+  getTags,
+} from "@/lib/content";
 import { site } from "@/lib/site";
 
 const baseUrl = new URL(site.url).origin;

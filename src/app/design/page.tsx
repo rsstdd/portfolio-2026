@@ -84,7 +84,8 @@ export default function DesignSystemPage() {
       */}
       {updated ? (
         <p className="data-plate mt-16 max-w-prose text-muted">
-          Updated <time dateTime={updated.toISOString().slice(0, 10)}>
+          Updated{" "}
+          <time dateTime={updated.toISOString().slice(0, 10)}>
             {updated.toISOString().slice(0, 10)}
           </time>
         </p>

@@ -3,7 +3,7 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  robots: { index: false, },
+  robots: { index: false },
 };
 
 /**

@@ -10,7 +10,7 @@ const links = [
   { href: "/colophon", label: "Colophon" },
   { href: "/design", label: "Datum design system" },
   { href: "/blog", label: "Engineering notes" },
-]
+];
 
 export function SiteFooter() {
   return (

@@ -25,9 +25,7 @@ import type { LoadedProject } from "@/lib/content";
 export function ProjectCard({ project }: { project: LoadedProject }) {
   return (
     <article className="group relative flex w-full flex-col border border-line bg-surface p-6 transition-[transform,box-shadow] duration-(--duration-fast) ease-(--ease-standard) hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-overline uppercase text-muted">
-        {project.stack.slice(0, 2).join(" · ")}
-      </p>
+      <p className="text-overline uppercase text-muted">{project.stack.slice(0, 2).join(" · ")}</p>
 
       <h3 className="mt-1.5 h3">
         <Link

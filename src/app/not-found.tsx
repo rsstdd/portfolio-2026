@@ -8,9 +8,7 @@ export default function NotFound() {
     >
       <p className="text-overline uppercase text-muted">404</p>
 
-      <h1 className="mt-2 display text-balance">
-        No entry at this datum.
-      </h1>
+      <h1 className="mt-2 display text-balance">No entry at this datum.</h1>
 
       <p className="mt-4 max-w-prose body-lg text-muted">
         The page does not exist, or it moved and nothing redirects here yet.

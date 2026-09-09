@@ -3,7 +3,7 @@ import { addressIncomplete, site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Impressum",
-  robots: { index: false, },
+  robots: { index: false },
 };
 
 /**
