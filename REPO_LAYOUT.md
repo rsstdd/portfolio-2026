@@ -70,14 +70,13 @@ portfolio-2026/
 │   └── cv.mdx
 │
 ├── public/
-│   ├── fonts/                    # self-hosted IBM Plex woff2
-│   └── images/
+│   └── images/og/                # social cards: .svg masters + rendered .png
+│                                 # (see scripts/render-og.mjs, scripts/OG_CARDS.md)
 │
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx            # fonts, Datum tokens, nav, footer
 │   │   ├── page.tsx              # /
-│   │   ├── opengraph-image.tsx   # build-time social card
 │   │   ├── not-found.tsx         # "No entry at this datum."
 │   │   ├── sitemap.ts
 │   │   ├── robots.ts
@@ -85,7 +84,7 @@ portfolio-2026/
 │   │   │   ├── page.tsx          # /projects
 │   │   │   └── [slug]/
 │   │   │       ├── page.tsx      # generateStaticParams + generateMetadata
-│   │   │       └── opengraph-image.tsx
+│   │   │       └── icon.tsx      # per-project tab icon, prerendered
 │   │   ├── about/page.tsx
 │   │   ├── cv/page.tsx
 │   │   ├── colophon/page.tsx
