@@ -1,0 +1,340 @@
+---
+title: "What I was asked in Better Stack's engineering interview"
+summary: "The full question log from Better Stack's engineering interview, the four stages I completed, and where the technical screen differed from the preparation guidance I was given."
+tags: ["interviews", "engineering", "security", "databases"]
+date: 2026-09-09
+---
+
+I interviewed with Better Stack between August 7 and September 9, 2026.
+
+This is a record of the process and the questions I was asked. The purpose is
+not to reconstruct anyone's intent. It is to document what happened closely
+enough that another candidate can prepare for the same process.
+
+This is one candidate's experience of one pipeline at one point in time.
+Hiring processes change, and a different role or a different interviewer may
+produce a different set of questions.
+
+The short version: I completed four stages. The deciding technical interview
+was scheduled for 30 minutes, covered web security and SQL, and ended about ten
+minutes early after the interviewer said he had formed a view.
+
+## The process
+
+The process I completed was:
+
+1. A timed coding task.
+2. A written critique of Better Stack's product.
+3. A recruiter call.
+4. A technical interview with one engineer.
+
+A final round with the CTO and two co-founders was described as following the
+technical interview. I did not reach it.
+
+The timeline was:
+
+- **August 7:** first recruiter contact and coding assignment.
+- **August 11:** coding assignment submitted.
+- **August 12:** advanced to a written product critique.
+- **August 14:** critique submitted.
+- **August 17:** advanced and given the remaining interview structure.
+- **August 25:** recruiter call.
+- **September 9:** first technical interview.
+
+Communication was prompt throughout.
+
+## Stage 1: coding task
+
+The first assignment was a timed problem in a custom browser-based interview
+application. The session was recorded, and the recruiter explicitly confirmed
+that AI tools were permitted.
+
+The problem was to convert a spreadsheet column label into its corresponding
+number:
+
+```
+A  = 1
+Z  = 26
+AA = 27
+AB = 28
+```
+
+This is bijective base-26. A direct solution accumulates each character from
+left to right:
+
+```
+result = result * 26 + value(letter)
+```
+
+where `A = 1` through `Z = 26`. The label has no zero digit, which is what
+separates bijective base-26 from ordinary base-26 and is where an off-by-one
+error tends to appear.
+
+I submitted the task, found an off-by-one error while reviewing it afterward,
+and emailed a corrected solution within the hour.
+
+## Stage 2: product critique
+
+The second assignment was to review Better Stack's product and submit a written
+critique.
+
+I used the free tier and documented usability, onboarding, accessibility, and
+defects. I submitted the result as a PDF.
+
+The recruiter later confirmed that the document had been shared with the
+product team.
+
+## Stage 3: recruiter call
+
+The recruiter call was approximately 30 minutes and non-technical.
+
+I was asked:
+
+1. How actively are you looking, and what is your situation?
+2. How did you find us, and had you heard of the company before?
+3. Given two offers, what would be your deciding factor?
+4. What does the ideal role look like technically, and what do you most enjoy?
+
+The part most useful for technical preparation came afterward. The recruiter
+identified three areas for the next interview:
+
+- front-end
+- security
+- databases
+
+## Stage 4: technical interview
+
+The technical interview was scheduled for 30 minutes with one engineer.
+
+The recruiter had described it as fast-paced and somewhat unconventional, with
+short technical questions across engineering topics. At the start of the
+interview, the interviewer said some of the questions would be "obscurely
+specific."
+
+That description matched what followed. Here is the complete technical question
+set.
+
+### 1. Which web-security attacks are you familiar with?
+
+The first question was broad: name web-security attacks I knew.
+
+Examples included:
+
+- cross-site scripting
+- cross-site request forgery
+- SQL injection
+- man-in-the-middle attacks
+
+The interview then moved directly into concrete scenarios.
+
+### 2. Prevent this CSRF attack
+
+The scenario was approximately this:
+
+A user is authenticated with a bank in one browser tab. A malicious page in
+another tab creates a form targeting the bank's transfer endpoint and
+automatically submits it. The browser attaches the user's authenticated session
+cookie.
+
+How should the bank prevent the request?
+
+The answer the discussion centered on was a CSRF token. The server creates an
+unpredictable token, associates it with the user's session, includes it with
+state-changing forms, and verifies it when the request returns. The malicious
+origin cannot retrieve a valid token from the bank's page.
+
+`SameSite` cookies were also relevant.
+
+The interviewer specifically pressed on using the `Referer` header as
+protection. The point was that relying on it is insufficient because clients,
+proxies, and privacy tooling can omit or alter it.
+
+### 3. Exploit this stored-XSS vulnerability
+
+The next scenario involved a product-review form that accepted arbitrary HTML
+and later rendered that content for other users.
+
+What damage could an attacker cause?
+
+This is stored cross-site scripting. Injected JavaScript executes when later
+visitors load the page. It can operate in the context of the user's
+authenticated session, read accessible page content, capture input, and issue
+requests as that user.
+
+The interviewer wanted a distinction around cookies: an `HttpOnly` session
+cookie cannot be read directly by JavaScript. Cookie theft therefore does not
+need to be the mechanism. The injected script can instead act through the
+victim's already authenticated browser.
+
+The defense is to treat untrusted content as data: encode output for the
+context in which it is rendered, and do not render arbitrary user-controlled
+HTML directly.
+
+### 4. Log in as admin using SQL injection
+
+The interview displayed a login form and this query:
+
+```sql
+SELECT * FROM users
+WHERE username = '$arg1'
+AND password = MD5('$arg2')
+```
+
+The task was to authenticate as `admin` without knowing the password.
+
+Entering `admin` as the username and this value in the password field works:
+
+```
+') OR (username = 'admin
+```
+
+which produces:
+
+```sql
+SELECT * FROM users
+WHERE username = 'admin'
+AND password = MD5('') OR (username = 'admin')
+```
+
+`AND` binds more tightly than `OR`, so the predicate groups as
+`(username = 'admin' AND password = MD5('')) OR (username = 'admin')`. The
+second operand selects the admin row independently of the password comparison.
+
+The production answer is not the payload. It is the boundary that prevents one
+from working: parameterized queries. Values must reach the database as values
+rather than being concatenated into SQL source.
+
+### 5. Make a large ORM query faster
+
+The last question concerned a slow query generated by an ORM. The hypothetical
+query had roughly 15 joins and several `WHERE` conditions.
+
+The questions were:
+
+- How would you make it faster?
+- How would you determine whether it had enough indexes?
+- Which indexes would you add?
+
+The expected starting point was `EXPLAIN` or `EXPLAIN ANALYZE`. `EXPLAIN` shows
+the planner's estimated execution plan. `EXPLAIN ANALYZE` executes the query and
+adds actual timings and row counts.
+
+Useful signals include:
+
+- sequential scans over large tables
+- expensive operations inside the join tree
+- large differences between estimated and actual row counts
+- individual plan nodes consuming disproportionate execution time
+
+The plan supplies the evidence for deciding what to change rather than guessing
+which columns need indexes.
+
+During this discussion, the interviewer recommended pasting `EXPLAIN` output
+into an LLM as a practical way to investigate the query.
+
+## Where the interview differed from the briefing
+
+The recruiter identified front-end, security, and databases. The interview
+covered security and databases. Front-end was not tested.
+
+The scheduled length was 30 minutes across a broad set of topics, so covering
+two of the three named areas is a plausible outcome of the time available
+rather than evidence that the briefing was wrong. It does mean a candidate
+preparing for all three should expect the actual screen to sample from them.
+
+The interviewer explained why these subjects matter at Better Stack: individual
+contributors are expected to have strong security and SQL fundamentals because
+work can move from assignment to production quickly, and pull-request review is
+not intended to catch every security or performance problem. That is a clear
+and specific engineering expectation, and web security and SQL performance are
+reasonable subjects for a software-engineering interview.
+
+It is worth naming what the format measures, because it shapes how to prepare.
+The screen asked for specific security mechanics and SQL behavior recalled
+quickly in conversation, without the source code, documentation, query plans,
+and tooling available during engineering work. During the same interview, using
+an LLM to analyze a query plan was recommended as a practical technique. Fast
+verbal recall and tool-assisted investigation are related but not identical
+skills, and this format weights the first. Whether that is the right proxy is a
+judgment call, and companies reasonably differ on it.
+
+## Compensation for assignment work
+
+The stages I completed were unpaid. That included the coding assignment and the
+written critique of Better Stack's product, which the recruiter confirmed was
+forwarded to the product team.
+
+Better Stack has publicly described paying candidates for assignment work. In a
+November 2024 Hacker News discussion, co-founder and CEO Juraj Masar wrote of
+the at-home project in their process: "This is a paid project. I don't expect
+you to work for free. We kindly ask you to name your rate and issue us an
+invoice and we pay what you ask for even when we reject you."
+
+Two things are worth keeping straight. That comment describes a specific
+at-home implementation project, not every assignment in the pipeline, and it
+describes the process as it stood in 2024. The stages I completed in 2026 were
+different exercises and were not compensated. I did not reach a stage where the
+question of an invoice came up.
+
+The practical point for a candidate is that compensation may attach to some
+assignments and not others, and it is reasonable to ask which stages are paid
+before starting one.
+
+Sources:
+
+- [Juraj Masar's explanation of the hiring process](https://news.ycombinator.com/item?id=42145050)
+- [Hacker News discussion of the process](https://news.ycombinator.com/item?id=42128940)
+- [Better Stack engineering careers](https://betterstack.com/careers/engineering)
+
+## How the interview ended
+
+The technical interview was scheduled for 30 minutes. It ended about ten
+minutes early.
+
+The interviewer said he had formed a view and preferred to respect my time. He
+also said he would share the outcome.
+
+He was direct about the format and about the standard he was applying, and the
+conduct of the interview was not a problem. Ending early once a decision is
+reached is a defensible use of both parties' time, though it does remove the
+chance to cover remaining topics.
+
+## What I would prepare
+
+For anyone interviewing through the same process, the preparation target is
+unusually concrete.
+
+Be able to explain, out loud and without looking anything up:
+
+- CSRF and synchronizer tokens
+- `SameSite` cookies
+- why `Referer` is not sufficient CSRF protection
+- stored XSS
+- the significance of `HttpOnly`
+- SQL injection
+- parameterized queries
+- SQL boolean precedence
+- `EXPLAIN`
+- `EXPLAIN ANALYZE`
+- sequential scans
+- index selection
+- estimated versus actual row counts
+
+The exact questions above are more useful than a generic instruction to study
+security and databases.
+
+## Summary
+
+The stages were organized, relevant, and communicated promptly. The questions
+were specific, and the interviewer explained the standard behind them.
+
+After a coding exercise, a written product critique, and a recruiter interview,
+the deciding assessment was a 30-minute screen on web security and SQL,
+answered from memory in conversation. A decision was reached about 20 minutes
+in.
+
+That format rewards immediate recall of specific mechanics more than
+tool-assisted investigation. Whether it is the right measure depends on what a
+company is optimizing for, and Better Stack has been explicit about its
+reasoning. Candidates can decide whether the format suits them. At minimum,
+they should know what they are preparing for.
