@@ -57,7 +57,7 @@ Read everything aloud before shipping. If it sounds like a marketing brochure or
 
 - **Every content file is built once.** If you add `content/projects/foo.mdx`, the build parses it once via `matter()`, validates it once via Zod, and caches the parsed result. Do not import the same file twice.
 - **Type safety on the schema.** Adding a field to `projectSchema` or `blogPostSchema` requires updating all the type exports. Running `tsc --noEmit` catches mismatches before a page fails at runtime. Run it before pushing.
-- **Verify page counts in PDF.** When exporting resumes or CVs to PDF for inclusion in `/cv`, render to PDF and assert 1 page. Five of the original ten "finished" resumes were silently 2 pages. A page-count bug is silent until someone opens it.
+- **The CV is printed, not exported.** `/cv` renders `content/cv.mdx` and relies on browser print; no build step produces a PDF. So the thing that can break silently is the print stylesheet in `components.css`, not a page count: `@media print` and `.no-print` hide the nav, footer, and on-screen-only copy, and nobody notices when that stops working because nobody prints a page they did not change. The CV is a full CV at roughly 2,400 words and is legitimately several pages. The one-page rule belongs to the ATS-facing resume variants in the Job Search repo, which is also where the incident behind it happened: five of the original ten "finished" resumes were silently 2 pages. Do not apply that assertion here.
 
 ## Routing table
 
