@@ -1,0 +1,73 @@
+# Runs the gate `pnpm verify` was written to be.
+#
+# Vercel builds this site with `next build`, which runs neither the linters nor
+# the tests, so without this workflow a red suite deploys perfectly happily.
+#
+# No secrets, and none should ever be added: `grep -r 'process.env'` across
+# src/ and scripts/ returns nothing, so the build reads no environment at all.
+# A step here needing a secret means something changed that deserves scrutiny.
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # A newer push makes an in-flight run irrelevant, and this repo is one person.
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Version comes from `packageManager` in package.json, so it is pinned in
+      # one place rather than drifting between here and the lockfile.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # --frozen-lockfile also fails when the lockfile has drifted from
+      # package.json, which is worth catching on its own.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Fast-fail first: lint, typecheck, unit tests, build. No browser needed.
+      - name: Verify
+        run: pnpm run verify
+
+      # Chromium only. playwright.config.ts defines no `projects`, so the suite
+      # never touches Firefox or WebKit and downloading them would be waste.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The e2e suite is the only thing asserting the JSON-LD, canonical, feed
+      # and nav markup, none of which is visible in a passing build.
+      - name: End-to-end
+        run: pnpm exec playwright test
+
+      # The social cards are committed PNGs rendered from SVG masters. This
+      # catches a master edited without re-rendering, which is otherwise silent
+      # until someone shares a link.
+      #
+      # Byte-comparison across machines is the risk here: fonts are embedded as
+      # data URIs and Chromium is pinned by Playwright, but if this proves
+      # flaky, set `continue-on-error: true` rather than deleting the step, so a
+      # stale card still shows up in the log.
+      - name: Social cards are current
+        run: node scripts/render-og.mjs --check
