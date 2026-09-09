@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Mdx } from "@/components/content/mdx";
 import { GitHubMark } from "@/components/ui";
 import { getProject, getProjectSlugs } from "@/lib/content";
+import { breadcrumbJsonLd, JsonLd, projectJsonLd } from "@/lib/json-ld";
+import { pageMetadata } from "@/lib/metadata";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -23,27 +25,15 @@ export async function generateMetadata({
   const project = getProject(slug);
   if (!project) return {};
 
-  const url = `/projects/${project.slug}`;
-  const image = project.ogImage ?? "/images/og/default.png";
-
-  return {
+  return pageMetadata({
     title: project.title,
     description: project.summary,
-    alternates: { canonical: url },
-    openGraph: {
-      type: "article",
-      title: project.title,
-      description: project.summary,
-      url,
-      images: [{ url: image, width: 1200, height: 630, alt: project.title }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: project.title,
-      description: project.summary,
-      images: [image],
-    },
-  };
+    path: `/projects/${project.slug}`,
+    image: project.ogImage,
+    type: "article",
+    publishedTime: project.date,
+    tags: project.stack,
+  });
 }
 
 export default async function ProjectPage({ params }: Params) {
@@ -53,19 +43,22 @@ export default async function ProjectPage({ params }: Params) {
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
-      <Link
-        href="/projects"
-        className="link-standalone--no-flag"
-      >
+      <JsonLd data={projectJsonLd(project)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Projects", path: "/projects" },
+          { name: project.title, path: `/projects/${project.slug}` },
+        ])}
+      />
+
+      <Link href="/projects" className="link-standalone--no-flag">
         ← All projects
       </Link>
 
       <header className="mt-8">
         <p className="text-overline uppercase text-muted">{project.stack.join(" · ")}</p>
 
-        <h1 className="display mt-2 text-balance">
-          {project.title}
-        </h1>
+        <h1 className="display mt-2 text-balance">{project.title}</h1>
 
         <p className="mt-4 max-w-prose body-lg text-muted">{project.summary}</p>
 
@@ -87,7 +80,11 @@ export default async function ProjectPage({ params }: Params) {
           </div>
           <div className="flex gap-2">
             <dt className="sr-only">Year</dt>
-            <dd>{project.date.toISOString().slice(0, 10)}</dd>
+            <dd>
+              <time dateTime={project.date.toISOString().slice(0, 10)}>
+                {project.date.toISOString().slice(0, 10)}
+              </time>
+            </dd>
           </div>
           <div className="flex gap-2">
             <dt className="sr-only">Claims</dt>

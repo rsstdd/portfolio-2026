@@ -43,3 +43,4 @@ next-env.d.ts
 # Windows-path directories created when Chrome or Lighthouse runs under WSL
 # with a Windows-style --user-data-dir
 /C:*
+test-results/

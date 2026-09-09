@@ -1,6 +1,6 @@
 ---
-title: SQL injection, XSS, CSRF, and mass assignment, by hand
-summary: The mechanism behind four common web vulnerabilities, reconstructed without a framework, because that is the bar worth being able to clear.
+title: "SQL injection, XSS, CSRF, and mass assignment, by hand"
+summary: "SQL injection, cross-site scripting, CSRF, and mass assignment, each reconstructed without a framework, because the mechanism is the part worth being able to rebuild."
 tags: ["security", "web"]
 date: 2026-08-01
 ---
@@ -106,7 +106,9 @@ when inserting user data on the client.
 
 CSRF exploits the fact that a browser attaches cookies automatically to any
 request to a domain, including a request triggered by a different site the
-user happens to have open. If a state-changing endpoint trusts the cookie
+user happens to have open. The boundary that governs which cross-origin
+requests a browser will make in the first place is the same-origin policy,
+worked through in [CORS: what it is, why it exists, and how it works](/blog/cors). If a state-changing endpoint trusts the cookie
 alone, any page on the internet can forge a request that performs the action
 as the logged-in user.
 

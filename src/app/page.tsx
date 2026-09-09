@@ -3,7 +3,16 @@ import { ProjectCard } from "@/components/content/project-card";
 import { SectionRule } from "@/components/ui/section-rule";
 import { getHome, getProjects } from "@/lib/content";
 import { JsonLd, personJsonLd } from "@/lib/json-ld";
+import { pageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
+
+/*
+ * Title and description are deliberately absent: the root layout's defaults are
+ * the home page's own copy, and restating them here would be a second place to
+ * edit them. What the layout cannot supply is the canonical, which is the whole
+ * reason this export exists.
+ */
+export const metadata = pageMetadata({ path: "/" });
 
 /**
  * Home. A Server Component with no client boundary beneath it.
@@ -42,9 +51,7 @@ export default function HomePage() {
           {site.name} · {site.role} · {site.location}
         </p>
 
-        <h1 className="mt-3 display-xl">
-          {home.headline}
-        </h1>
+        <h1 className="mt-3 display-xl">{home.headline}</h1>
 
         <p className="mt-6 max-w-prose body-lg text-muted">{home.intro}</p>
 
@@ -52,10 +59,7 @@ export default function HomePage() {
           <p className="mt-4 mono caption uppercase text-muted">{site.availability}</p>
         ) : null}
 
-        <Link
-          href={home.ctaHref}
-          className="mt-10 link-standalone"
-        >
+        <Link href={home.ctaHref} className="mt-10 link-standalone">
           {home.ctaLabel}
         </Link>
       </section>

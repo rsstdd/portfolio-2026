@@ -1,16 +1,16 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import {
   type About,
-  type BlogPost,
-  type Cv,
-  type Home,
-  type Project,
   aboutSchema,
+  type BlogPost,
   blogPostSchema,
+  type Cv,
   cvSchema,
+  type Home,
   homeSchema,
+  type Project,
   projectSchema,
 } from "./schema";
 
@@ -33,6 +33,20 @@ const CONTENT_DIR = join(process.cwd(), "content");
 const PROJECTS_DIR = join(CONTENT_DIR, "projects");
 const BLOG_DIR = join(CONTENT_DIR, "blog");
 
+/**
+ * Minimum posts before a tag gets its own listing page. See `getTags`.
+ * Named rather than inlined because the number is a judgement, not a fact.
+ */
+const TAG_PAGE_THRESHOLD = 2;
+
+/**
+ * Tags are authored already lowercase and hyphenated, so this is a guard
+ * against a future one that is not, rather than a transformation.
+ */
+export function tagSlug(tag: string): string {
+  return tag.toLowerCase().trim().replace(/\s+/g, "-");
+}
+
 export type LoadedProject = Project & { slug: string; body: string };
 export type LoadedBlogPost = BlogPost & { slug: string; body: string };
 export type LoadedAbout = About & { body: string };
@@ -41,7 +55,7 @@ export interface DesignSystemContent {
   overline: string;
   title: string;
   description: string;
-  updated: Date;
+  updated: Date | undefined;
   body: string;
 }
 
@@ -118,7 +132,12 @@ export function getProjectSlugs(): string[] {
     .map((f) => f.replace(/\.mdx$/, ""));
 }
 
-/** All blog posts, newest first. No featured concept: a blog is chronological. */
+/**
+ * All blog posts, featured first and then newest.
+ *
+ * Same rule as `getProjects`, and it lives here for the same reason: a page
+ * that re-sorted would be a second copy of the rule, free to drift.
+ */
 export function getBlogPosts(): LoadedBlogPost[] {
   return readdirSync(BLOG_DIR)
     .filter((f) => f.endsWith(".mdx"))
@@ -130,7 +149,10 @@ export function getBlogPosts(): LoadedBlogPost[] {
         return fail(`blog/${file}`, e);
       }
     })
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
+    .sort((a, b) => {
+      if (a.featured !== b.featured) return a.featured ? -1 : 1;
+      return b.date.getTime() - a.date.getTime();
+    });
 }
 
 export function getBlogPost(slug: string): LoadedBlogPost | undefined {
@@ -142,6 +164,42 @@ export function getBlogPostSlugs(): string[] {
   return readdirSync(BLOG_DIR)
     .filter((f) => f.endsWith(".mdx"))
     .map((f) => f.replace(/\.mdx$/, ""));
+}
+
+/**
+ * Tags that earn a page of their own.
+ *
+ * A tag carried by one post produces a listing with one link on it, which is a
+ * worse destination than the post itself and a page search engines are right to
+ * treat as thin. So the threshold is two, and it is enforced here rather than in
+ * the route for the same reason the sort order is: one rule, one place.
+ *
+ * Sorted by count and then alphabetically, so the ordering is stable across
+ * builds rather than dependent on which file the reader happened to hit first.
+ */
+export function getTags(): { tag: string; slug: string; count: number }[] {
+  const counts = new Map<string, number>();
+
+  for (const post of getBlogPosts()) {
+    for (const tag of post.tags) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  return [...counts.entries()]
+    .filter(([, count]) => count >= TAG_PAGE_THRESHOLD)
+    .map(([tag, count]) => ({ tag, slug: tagSlug(tag), count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+/** Posts carrying one tag, in `getBlogPosts` order. Empty for an unknown slug. */
+export function getPostsByTag(slug: string): LoadedBlogPost[] {
+  return getBlogPosts().filter((post) => post.tags.some((tag) => tagSlug(tag) === slug));
+}
+
+/** The display name for a tag slug, or undefined when the tag has no page. */
+export function getTagName(slug: string): string | undefined {
+  return getTags().find((t) => t.slug === slug)?.tag;
 }
 
 /** Home page copy. Frontmatter only; the body is unused. */
@@ -179,7 +237,12 @@ export function getDesignSystem(): DesignSystemContent {
       overline: String(data.overline ?? ""),
       title: String(data.title ?? ""),
       description: String(data.description ?? ""),
-      updated: new Date(data.updated ?? Date.now()),
+      /*
+       * Undefined when the frontmatter omits it, never `Date.now()`. The old
+       * fallback produced a fresh timestamp on every build, which the sitemap
+       * then published as a modification date for a file nobody had touched.
+       */
+      updated: data.updated ? new Date(String(data.updated)) : undefined,
       body,
     };
   } catch (e) {

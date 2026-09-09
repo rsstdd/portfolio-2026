@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { getProjects } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Projects",
   description:
     "Selected engineering work: concurrent Rust pipelines, sensor telemetry, full-stack systems, and shared frontend platforms.",
-};
+  path: "/projects",
+  image: "/images/og/projects.png",
+});
 
 /**
  * Projects index.
@@ -33,9 +35,8 @@ export default function ProjectsPage() {
         <p className="text-overline uppercase text-muted">Projects</p>
         <h1 className="mt-3 display">Selected work</h1>
         <p className="mt-4 max-w-prose body-lg text-muted">
-          Unfinished work is listed here too, dated as in progress rather than
-          by year. Each page states what was read in the source, what was
-          measured, and what was not.
+          Unfinished work is listed here too, dated as in progress rather than by year. Each page
+          states what was read in the source, what was measured, and what was not.
         </p>
       </header>
 
@@ -60,15 +61,21 @@ export default function ProjectsPage() {
               </div>
 
               <p className="mono caption uppercase tabular-nums text-muted md:w-28 md:text-right">
-                {project.complete ? project.date.getUTCFullYear() : "in progress"}
+                {project.complete ? (
+                  <time dateTime={String(project.date.getUTCFullYear())}>
+                    {project.date.getUTCFullYear()}
+                  </time>
+                ) : (
+                  "in progress"
+                )}
               </p>
             </Link>
           </li>
         ))}
       </ul>
       <p className="mt-8 max-w-prose mono caption text-muted">
-        Not everything I have written is included. Some repositories are private,
-        and some are practice.
+        Not everything I have written is included. Some repositories are private, and some are
+        practice.
       </p>
     </main>
   );

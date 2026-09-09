@@ -1,13 +1,14 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
+import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import {
-  Section,
-  SwatchGrid,
-  DataPlate,
   ControlsDemo,
-  ElevationDemo,
   DataDemo,
+  DataPlate,
+  ElevationDemo,
+  Section,
   SectionRule,
+  SwatchGrid,
   Term,
 } from "@/components/ui";
 
@@ -43,6 +44,17 @@ export function Mdx({ source, className = "", components = {} }: MdxProps) {
         options={{
           mdxOptions: {
             remarkPlugins: [remarkGfm],
+            /*
+             * Heading ids, so every section in a post or a project is a link
+             * and Google can offer a jump to one.
+             *
+             * `rehype-slug` only. `rehype-autolink-headings` would wrap each
+             * heading in an anchor, and `.prose-datum a` in prose.css carries
+             * an underline, so every heading on the site would gain one. The
+             * ids are the whole payload; a visible anchor affordance is a
+             * separate design decision that needs a carve-out in that rule.
+             */
+            rehypePlugins: [rehypeSlug],
           },
         }}
         components={{ ...registry, ...components }}

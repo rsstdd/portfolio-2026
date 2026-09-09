@@ -64,7 +64,20 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Ross Todd",
+    siteName: site.name,
+    /*
+     * Site-wide fallback card. Without it, any route that sets no image of its
+     * own emits no `og:image` at all, which is how /cv, /projects and the
+     * colophon shipped as bare links for months.
+     */
+    images: [{ url: "/images/og/default.png", width: 1200, height: 630, alt: site.name }],
+  },
+  /*
+   * Feed discovery. This is `alternates.types`, not `alternates.canonical` —
+   * the warning above still holds, and a canonical here would still be wrong.
+   */
+  alternates: {
+    types: { "application/rss+xml": `${site.url}/feed.xml` },
   },
 };
 

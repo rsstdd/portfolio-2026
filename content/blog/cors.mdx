@@ -1,14 +1,8 @@
 ---
-title: "CORS: What It Is, Why It Exists, and How It Works"
+title: "CORS: what it is, why it exists, and how it works"
 summary: "A practical explanation of Cross-Origin Resource Sharing, browser same-origin policy, preflight requests, response headers, credentials, and common configuration mistakes."
+tags: ["web", "security", "http", "browsers"]
 date: 2026-08-08
-tags:
-  - web
-  - http
-  - security
-  - cors
-  - browsers
-featured: false
 ---
 
 
@@ -50,6 +44,11 @@ For JSONP to work, a server must reply with a response that includes the JSONP f
 JSONP works only for GET requests and is not an effective solution for POSTs, PUTs, and DELETEs of a RESTful server.
 
 JSON-P is an early and limited solution to cross-origin sharing. Fortunately, we have better options now. There are still APIs that use JSON-P, but it's being phased out by the industry in favor of **CORS**.
+
+The same-origin policy is one of several browser-enforced boundaries. The
+attacks that show up when a different boundary is missing, CSRF among them, are
+worked through in
+[SQL injection, XSS, CSRF, and mass assignment, by hand](/blog/web-application-security).
 
 ## CORS Security Model
 

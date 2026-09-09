@@ -1,6 +1,6 @@
 ---
 title: "Process vs. thread, and where Node fits"
-summary: Why isolation and shared memory are different trade-offs, and how Node's single-threaded event loop and worker_threads actually relate to that choice.
+summary: "Why isolation and shared memory are different trade-offs, and how Node's single-threaded event loop and worker_threads actually relate to that choice."
 tags: ["systems", "node", "concurrency"]
 date: 2026-08-08
 ---
@@ -46,6 +46,10 @@ serialization cost to hand data back and forth — several threads
 collaboratively processing regions of the same large array, for instance.
 
 ## Where Node fits
+
+A worked example of the other side of this trade, real OS threads with bounded
+backpressure and coordinated shutdown, is the Rust pipeline in
+[plane scraper](/projects/plane-scraper).
 
 Node's JavaScript execution is single-threaded by design. There is one
 thread running application code, ever, so no data races on JS objects are

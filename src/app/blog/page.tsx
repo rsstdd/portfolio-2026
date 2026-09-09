@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getBlogPosts } from "@/lib/content";
+import { blogJsonLd, JsonLd } from "@/lib/json-ld";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -22,12 +23,14 @@ export default function BlogPage() {
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
+      <JsonLd data={blogJsonLd(posts)} />
+
       <header>
         <p className="text-overline uppercase text-muted">Notes</p>
         <h1 className="mt-3 display">Engineering notes</h1>
         <p className="mt-4 max-w-prose body-lg text-muted">
-          Working notes on security, systems, and the practice of engineering with AI, written to
-          be checked, not taken on faith.
+          Working notes on security, systems, and the practice of engineering with AI, written to be
+          checked, not taken on faith.
         </p>
       </header>
 
@@ -51,9 +54,12 @@ export default function BlogPage() {
                 <p className="text-muted">{post.summary}</p>
               </div>
 
-              <p className="mono caption tabular-nums text-muted md:w-28 md:text-right">
+              <time
+                dateTime={post.date.toISOString().slice(0, 10)}
+                className="mono caption tabular-nums text-muted md:w-28 md:text-right"
+              >
                 {post.date.toISOString().slice(0, 10)}
-              </p>
+              </time>
             </Link>
           </li>
         ))}

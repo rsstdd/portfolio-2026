@@ -5,6 +5,7 @@ import { Mdx } from "@/components/content/mdx";
 import { SectionRule } from "@/components/ui/section-rule";
 import { getAbout } from "@/lib/content";
 import { JsonLd, personJsonLd } from "@/lib/json-ld";
+import { pageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 const getAboutContent = cache(getAbout);
@@ -12,23 +13,17 @@ const getAboutContent = cache(getAbout);
 export function generateMetadata(): Metadata {
   const about = getAboutContent();
 
-  return {
+  /*
+   * The social card is the 1200x630 plate, not `about.portrait`. The portrait
+   * is a different aspect ratio and every platform would crop it differently.
+   */
+  return pageMetadata({
     title: about.title,
     description: about.description,
-    openGraph: {
-      title: about.title,
-      description: about.description,
-      type: "profile",
-      images: about.portrait
-        ? [
-            {
-              url: about.portrait,
-              alt: about.portraitAlt ?? site.name,
-            },
-          ]
-        : undefined,
-    },
-  };
+    path: "/about",
+    image: "/images/og/about.png",
+    type: "profile",
+  });
 }
 
 export default function AboutPage() {

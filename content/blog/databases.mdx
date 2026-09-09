@@ -1,11 +1,9 @@
 ---
-title: Database indexing and query diagnosis
-summary: A Raspberry Pi and Arduino monitoring prototype that reads environmental sensors over Firmata, streams them to a browser over Socket.io, and sends SMS when a reading leaves its threshold.
+title: "Database indexing and query diagnosis"
+summary: "How B-tree, hash, composite, covering, and partial indexes differ, why composite column order decides whether an index is used, and how to diagnose an endpoint with a high P95."
+tags: ["databases", "backend", "performance"]
 date: 2026-08-08
-tags: ["systems", "node", "concurrency"]
 ---
-
-# Database indexing and query diagnosis
 
 ## Index types
 
@@ -78,6 +76,11 @@ the picture, B-tree wins, which is why B-tree is the sane default and hash
 indexes are a narrow optimization, not a general-purpose choice.
 
 ## Diagnosing a slow endpoint (high P95, high DB CPU)
+
+The ingestion path in
+[the aircraft management engine](/projects/aircraft-management-engine) is where
+most of this came from: PostgreSQL, and rows that stay non-canonical until a
+curator accepts them.
 
 Steps:
 

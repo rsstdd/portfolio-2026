@@ -4,6 +4,7 @@ import { ThemeControl } from "./theme-control";
 
 const links = [
   { href: "/projects", label: "Projects" },
+  { href: "/blog", label: "Notes" },
   { href: "/about", label: "About" },
   { href: "/cv", label: "CV" },
 ];

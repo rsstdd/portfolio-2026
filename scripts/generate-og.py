@@ -16,7 +16,35 @@ accent moment per card, which is the tick.
 """
 import subprocess, sys, shutil
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+except ModuleNotFoundError:
+    sys.exit(
+        "Pillow is not installed.\n"
+        "  sudo apt install python3-pil                     # Debian, Ubuntu, WSL\n"
+        "  pip install --break-system-packages Pillow       # if pip refuses (PEP 668)\n"
+        "\nOr skip Python entirely and rasterise the committed SVG masters with\n"
+        "rsvg-convert. See scripts/OG_CARDS.md."
+    )
+
+
+def repo_root() -> Path:
+    """
+    Walk up for package.json so the cards always land in public/images/og
+    regardless of where this script is invoked from. Writing to the current
+    working directory meant running it from src/lib scattered PNGs beside
+    application code.
+    """
+    here = Path(__file__).resolve()
+    for d in (here.parent, *here.parents):
+        if (d / "package.json").exists():
+            return d
+    return here.parent
+
+
+OUT = repo_root() / "public" / "images" / "og"
+OUT.mkdir(parents=True, exist_ok=True)
 
 W, H = 1200, 630
 PAPER, INK, MUTED, LINE, ORANGE = "#f5f2ec", "#221f1a", "#6b655a", "#d9d2c2", "#dd4e12"
@@ -34,6 +62,15 @@ FALLBACK = {
 
 CARDS = [
     # slug, overline, title, plate
+    ("fleet-console", "TypeScript · React · Material UI",
+     "Fleet console",
+     "rsstdd.com/projects/fleet-console · 2026"),
+    ("technical-tts", "Rust · Python · PyTorch",
+     "Technical TTS",
+     "rsstdd.com/projects/technical-tts · in progress"),
+    ("aircraft-management-engine", "Rust · Axum · PostgreSQL",
+     "Aircraft management engine",
+     "rsstdd.com/projects/aircraft-management-engine · in progress"),
     ("default", "Senior Software Engineer · München",
      "Sensors first. Then products. Then platforms.",
      "rsstdd.com · TypeScript · Node · Python · Rust"),
@@ -136,7 +173,7 @@ def build(slug, overline, title, plate):
     d.line([(PAD, plate_y), (W - PAD, plate_y)], fill=LINE, width=2)
     d.text((PAD, plate_y + 14), plate, font=mono_p, fill=MUTED)
 
-    png = Path(f"{slug}.png")
+    png = OUT / f"{slug}.png"
     img.save(png, "PNG", optimize=True)
 
     # SVG master with the real stack.
@@ -157,7 +194,7 @@ def build(slug, overline, title, plate):
         fill="{MUTED}">{esc(plate)}</text>
 </svg>
 '''
-    Path(f"{slug}.svg").write_text(svg, encoding="utf-8")
+    (OUT / f"{slug}.svg").write_text(svg, encoding="utf-8")
     return png
 
 
@@ -170,7 +207,7 @@ if __name__ == "__main__":
         ["fc-list"], capture_output=True, text=True).stdout.lower() if shutil.which("fc-list") else False
     for slug, ol, title, plate in CARDS:
         p = build(slug, ol, title, plate)
-        print(f"{p}  {p.stat().st_size//1024}KB")
+        print(f"{p.relative_to(repo_root())}  {p.stat().st_size//1024}KB")
     print("\nSVG masters carry the IBM Plex stack and are authoritative.")
     print("IBM Plex detected on this machine:", has_plex)
     if not has_plex:

@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
-import { SectionRule, DataPlate, GitHubMark, Term } from "@/components/ui";
+import { DataPlate, GitHubMark, SectionRule, Term } from "@/components/ui";
+import { pageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Colophon",
   description:
     "How this site is built: Next.js 16, static generation, MDX in git, zero client components.",
-};
+  path: "/colophon",
+  image: "/images/og/colophon.png",
+});
 
 const stack = [
   [
@@ -51,7 +53,8 @@ const contrast = [
   ["Orange body text on paper", "5.24", "AA"],
 ];
 
-const datumCopy = "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data. Color relationships were calculated for consistency and contrast rather than selected by eye.";
+const datumCopy =
+  "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data. Color relationships were calculated for consistency and contrast rather than selected by eye.";
 
 export default function ColophonPage() {
   return (
@@ -77,7 +80,9 @@ export default function ColophonPage() {
           </Term>
         </p>
         <h1 className="mt-3 display">How this site is built</h1>
-        <p className="measure mt-4 body-lg text-muted">What the site is built from, and why each piece is there.</p>
+        <p className="measure mt-4 body-lg text-muted">
+          What the site is built from, and why each piece is there.
+        </p>
       </header>
 
       <section className="mt-16">
@@ -100,9 +105,15 @@ export default function ColophonPage() {
           <table className="mt-8 w-full border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-line pb-3 pr-4 text-left text-overline uppercase text-muted">Pair</th>
-                <th className="border-b border-line pb-3 pr-4 text-right text-overline uppercase text-muted">Ratio</th>
-                <th className="border-b border-line pb-3 pr-4 text-right text-overline uppercase text-muted">Level</th>
+                <th className="border-b border-line pb-3 pr-4 text-left text-overline uppercase text-muted">
+                  Pair
+                </th>
+                <th className="border-b border-line pb-3 pr-4 text-right text-overline uppercase text-muted">
+                  Ratio
+                </th>
+                <th className="border-b border-line pb-3 pr-4 text-right text-overline uppercase text-muted">
+                  Level
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -116,9 +127,7 @@ export default function ColophonPage() {
             </tbody>
           </table>
 
-          <DataPlate>
-            Computed 2026-07-29 against opaque backgrounds · WCAG 2.2
-          </DataPlate>
+          <DataPlate>Computed 2026-07-29 against opaque backgrounds · WCAG 2.2</DataPlate>
 
           <p className="mt-6">
             <a href="/design" className="link-standalone">
@@ -132,11 +141,12 @@ export default function ColophonPage() {
         <SectionRule index="03" label="Measurements" as="h2" />
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">
-            Not yet measured. When these carry real numbers they will say so plainly if any of
-            them disappoint.
+            Not yet measured. When these carry real numbers they will say so plainly if any of them
+            disappoint.
           </p>
           <DataPlate>
-            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not yet measured
+            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not
+            yet measured
           </DataPlate>
         </div>
       </section>
@@ -145,8 +155,8 @@ export default function ColophonPage() {
         <SectionRule index="04" label="Source" as="h2" />
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">
-            The repository is public. Fonts are self-hosted, and there are no third-party requests, so
-            nothing about a visit is shared with anyone.
+            The repository is public. Fonts are self-hosted, and there are no third-party requests,
+            so nothing about a visit is shared with anyone.
           </p>
           <p className="mt-6">
             {/*
@@ -154,10 +164,7 @@ export default function ColophonPage() {
               datum tick and the GitHub mark both occupy that slot, and a link
               wearing both reads as two design languages arguing.
             */}
-            <a
-              href={`${site.github}/portfolio-2026`}
-              className="link-standalone--no-flag gap-1.5"
-            >
+            <a href={`${site.github}/portfolio-2026`} className="link-standalone--no-flag gap-1.5">
               <GitHubMark />
               View the source
             </a>

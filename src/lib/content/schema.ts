@@ -61,6 +61,17 @@ export const blogPostSchema = z.object({
   date: z.coerce.date(),
   /** Set only when a post is revised after its original publish date. */
   updated: z.coerce.date().optional(),
+  /**
+   * Sorted first by `getBlogPosts`, same rule as projects, per AGENTS.md
+   * "Featured content is a first-class flag".
+   *
+   * This field is here because two posts already declared it and Zod was
+   * stripping it silently, so `featured: true` on the question bank had no
+   * effect anywhere. An inert flag is worse than no flag: it reads as working.
+   */
+  featured: z.boolean().default(false),
+  /** Social card. Falls back to the site default. Mirrors `projectSchema`. */
+  ogImage: z.string().optional(),
 });
 
 /**

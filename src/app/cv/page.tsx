@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { Mdx } from "@/components/content/mdx";
 import { getCv } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
 export function generateMetadata(): Metadata {
   const cv = getCv();
-  return {
+  return pageMetadata({
     title: "CV",
     description: `${cv.name}, ${cv.title}, ${cv.location}.`,
-  };
+    path: "/cv",
+    image: "/images/og/cv.png",
+  });
 }
 
 /**
