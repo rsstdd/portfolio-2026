@@ -1,8 +1,25 @@
 import { ImageResponse } from "next/og";
 import type { JSX } from "react/jsx-runtime";
+import { getProjectSlugs } from "@/lib/content";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
+
+/**
+ * Without this, the icon is the one route on the site rendered on demand.
+ *
+ * An icon in a static segment is prerendered by default, but this one sits
+ * under [slug] and Next cannot enumerate a dynamic segment on its own, so it
+ * shipped as a live route handler. The colophon claims every route is
+ * statically generated, and until this existed that claim was false and a
+ * reviewer could see it in the first screen of `pnpm build` output.
+ *
+ * Same source as the page in this segment, so the two cannot disagree about
+ * which projects exist.
+ */
+export function generateStaticParams() {
+  return getProjectSlugs().map((slug) => ({ slug }));
+}
 
 const BG = "#f5f2ec";
 const INK = "#221f1a";
