@@ -61,6 +61,9 @@ export const metadata: Metadata = {
   },
   description:
     "Senior software engineer in Munich. Nine years across sensors, full-stack product work, and shared frontend platforms.",
+  verification: {
+    google: "QQ3UlnWLxNEAIybs29R4Du5k1AF-Vo7RRd2Uwsx_eOc",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
