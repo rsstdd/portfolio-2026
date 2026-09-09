@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
+import { cache } from "react";
 import {
   type About,
   aboutSchema,
@@ -85,8 +86,21 @@ function fail(file: string, error: unknown): never {
   throw new Error(`Invalid frontmatter in content/${file}:\n${detail}`);
 }
 
-/** All projects: featured first, ranked before unranked, then newest. */
-export function getProjects(): LoadedProject[] {
+/**
+ * All projects: featured first, ranked before unranked, then newest.
+ *
+ * Wrapped in `cache` because the per-slug readers below scan the whole
+ * directory: without it a project page parses every `.mdx` once in
+ * `generateMetadata` and again in the component, and a blog post page manages
+ * three passes. `cache` dedupes within a single render, which is where all of
+ * that redundancy actually is.
+ *
+ * Note what this does not do: it is per-render, not per-build. True
+ * once-per-build would need a module-level memo, and that serves stale content
+ * in dev after an `.mdx` edit, which is a worse trade for a build already
+ * measured in seconds.
+ */
+export const getProjects = cache((): LoadedProject[] => {
   return readdirSync(PROJECTS_DIR)
     .filter((f) => f.endsWith(".mdx"))
     .map((file) => {
@@ -119,7 +133,7 @@ export function getProjects(): LoadedProject[] {
 
       return b.date.getTime() - a.date.getTime();
     });
-}
+});
 
 export function getProject(slug: string): LoadedProject | undefined {
   return getProjects().find((p) => p.slug === slug);
@@ -138,7 +152,7 @@ export function getProjectSlugs(): string[] {
  * Same rule as `getProjects`, and it lives here for the same reason: a page
  * that re-sorted would be a second copy of the rule, free to drift.
  */
-export function getBlogPosts(): LoadedBlogPost[] {
+export const getBlogPosts = cache((): LoadedBlogPost[] => {
   return readdirSync(BLOG_DIR)
     .filter((f) => f.endsWith(".mdx"))
     .map((file) => {
@@ -153,7 +167,7 @@ export function getBlogPosts(): LoadedBlogPost[] {
       if (a.featured !== b.featured) return a.featured ? -1 : 1;
       return b.date.getTime() - a.date.getTime();
     });
-}
+});
 
 export function getBlogPost(slug: string): LoadedBlogPost | undefined {
   return getBlogPosts().find((p) => p.slug === slug);
