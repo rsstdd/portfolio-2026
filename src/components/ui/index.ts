@@ -7,3 +7,4 @@ export { Section } from "./section";
 export { SectionRule } from "./section-rule";
 export { SwatchGrid } from "./swatch-grid";
 export { Term } from "./term";
+export { MoonMark, SunMark, SystemMark } from "./theme-icons";
