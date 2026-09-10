@@ -1,4 +1,6 @@
 import { DataPlate, GitHubMark, SectionRule, Term } from "@/components/ui";
+import { getContrastTable } from "@/lib/contrast";
+import measurements from "@/lib/measurements.json";
 import { pageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -41,22 +43,20 @@ const stack = [
   ],
 ];
 
-/**
- * Contrast ratios computed against the palette, not eyeballed. Reproduced here
- * because a design system that claims accessibility should show the arithmetic.
- */
-const contrast = [
-  ["Ink on paper", "14.70", "AAA"],
-  ["Muted on paper", "5.17", "AA"],
-  ["Paper on ink (button)", "14.70", "AA"],
-  ["Orange on paper (UI, large text)", "3.63", "AA large"],
-  ["Orange body text on paper", "5.24", "AA"],
-];
-
 const datumCopy =
   "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data. Color relationships were calculated for consistency and contrast rather than selected by eye.";
 
 export default function ColophonPage() {
+  /*
+   * Computed from design-tokens.css at build time rather than transcribed.
+   * These five sat here as string literals, and all five were correct, which is
+   * the state that makes a published claim dangerous: right today, unmaintained,
+   * and silently wrong after the next palette edit. `buildTable` also throws
+   * when a pair drops below the level it claims, so that edit fails the build
+   * instead of shipping a page that states arithmetic it no longer performs.
+   */
+  const contrast = getContrastTable();
+
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
       <header>
@@ -117,17 +117,19 @@ export default function ColophonPage() {
               </tr>
             </thead>
             <tbody>
-              {contrast.map(([pair, ratio, level]) => (
-                <tr key={pair}>
-                  <td className="py-2">{pair}</td>
-                  <td className="py-2 text-right mono tabular-nums">{ratio}</td>
-                  <td className="py-2 text-right mono">{level}</td>
+              {contrast.map((row) => (
+                <tr key={row.label}>
+                  <td className="py-2">{row.label}</td>
+                  <td className="py-2 text-right mono tabular-nums">{row.ratio}</td>
+                  <td className="py-2 text-right mono">{row.level}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <DataPlate>Computed 2026-07-29 against opaque backgrounds · WCAG 2.2</DataPlate>
+          <DataPlate>
+            Computed at build from design-tokens.css against opaque backgrounds · WCAG 2.1
+          </DataPlate>
 
           <p className="mt-6">
             <a href="/design" className="link-standalone">
@@ -141,12 +143,25 @@ export default function ColophonPage() {
         <SectionRule index="03" label="Measurements" as="h2" />
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">
-            Not yet measured. When these carry real numbers they will say so plainly if any of them
-            disappoint.
+            The home page ships {measurements.homeScriptTransferKb}KB of compressed JavaScript,
+            which the browser expands to {measurements.homeScriptParsedKb}KB to parse. None of it is
+            application code. Zero client components means nothing here opts into hydration; it does
+            not mean nothing is sent, because the App Router loads its client runtime whether a page
+            uses it or not. That is the honest shape of the trade this site makes, and stating the
+            number is better than letting the line above it imply a smaller one.
+          </p>
+          <p className="measure mt-4 text-muted">
+            The figures come from <code>scripts/measure-payload.mjs</code>, which loads every route
+            in the sitemap and reads the Resource Timing API rather than adding up chunk files,
+            because that measures what a visitor actually downloads. The numbers are a budget as
+            well as a record: the build fails if the payload grows more than five per cent past
+            them.
           </p>
           <DataPlate>
-            JavaScript shipped: not yet measured · Largest route: not yet measured · Lighthouse: not
-            yet measured
+            JavaScript {measurements.homeScriptTransferKb}KB compressed,{" "}
+            {measurements.homeScriptParsedKb}KB parsed · Largest route {measurements.largestRoute}{" "}
+            at {measurements.largestRouteTransferKb}KB · {measurements.routes} routes measured{" "}
+            {measurements.measuredAt} · Lighthouse: not yet measured
           </DataPlate>
         </div>
       </section>
