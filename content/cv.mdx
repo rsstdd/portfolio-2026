@@ -8,7 +8,7 @@ github: https://github.com/rsstdd
 linkedin: https://linkedin.com/in/rsstdd
 site: https://rsstdd.com
 languages: "English native; German A0"
-updated: 2026-07-30
+updated: 2026-09-10
 ---
 
 Senior software engineer with a decade building web applications, backend services, and shared platforms at scale. At Alaska Airlines, built a component platform adopted across five host frameworks; versioned props and events, explicit contracts, and a deprecation policy made that reuse durable. At Nike, built a serverless consent platform handling 30,000 requests per second across four AWS regions, including China. Led a separate migration of more than 20 million records. The work centers on frontend and platform architecture, event-driven systems, performance grounded in measurement, and the contracts and documentation that let teams ship independently. Core stack: TypeScript, JavaScript, React, Next.js, Node.js, Python, Rust, and AWS.
@@ -16,6 +16,17 @@ Senior software engineer with a decade building web applications, backend servic
 Based in Munich, authorized to work in Germany without sponsorship.
 
 ## Experience
+
+### Independent engineering — Munich, Germany
+**Jan 2026 – present · Self-directed**
+
+Systems work in Rust, TypeScript, and PostgreSQL since relocating to Munich. This is self-directed work rather than client engagements, and it is listed as such. Each system below has a page at [rsstdd.com/projects](https://rsstdd.com/projects) stating what was read in the source, what was measured, and what was not.
+
+- Built an aircraft management engine in Rust 2024 and PostgreSQL as a hexagonal Cargo workspace, where the dependency direction is enforced by a workspace automation task rather than by convention. Imported values stay non-canonical until a curator accepts them, because a parser proving a value is well-formed is a different claim from a curator proving it is correct. Every HTTP refusal is an RFC 9457 problem document, including the body-limit and timeout cases, which are written by hand because the `tower-http` layers answer with bodyless responses.
+- Built the concurrent Rust scraping pipeline that produces its source data, with bounded backpressure through capacity-scaled channels, barrier-coordinated shutdown, and rate-limit-aware retry with capped jittered backoff.
+- Built a robot telemetry console that treats silence as an event, normalizing three vendor dialects into one canonical envelope and degrading freshness on a server-side sweep rather than in the browser.
+- Built a local-first Rust and Python text-to-speech pipeline engineered so a stochastic generator renders reproducibly, with every input that can change the audio named in the cache key.
+- Built this site: statically generated Next.js 16 with content in git, zero client components, and a Zod content schema that fails the build rather than rendering a blank card.
 
 ### Alaska Airlines — Senior software engineer, content engineering
 **Feb 2024 – Jan 2026 · Contract · Remote, USA**

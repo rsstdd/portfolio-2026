@@ -16,9 +16,15 @@ export const site = {
   /**
    * Set to null when the search ends. The home page omits the line entirely
    * rather than rendering an empty element.
+   *
+   * It names an employment type, a start date, and a location because the
+   * previous line named none of them: "open to senior and staff platform or
+   * full-stack roles" left a reader unable to tell whether this was a permanent
+   * search, a contract search, or an idle one. The three facts a recruiter
+   * needs before writing are the three the line now leads with.
    */
   availability:
-    "Based in Munich. Authorized to work in Germany without sponsorship. Open to senior and staff platform or full-stack roles." as
+    "Available now. Permanent senior or staff platform roles, in Munich or remote within the EU." as
       | string
       | null,
 

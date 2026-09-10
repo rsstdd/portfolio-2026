@@ -55,8 +55,15 @@ export default function HomePage() {
 
         <p className="mt-6 max-w-prose body-lg text-muted">{home.intro}</p>
 
+        {/*
+          Ink rather than muted, and no accent: DESIGN_SYSTEM.md 1 principle 3
+          allows one accent moment per view and the datum tick on the "Selected
+          work" rule below already spends it. This line was previously the most
+          de-emphasised combination on the page, which is a strange place to put
+          the one sentence a recruiter is looking for.
+        */}
         {site.availability ? (
-          <p className="mt-4 mono caption uppercase text-muted">{site.availability}</p>
+          <p className="mt-4 mono caption uppercase text-ink">{site.availability}</p>
         ) : null}
 
         <Link href={home.ctaHref} className="mt-10 link-standalone">
