@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mdx } from "@/components/content/mdx";
+import { ContactCta } from "@/components/layout/contact-cta";
+import { RelatedPosts } from "@/components/layout/related-posts";
 import { getBlogPost, getBlogPostSlugs, getTags } from "@/lib/content";
 import { blogPostingJsonLd, breadcrumbJsonLd, JsonLd } from "@/lib/json-ld";
 import { pageMetadata } from "@/lib/metadata";
@@ -116,6 +118,15 @@ export default async function BlogPostPage({ params }: Params) {
           <Mdx source={post.body} />
         </div>
       </article>
+
+      {/*
+        Blog posts are where strangers arrive from search, so they are the pages
+        that most need somewhere to go next. They were the pages that had it
+        least: the closing block landed on /projects, /about and the project
+        pages in the same commit and missed this one.
+      */}
+      <RelatedPosts current={post} />
+      <ContactCta />
     </main>
   );
 }
