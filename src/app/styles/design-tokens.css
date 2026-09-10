@@ -103,29 +103,38 @@
  * The cost, stated on /colophon rather than left to be discovered: a CSS-only
  * control has nowhere to persist. An explicit choice survives in-session
  * navigation and resets to the system default on reload.
+ *
+ * Both mappings are scoped to `screen`, because a dark theme is a screen
+ * concern and paper is not backlit. Without that scope, printing from the dark
+ * theme rendered near-white text on the white background the print stylesheet
+ * forces, which is an invisible page rather than a dark one. Gating here rather
+ * than restating the light palette inside `@media print` keeps the promise
+ * above: the values live in one place and only the mapping repeats.
  */
-[data-theme="dark"],
-:root:has(#theme-dark:checked) {
-  --bg: var(--dark-bg);
-  --surface: var(--dark-surface);
-  --well: var(--dark-well);
-  --border-line: var(--dark-line);
-  --border-essential: var(--dark-line-essential);
-  --text: var(--dark-text);
-  --text-muted: var(--dark-text-muted);
-  --brand: var(--dark-text);
-  --brand-hover: var(--dark-brand-hover);
-  --on-brand: var(--dark-bg);
-  --accent: var(--dark-accent);
-  --accent-text: var(--dark-accent);
-  --focus-ring: var(--dark-accent);
-  --success: var(--dark-success);
-  --warn: var(--dark-warn);
-  --error: var(--dark-error);
-  --shadow-tint: 0 0 0;
+@media screen {
+  [data-theme="dark"],
+  :root:has(#theme-dark:checked) {
+    --bg: var(--dark-bg);
+    --surface: var(--dark-surface);
+    --well: var(--dark-well);
+    --border-line: var(--dark-line);
+    --border-essential: var(--dark-line-essential);
+    --text: var(--dark-text);
+    --text-muted: var(--dark-text-muted);
+    --brand: var(--dark-text);
+    --brand-hover: var(--dark-brand-hover);
+    --on-brand: var(--dark-bg);
+    --accent: var(--dark-accent);
+    --accent-text: var(--dark-accent);
+    --focus-ring: var(--dark-accent);
+    --success: var(--dark-success);
+    --warn: var(--dark-warn);
+    --error: var(--dark-error);
+    --shadow-tint: 0 0 0;
+  }
 }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
   :root:has(#theme-system:checked) {
     --bg: var(--dark-bg);
     --surface: var(--dark-surface);

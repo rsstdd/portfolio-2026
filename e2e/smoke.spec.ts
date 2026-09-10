@@ -148,3 +148,43 @@ test("the CV offers a PDF that is really there", async ({ page, request }) => {
   // A PDF that is present but empty is the failure a status check alone misses.
   expect(Number(res.headers()["content-length"] ?? 0)).toBeGreaterThan(20_000);
 });
+
+/*
+ * Printing from the dark theme.
+ *
+ * The print stylesheet forces a white page, and prose sets its own
+ * `color: var(--text)` rather than inheriting the black forced onto <body>. So
+ * while the dark mappings applied in print media, choosing dark and pressing
+ * print produced near-white text on white: an invisible CV, not a dark one.
+ * Nothing about the screen looking right says anything about this, and
+ * render-cv.mjs cannot cover it because it renders in the browser's default
+ * light state.
+ */
+test("the CV prints legibly after choosing the dark theme", async ({ page }) => {
+  await page.goto("/cv");
+
+  const bg = () =>
+    page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--bg").trim());
+
+  // Confirm the click really switched the theme, so the print assertion below
+  // is about print media rather than about a click that silently did nothing.
+  const before = await bg();
+  await page.locator('label[for="theme-dark"]').click();
+  await expect.poll(bg).not.toBe(before);
+
+  await page.emulateMedia({ media: "print" });
+
+  const luminances = await page.evaluate(() => {
+    const relative = (color: string) => {
+      const [r = 0, g = 0, b = 0] = (color.match(/\d+/g) ?? []).map(Number);
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    };
+    return [...document.querySelectorAll("article p, article li, article h2")].map((el) =>
+      relative(getComputedStyle(el).color),
+    );
+  });
+
+  expect(luminances.length).toBeGreaterThan(0);
+  // Ink on paper. Anything above 0.5 is lighter than mid-grey and vanishes.
+  expect(Math.max(...luminances)).toBeLessThan(0.5);
+});

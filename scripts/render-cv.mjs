@@ -26,13 +26,16 @@
  * which is whether the source moved after the PDF was last rendered. It also
  * needs no browser and no server, so the CI step is fast and cannot flake.
  *
- * The honest limit: the input set is the three files below. A change to a
- * shared typography token in design-tokens.css can alter the document without
- * tripping this check. Widening the set to every file that transitively affects
- * a page means hashing most of src/, which would fail on changes that cannot
- * touch the CV and teach everyone to re-render on reflex. Three named files
- * that cover the realistic edits is the better trade, and naming the gap here
- * is the price of making it.
+ * The honest limit: the input set is the four files below, not everything that
+ * transitively affects the page. Hashing all of src/ would fail on changes that
+ * cannot touch the CV and would teach everyone to re-render on reflex, which
+ * ends with the check being ignored.
+ *
+ * design-tokens.css is in the set because it stopped being hypothetical. It was
+ * listed here as the example of a file that could change the document without
+ * tripping the check, and then a change to it did exactly that: scoping the
+ * dark mappings to `screen` altered what print media resolves. A named gap that
+ * has since swallowed a real edit is not a trade-off any more, it is a bug.
  *
  * Usage:
  *   node scripts/render-cv.mjs           render and write the PDF and sidecar
@@ -61,7 +64,12 @@ const PORT = Number(process.env.CV_PDF_PORT ?? 3200);
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 
 /** The files that can change the document. See the note above about scope. */
-const INPUTS = ["content/cv.mdx", "src/app/cv/page.tsx", "src/app/styles/components.css"];
+const INPUTS = [
+  "content/cv.mdx",
+  "src/app/cv/page.tsx",
+  "src/app/styles/components.css",
+  "src/app/styles/design-tokens.css",
+];
 
 async function inputHash() {
   const hash = createHash("sha256");
@@ -233,6 +241,50 @@ async function render() {
        * first export came out with the site's paper background across all nine
        * pages. A guard that only checks `display` would have signed that off.
        */
+      /*
+       * The body rule alone does not make a legible document. Prose sets its
+       * own `color: var(--text)`, so descendants do not inherit the black the
+       * print block forces onto <body>. With the dark theme still mapped in
+       * print media that meant near-white text on the forced white background:
+       * an invisible page rather than a dark one, and one a background-only
+       * guard signs off on happily.
+       */
+      const tooLightProse = () =>
+        page.evaluate(() => {
+          const luminance = (color) => {
+            const [r, g, b] = color.match(/\d+/g).map(Number);
+            return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          };
+          return [
+            ...new Set(
+              [...document.querySelectorAll("article p, article li, article h2, article strong")]
+                .map((el) => getComputedStyle(el).color)
+                .filter((color) => luminance(color) > 0.5),
+            ),
+          ];
+        });
+
+      const assertLegible = async (state) => {
+        const tooLight = await tooLightProse();
+        if (tooLight.length > 0) {
+          throw new Error(
+            `Prose renders too light to read on white (${state}): ${tooLight.join(", ")}. ` +
+              "A dark-theme token is still mapped in print media. Check the @media screen " +
+              "scope around the dark mappings in src/app/styles/design-tokens.css.",
+          );
+        }
+      };
+
+      /*
+       * Only the state this script renders in. Chromium launches light, so this
+       * cannot speak for a reader who selected the dark theme and pressed
+       * print, and pretending otherwise would be the worse kind of green check.
+       * That case is covered in e2e/smoke.spec.ts, where switching themes is
+       * already possible and the site chrome carrying the control is not
+       * `display: none`.
+       */
+      await assertLegible("default theme");
+
       const chromeHidden = await page.evaluate(() =>
         [...document.querySelectorAll("body > header, body > footer, .no-print")].every(
           (el) => getComputedStyle(el).display === "none",
