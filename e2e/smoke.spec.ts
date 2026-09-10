@@ -111,3 +111,40 @@ test("each theme glyph still names itself for a screen reader", async ({ page })
   }
   await expect(page.getByRole("group", { name: "Theme" })).toBeVisible();
 });
+
+/*
+ * The closing block is markup with no behaviour, which is exactly the kind of
+ * thing that disappears in a refactor without anything failing. It exists so a
+ * reader who has just been convinced has somewhere to go, so its absence is a
+ * silent regression in the only part of this site with a commercial job.
+ */
+test("every page that argues for the work ends with a way to reach me", async ({ page }) => {
+  for (const path of ["/projects", "/about", "/projects/fleet-console"]) {
+    await page.goto(path);
+    const contact = page.getByRole("navigation", { name: "Contact" });
+    await expect(contact, `no contact block on ${path}`).toBeVisible();
+    await expect(contact.locator('a[href^="mailto:"]')).toHaveCount(1);
+    await expect(contact.locator('a[href="/cv"]')).toHaveCount(1);
+  }
+});
+
+/*
+ * The CV PDF is a committed artifact, so the link can point at a file that was
+ * never rendered or was deleted, and the page would look perfectly correct
+ * while the download 404s. render-cv.mjs --check proves the file is current;
+ * this proves it is actually served at the URL the page offers.
+ */
+test("the CV offers a PDF that is really there", async ({ page, request }) => {
+  await page.goto("/cv");
+
+  const link = page.locator('a[href$=".pdf"]');
+  await expect(link).toHaveCount(1);
+  const href = await link.getAttribute("href");
+  if (!href) throw new Error("The CV download link has no href.");
+
+  const res = await request.get(href);
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("pdf");
+  // A PDF that is present but empty is the failure a status check alone misses.
+  expect(Number(res.headers()["content-length"] ?? 0)).toBeGreaterThan(20_000);
+});
