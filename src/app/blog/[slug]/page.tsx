@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: Params) {
       <JsonLd data={blogPostingJsonLd(post)} />
       <JsonLd
         data={breadcrumbJsonLd([
-          { name: "Engineering notes", path: "/blog" },
+          { name: "Notes", path: "/blog" },
           { name: post.title, path: `/blog/${post.slug}` },
         ])}
       />

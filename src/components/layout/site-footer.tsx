@@ -9,11 +9,6 @@ const links = [
   { href: "/privacy", label: "Privacy" },
   { href: "/colophon", label: "Colophon" },
   { href: "/design", label: "Datum design system" },
-  // "Notes", matching the header nav. The page is still titled "Engineering
-  // notes" in its heading, feed and breadcrumbs, because that is its name; this
-  // is a nav label, and two navs on one page calling the same destination
-  // different things is the kind of small inconsistency a reader notices
-  // without being able to say why.
   { href: "/blog", label: "Notes" },
 ];
 

@@ -335,7 +335,7 @@ test("the home page leads with the featured note, in the same order as /blog", a
   await page.goto("/");
 
   const section = page.locator("section", {
-    has: page.getByRole("heading", { name: "Engineering notes" }),
+    has: page.getByRole("heading", { name: "Notes" }),
   });
   await expect(section).toHaveCount(1);
 

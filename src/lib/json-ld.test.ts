@@ -56,7 +56,7 @@ describe("blogPostingJsonLd", () => {
 describe("breadcrumbJsonLd", () => {
   it("numbers positions from one and resolves each item to an absolute URL", () => {
     const ld = breadcrumbJsonLd([
-      { name: "Engineering notes", path: "/blog" },
+      { name: "Notes", path: "/blog" },
       { name: "A post", path: "/blog/a-post" },
     ]);
     expect(ld.itemListElement.map((i) => i.position)).toEqual([1, 2]);

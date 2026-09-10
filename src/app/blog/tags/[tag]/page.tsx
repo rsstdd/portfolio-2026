@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
   return pageMetadata({
     title: `Notes tagged ${name}`,
-    description: `${count} engineering notes tagged ${name}.`,
+    description: `${count} notes tagged ${name}.`,
     path: `/blog/tags/${tag}`,
   });
 }

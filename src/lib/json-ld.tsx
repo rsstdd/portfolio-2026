@@ -174,7 +174,7 @@ export function blogJsonLd(posts: LoadedBlogPost[]) {
     "@type": "Blog",
     "@id": `${site.url}/blog#blog`,
     url: `${site.url}/blog`,
-    name: "Engineering notes",
+    name: "Notes",
     inLanguage: "en",
     author: { "@id": PERSON_ID },
     publisher: { "@id": PERSON_ID },

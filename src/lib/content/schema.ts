@@ -105,7 +105,7 @@ export const homeSchema = z.object({
    * home page omits the whole section when there are no posts, rather than
    * rendering a heading over nothing.
    */
-  notesLabel: z.string().default("Engineering notes"),
+  notesLabel: z.string().default("Notes"),
   /** How many posts the home page shows. The loader owns which ones. */
   notesCount: z.number().int().positive().default(3),
   ctaLabel: z.string().default("View the work"),

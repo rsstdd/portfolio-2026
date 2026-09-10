@@ -4,7 +4,7 @@ import { blogJsonLd, JsonLd } from "@/lib/json-ld";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
-  title: "Engineering notes",
+  title: "Notes",
   description:
     "Notes on web security, databases, concurrency, and agentic engineering practice — each one written to be checked, not taken on faith.",
   path: "/blog",
@@ -26,8 +26,13 @@ export default function BlogPage() {
       <JsonLd data={blogJsonLd(posts)} />
 
       <header>
-        <p className="text-overline uppercase text-muted">Notes</p>
-        <h1 className="mt-3 display">Engineering notes</h1>
+        {/*
+          No overline here, unlike /projects and /about. Those pair a category
+          overline with a descriptive title: "Projects" over "Selected work".
+          This page's title is now the category, so an overline would print the
+          same word twice at two sizes.
+        */}
+        <h1 className="display">Notes</h1>
         <p className="mt-4 max-w-prose body-lg text-muted">
           Working notes on security, systems, and the practice of engineering with AI, written to be
           checked, not taken on faith.
