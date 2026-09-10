@@ -188,3 +188,32 @@ test("the CV prints legibly after choosing the dark theme", async ({ page }) => 
   // Ink on paper. Anything above 0.5 is lighter than mid-grey and vanishes.
   expect(Math.max(...luminances)).toBeLessThan(0.5);
 });
+
+/*
+ * Security headers.
+ *
+ * A header that stops being sent looks exactly like one that is working: the
+ * page renders, nothing errors, and the only symptom is a scan the site owner
+ * never runs. Production shipped for months with only the HSTS header Vercel
+ * adds, which is how this went unnoticed in the first place.
+ *
+ * The CSP assertion checks the two directives that do real work on a static
+ * document site rather than the whole string, so tightening img-src or adding a
+ * source does not break the test for no reason.
+ */
+test("every response carries the security headers", async ({ request }) => {
+  for (const path of ["/", "/cv", "/feed.xml"]) {
+    const res = await request.get(path);
+    const headers = res.headers();
+
+    expect(headers["x-content-type-options"], path).toBe("nosniff");
+    expect(headers["referrer-policy"], path).toBe("strict-origin-when-cross-origin");
+    expect(headers["x-frame-options"], path).toBe("DENY");
+
+    const csp = headers["content-security-policy"];
+    expect(csp, `no CSP on ${path}`).toBeTruthy();
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).toContain("default-src 'self'");
+  }
+});
