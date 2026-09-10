@@ -1,0 +1,25 @@
+{
+  "url": "https://rsstdd.com/",
+  "measuredAt": "2026-09-10",
+  "runs": 3,
+  "categories": {
+    "performance": {
+      "min": 66,
+      "max": 92
+    },
+    "accessibility": {
+      "min": 100,
+      "max": 100
+    },
+    "best-practices": {
+      "min": 100,
+      "max": 100
+    },
+    "seo": {
+      "min": 92,
+      "max": 100
+    }
+  },
+  "profile": "simulated mobile throttling, Lighthouse default preset",
+  "lighthouseVersion": "13.4.1"
+}

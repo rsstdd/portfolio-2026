@@ -1,5 +1,6 @@
 import { DataPlate, GitHubMark, SectionRule, Term } from "@/components/ui";
 import { getContrastTable } from "@/lib/contrast";
+import lighthouse from "@/lib/lighthouse.json";
 import measurements from "@/lib/measurements.json";
 import { pageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -26,8 +27,8 @@ const stack = [
     "Every file is a Server Component. Each candidate island was rejected with a reason recorded in the file rather than in a commit message.",
   ],
   [
-    "A theme control with no memory",
-    "System, light, and dark are three radio inputs read by a CSS :has() selector, so the switch costs no JavaScript. It also has nowhere to store a choice: an explicit selection survives navigation within a session and resets to the system default on reload. Persisting it needs localStorage, which needs a client component, which costs more than the defect does.",
+    "A persisted theme control",
+    "System, light, and dark remain three radio inputs read by CSS. A small inline script stores an explicit choice in localStorage and restores it before first paint, without adding a client component.",
   ],
   [
     "MDX parsed by about a hundred owned lines",
@@ -46,6 +47,25 @@ const stack = [
 const datumCopy =
   "Datum takes its name from the fixed reference plane used in aircraft design to calculate structural coordinates, measurements, and weight balance. It serves the same role here: the system's zero point. The visual language uses warm paper tones, restrained monochrome surfaces, a single instrument color, and the IBM Plex family for display, body, and data. Color relationships were calculated for consistency and contrast rather than selected by eye.";
 
+/** Lighthouse's category keys are not display copy. `seo` is not a word. */
+const CATEGORY_LABELS: Record<string, string> = {
+  performance: "performance",
+  accessibility: "accessibility",
+  "best-practices": "best practices",
+  seo: "SEO",
+};
+
+/** "a, b and c", because a bare join reads as a stack trace in prose. */
+function formatList(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/** Capitalises a sentence opener without disturbing an initialism like SEO. */
+function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export default function ColophonPage() {
   /*
    * Computed from design-tokens.css at build time rather than transcribed.
@@ -56,6 +76,44 @@ export default function ColophonPage() {
    * instead of shipping a page that states arithmetic it no longer performs.
    */
   const contrast = getContrastTable();
+
+  /*
+   * Lighthouse split into what it measured reliably and what it did not.
+   *
+   * Accessibility and best practices are deterministic audits of the document
+   * and returned the same score on every run. Performance is a simulation whose
+   * result moves with load on the measuring machine: three runs against one URL
+   * spanned 66 to 92, and earlier sessions returned 99 and 80. Quoting a number
+   * out of that would describe a laptop rather than the site, so the page prints
+   * the range and says so instead. Computed rather than written down, so a
+   * future run where everything agrees needs no edit here.
+   */
+  const scores = Object.entries(lighthouse.categories).map(([key, value]) => ({
+    label: CATEGORY_LABELS[key] ?? key,
+    ...value,
+  }));
+  const stable = scores.filter((s) => s.min === s.max);
+  const unstable = scores.filter((s) => s.min !== s.max);
+
+  /*
+   * Built as strings rather than assembled in JSX. The first version
+   * interleaved `{" "}` around conditional fragments and rendered "…rsstdd.com/
+   * , performance and seo are not quoted": a space before a comma, and a
+   * sentence starting lowercase. Prose is easier to get right as prose.
+   */
+  const measured =
+    stable.length > 0
+      ? `Lighthouse scores ${formatList(stable.map((s) => `${s.label} ${s.min}`))} against ` +
+        `${lighthouse.url}, identically in every one of ${lighthouse.runs} runs.`
+      : "";
+
+  const withheld =
+    unstable.length > 0
+      ? `${sentenceCase(formatList(unstable.map((s) => s.label)))} ` +
+        `${unstable.length === 1 ? "is" : "are"} not quoted, because ` +
+        `${unstable.length === 1 ? "it ranged" : "they ranged"} ` +
+        `${formatList(unstable.map((s) => `${s.min} to ${s.max}`))} across those same runs.`
+      : "";
 
   return (
     <main id="main" className="mx-auto max-w-content px-5 pt-12 pb-8 md:px-8 md:pt-16 lg:px-10">
@@ -144,11 +202,11 @@ export default function ColophonPage() {
         <div className="mt-8 max-w-prose">
           <p className="measure text-muted">
             The home page ships {measurements.homeScriptTransferKb}KB of compressed JavaScript,
-            which the browser expands to {measurements.homeScriptParsedKb}KB to parse. None of it is
-            application code. Zero client components means nothing here opts into hydration; it does
-            not mean nothing is sent, because the App Router loads its client runtime whether a page
-            uses it or not. That is the honest shape of the trade this site makes, and stating the
-            number is better than letting the line above it imply a smaller one.
+            which the browser expands to {measurements.homeScriptParsedKb}KB to parse. The measured
+            bundle is Next.js runtime rather than application code. A small inline theme script is
+            embedded in the HTML and excluded from these Resource Timing figures. Zero client
+            components means nothing here adds a hydrated client island; it does not mean nothing is
+            sent, because the App Router loads its client runtime whether a page uses it or not.
           </p>
           <p className="measure mt-4 text-muted">
             The figures come from <code>scripts/measure-payload.mjs</code>, which loads every route
@@ -157,11 +215,18 @@ export default function ColophonPage() {
             well as a record: the build fails if the payload grows more than five per cent past
             them.
           </p>
+          <p className="measure mt-4 text-muted">
+            {measured} {withheld} That spread measures how busy the machine running Lighthouse was
+            rather than how quickly the site loads, and picking a number out of it would be
+            publishing a property of a laptop. The figures above are deterministic, which is why
+            they carry a budget and this does not.
+          </p>
           <DataPlate>
             JavaScript {measurements.homeScriptTransferKb}KB compressed,{" "}
             {measurements.homeScriptParsedKb}KB parsed · Largest route {measurements.largestRoute}{" "}
             at {measurements.largestRouteTransferKb}KB · {measurements.routes} routes measured{" "}
-            {measurements.measuredAt} · Lighthouse: not yet measured
+            {measurements.measuredAt} · Lighthouse {lighthouse.runs} runs {lighthouse.measuredAt},{" "}
+            {lighthouse.profile}
           </DataPlate>
         </div>
       </section>

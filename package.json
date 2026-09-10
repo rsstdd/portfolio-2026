@@ -17,6 +17,7 @@
     "cv:pdf": "node scripts/render-cv.mjs",
     "measure": "node scripts/measure-payload.mjs",
     "capture": "node scripts/capture-screens.mjs",
+    "lighthouse": "node scripts/measure-lighthouse.mjs",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
   },
   "dependencies": {
