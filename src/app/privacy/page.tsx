@@ -50,6 +50,10 @@ export default function PrivacyPage() {
           this site. No cookies are set, so there is no consent banner, because there is nothing to
           consent to.
         </p>
+        <p>
+          Choosing light or dark stores that preference in this browser&rsquo;s local storage. The
+          value is never transmitted, and choosing system removes it.
+        </p>
 
         <h2>No third-party requests</h2>
         <p>
@@ -102,7 +106,7 @@ export default function PrivacyPage() {
       </div>
 
       <p className="data-plate mt-12 max-w-prose text-muted">
-        Last reviewed 2026-07-30 · Host: {site.host.name} ·{" "}
+        Last reviewed 2026-09-10 · Host: {site.host.name} ·{" "}
         <a
           href="/impressum"
           className="underline decoration-1 underline-offset-[3px] transition-[text-decoration-color] duration-(--duration-fast) hover:decoration-accent hover:decoration-2"

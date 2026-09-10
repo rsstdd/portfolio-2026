@@ -231,7 +231,7 @@ Unchanged: `cubic-bezier(0.2, 0, 0, 1)`, 120/200/320ms, underlines slide, cards 
 
 Siblings, not triplets, as before. What changed is whose siblings they are.
 
-**The portfolio's theme control.** Light is the default and dark is a first-class alternative, offered as three radio inputs in the header: system, light, dark. Radios rather than a checkbox because a checkbox can only express "force dark", which leaves someone whose operating system is set to dark with no way back. The tokens resolve in `design-tokens.css` through `:root:has()` plus a `prefers-color-scheme` query, so the control needs no JavaScript and no client component. Its one limitation is that CSS has nowhere to persist a choice, so an explicit selection resets to the system default on reload; that is stated on `/colophon` rather than left to be discovered.
+**The portfolio's theme control.** Light is the default and dark is a first-class alternative, offered as three radio inputs in the header: system, light, dark. Radios rather than a checkbox because a checkbox can only express "force dark", which leaves someone whose operating system is set to dark with no way back. The tokens resolve in `design-tokens.css` through `:root:has()` plus a `prefers-color-scheme` query. A small inline script stores an explicit choice in `localStorage`, restores it before first paint, and synchronizes the radio state. The control remains a Server Component with no hydrated client island; choosing system removes the stored override and follows the operating-system preference again.
 
 ---
 

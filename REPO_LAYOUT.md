@@ -128,7 +128,7 @@ Track it in one place, and the place is this file:
 
 Every addition gets a row here and a one-sentence justification comment above its `"use client"`. The colophon claims zero client components, so the claim needs somewhere to be checked.
 
-The nearest thing to an island is `layout/theme-control.tsx`, and it is not one. The theme switch is three radio inputs read by a `:root:has()` selector in `design-tokens.css`, so it renders as static markup and the budget above stays empty. It buys that with the one thing CSS cannot do, which is remember: a choice resets to the system default on reload. Anything that needs storage needs a row in the table.
+The nearest thing to an island is `layout/theme-control.tsx`, and it is not one. The theme switch is three radio inputs read by `:root:has()` selectors in `design-tokens.css`, with a small inline script that stores an explicit choice and restores it before first paint. It remains a Server Component, so the budget above stays empty. Anything that needs React state or a hydration boundary needs a row in the table.
 
 ## 5. Import conventions
 

@@ -24,8 +24,9 @@ one of the original steps would have introduced a bug.
    See `scripts/OG_CARDS.md`.
 4. **Superseded.** This called for exactly one client island. There are zero,
    and the theme control gets the same result with three radio inputs and a
-   `:root:has()` selector. See `REPO_LAYOUT.md` section 4, which is where the
-   budget is tracked.
+   `:root:has()` selector. A small inline script persists the choice without a
+   hydration boundary. See `REPO_LAYOUT.md` section 4, which is where the budget
+   is tracked.
 5. Done, then extended. `/cv` renders from a single MDX source, and
    `scripts/render-cv.mjs` drives that same page through print media to write
    `public/cv/ross-todd.pdf`. This item used to end "no build step produces a

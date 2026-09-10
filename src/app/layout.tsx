@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { THEME_SCRIPT } from "@/components/layout/theme-control";
 import { site } from "@/lib/site";
 import "./styles/globals.css";
 
@@ -89,8 +90,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
       className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable}`}
     >
+      <head>
+        <script
+          type="text/javascript"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: static local code restores the theme before first paint
+          dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
+        />
+      </head>
       <body className="flex min-h-dvh flex-col bg-bg text-ink antialiased transition-colors duration-(--duration-base)">
         <SiteHeader />
         <div className="flex-1">{children}</div>

@@ -95,14 +95,9 @@
  * an explicit `data-theme` attribute, an explicit choice from the header
  * control, or the system preference while the control is left on "system".
  *
- * The control is three radio inputs rather than one checkbox because a
- * checkbox can only express "force dark": someone whose OS is set to dark had
- * no way back to light. Radios give all three states and still need no
- * JavaScript, which is what keeps the zero-client-component rule intact.
- *
- * The cost, stated on /colophon rather than left to be discovered: a CSS-only
- * control has nowhere to persist. An explicit choice survives in-session
- * navigation and resets to the system default on reload.
+ * The control remains functional through the radio selectors when JavaScript
+ * is unavailable. A small inline script adds the data attribute only to restore
+ * an explicit choice before first paint.
  *
  * Both mappings are scoped to `screen`, because a dark theme is a screen
  * concern and paper is not backlit. Without that scope, printing from the dark
@@ -135,7 +130,7 @@
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  :root:has(#theme-system:checked) {
+  :root:not([data-theme="light"]):has(#theme-system:checked) {
     --bg: var(--dark-bg);
     --surface: var(--dark-surface);
     --well: var(--dark-well);

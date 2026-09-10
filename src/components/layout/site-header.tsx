@@ -25,7 +25,7 @@ const links = [
  * The theme control sits here rather than on /design because the dark palette
  * is a first-class theme in DESIGN_SYSTEM.md 7, and a theme reachable from one
  * page is a theme nobody sees. It is also a Server Component: see
- * ./theme-control.tsx for why radios and what the approach cannot do.
+ * ./theme-control.tsx for the CSS and inline-script boundary.
  */
 export function SiteHeader() {
   return (
