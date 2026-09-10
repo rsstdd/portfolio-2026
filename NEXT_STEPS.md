@@ -26,8 +26,10 @@ one of the original steps would have introduced a bug.
    and the theme control gets the same result with three radio inputs and a
    `:root:has()` selector. See `REPO_LAYOUT.md` section 4, which is where the
    budget is tracked.
-5. Done. `/cv` from a single MDX source. Note it is printed from the browser
-   rather than exported: no build step produces a PDF.
+5. Done, then extended. `/cv` renders from a single MDX source, and
+   `scripts/render-cv.mjs` drives that same page through print media to write
+   `public/cv/ross-todd.pdf`. This item used to end "no build step produces a
+   PDF", which stopped being true when the script landed.
 
 ## Content
 

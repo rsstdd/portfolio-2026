@@ -78,7 +78,7 @@ Read everything aloud before shipping. If it sounds like a marketing brochure or
 | Page-specific UI                          | `src/app/projects/page.tsx`, `src/app/blog/page.tsx`               | List pages. Do not sort, do not filter, do not duplicate loader logic. Call `getProjects()` or `getBlogPosts()` and render.                  |
 | Dynamic page generation                   | `src/app/projects/[slug]/page.tsx`, `src/app/blog/[slug]/page.tsx` | `generateStaticParams` from loader slugs. `generateMetadata` from loaded post. Content via `Mdx` component.                                  |
 | Sitemap and robots                        | `src/app/sitemap.ts`, `src/app/robots.ts`                          | Auto-generated from content loader. No hardcoded routes.                                                                                     |
-| MDX rendering                             | `src/components/content/mdx.tsx`                                   | Wraps `MDXRemote` from `next-mdx-remote/rsc`. No component map: styling lives in globals.css under `.prose-datum`.                           |
+| MDX rendering                             | `src/components/content/mdx.tsx`                                   | Wraps `MDXRemote` from `next-mdx-remote/rsc`. Registers the Datum components MDX may use; prose styling lives in `prose.css` under `.prose-datum`.                           |
 
 ## Agent-specific notes
 
