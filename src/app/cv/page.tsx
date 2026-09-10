@@ -16,10 +16,16 @@ export function generateMetadata(): Metadata {
 /**
  * CV.
  *
- * Rendered from content/cv.mdx, which is also the source for the exported PDF,
- * so the page and the document cannot disagree. The print stylesheet in
- * globals.css hides the nav and footer, which is what makes browser print an
- * acceptable export path rather than a compromise.
+ * Rendered from content/cv.mdx, which is also the source for the PDF that
+ * scripts/render-cv.mjs writes to public/cv, so the page and the document
+ * cannot disagree. That claim sat in this docstring for months while no export
+ * existed; the script is what made it true.
+ *
+ * The export drives this page through the `@media print` block in
+ * components.css, which hides the nav and footer. That block is the thing here
+ * that can break without anyone noticing, because nobody prints a page they did
+ * not change, so the script asserts the chrome is actually hidden rather than
+ * trusting it.
  */
 export default function CvPage() {
   const cv = getCv();
@@ -56,9 +62,21 @@ export default function CvPage() {
           </div>
         </dl>
 
+        {/*
+          `.no-print` because a printed page offering a download is addressing a
+          reader who is not there. The file is rendered from this page, so the
+          two cannot drift.
+        */}
         <p className="no-print mt-6 max-w-prose mono caption text-muted">
-          Print this page for a PDF. Layout and content come from one source, so the document
-          matches what you see.
+          <a
+            href="/cv/ross-todd.pdf"
+            download
+            className="underline decoration-1 underline-offset-[3px] transition-[text-decoration-color] duration-(--duration-fast) hover:decoration-accent hover:decoration-2"
+          >
+            Download as PDF
+          </a>{" "}
+          — rendered from this page, so the document and the page cannot disagree. Printing works
+          too.
         </p>
       </header>
 

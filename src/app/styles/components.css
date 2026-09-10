@@ -340,16 +340,28 @@
    ========================================================================== */
 
 /*
- * The CV page is the export path: it says "print this page for a PDF" and
- * AGENTS.md requires the result to be one page. That only holds if the site
- * chrome is dropped, so these rules are load-bearing rather than a polish
- * pass. `.no-print` marks copy that addresses a reader on screen and has no
- * business in the document.
+ * The CV page is the export path: scripts/render-cv.mjs drives /cv through
+ * print media to write public/cv/ross-todd.pdf, so these rules are what the
+ * document is made of rather than a polish pass. `.no-print` marks copy that
+ * addresses a reader on screen and has no business in the document. (The old
+ * version of this comment said AGENTS.md requires one page. It does not, and
+ * AGENTS.md no longer holds the rules: CLAUDE.md states the CV is a full CV and
+ * legitimately several pages, and that the one-page assertion belongs to the
+ * ATS resumes in another repository.)
  *
- * Deliberately outside every cascade layer. Unlayered styles beat layered ones
- * regardless of specificity, which is what lets `display: none` here win
- * against a Tailwind display utility in the utilities layer without reaching
- * for `!important`.
+ * Deliberately outside every cascade layer, and that is necessary but not
+ * sufficient. The previous comment here claimed unlayered rules beat Tailwind
+ * utilities "in the utilities layer" and therefore never need `!important`.
+ * Tailwind v4 as configured emits its utilities unlayered too, so the contest
+ * is decided on specificity after all, and `body` (0,0,1) loses to the `.bg-bg`
+ * utility (0,1,0) on the body element. The result was a CV that exported with
+ * the site's paper background flooded across all nine pages while the rules
+ * that happen to out-specify their utility, such as `body > footer`, worked
+ * fine and made the block look healthy.
+ *
+ * So the two properties that fight a utility out-specify it instead, which is
+ * what the doubled selector below is for. render-cv.mjs asserts both at render
+ * time rather than trusting this comment.
  */
 @media print {
   .term-note {
@@ -366,7 +378,15 @@
     display: none;
   }
 
-  body {
+  /*
+   * `body[class]` rather than `!important`. The utilities on <body> score
+   * (0,1,0); a bare `body` scores (0,0,1) and loses, while an attribute
+   * selector on the same element scores (0,1,1) and wins without reversing the
+   * cascade. Both selectors are listed so the rule still applies if <body> ever
+   * carries no class at all, in which case there is no utility to outrank.
+   */
+  body,
+  body[class] {
     background: #fff;
     color: #000;
   }

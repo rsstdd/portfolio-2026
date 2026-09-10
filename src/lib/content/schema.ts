@@ -116,7 +116,10 @@ export const aboutSchema = z.object({
   updated: z.coerce.date(),
 });
 
-/** content/cv.mdx — single source for both the /cv page and the exported PDF. */
+/**
+ * content/cv.mdx — single source for both the /cv page and the PDF that
+ * scripts/render-cv.mjs renders from it.
+ */
 export const cvSchema = z.object({
   name: z.string(),
   title: z.string(),

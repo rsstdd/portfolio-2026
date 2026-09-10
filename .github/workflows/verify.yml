@@ -71,3 +71,14 @@ jobs:
       # stale card still shows up in the log.
       - name: Social cards are current
         run: node scripts/render-og.mjs --check
+
+      # The CV PDF is a committed artifact rendered from /cv. This compares a
+      # hash of its sources against the sidecar rather than comparing PDF bytes,
+      # because Chromium stamps a fresh /CreationDate into every render and a
+      # byte comparison would fail on every run. It needs no browser and no
+      # server, so it is cheap and cannot flake.
+      #
+      # What it catches: content/cv.mdx edited and the PDF not re-rendered,
+      # which otherwise ships a stale CV to anyone who clicks download.
+      - name: CV PDF is current
+        run: node scripts/render-cv.mjs --check
