@@ -1,7 +1,7 @@
 ---
 title: "Process vs. thread, and where Node fits"
 summary: "Why isolation and shared memory are different trade-offs, and how Node's single-threaded event loop and worker_threads actually relate to that choice."
-tags: ["systems", "node", "concurrency"]
+tags: ["systems", "node", "concurrency", "performance"]
 date: 2026-08-08
 ---
 
@@ -78,6 +78,101 @@ memory is needed.
 **`child_process`** — `spawn`, `fork`, `exec` — is Node's process primitive,
 for the isolation case above: running another program, or another Node
 process, with a hard fault boundary.
+
+## Watching the event loop block
+
+The claim that a CPU-bound function stops everything is worth running rather
+than believing. This server prints a heartbeat every hundred milliseconds and
+computes a deliberately naive Fibonacci number on each request:
+
+```js
+import { createServer } from "node:http";
+
+const started = Date.now();
+setInterval(() => {
+  console.log(`heartbeat ${Date.now() - started}ms`);
+}, 100);
+
+function fib(n) {
+  return n < 2 ? n : fib(n - 1) + fib(n - 2);
+}
+
+createServer((_request, response) => {
+  response.end(`${fib(42)}\n`);
+}).listen(3000);
+```
+
+Start it and the heartbeat ticks steadily. Send one request and it stops
+completely until the response returns, then resumes with a gap where the
+computation was. Nothing was scheduled during that window: not the timer, not
+another request, not an I/O callback that had already completed. There is one
+thread and `fib` was standing on it.
+
+The gap is the whole lesson. An `async` function would not have helped, because
+there is no I/O to await here, and awaiting a synchronous computation still runs
+it on the same thread.
+
+## Moving the work off the loop
+
+`worker_threads` is the primitive that fixes it. The worker computes and posts
+the result back:
+
+```js
+import { parentPort, workerData } from "node:worker_threads";
+
+function fib(n) {
+  return n < 2 ? n : fib(n - 1) + fib(n - 2);
+}
+
+parentPort.postMessage(fib(workerData));
+```
+
+```js
+import { createServer } from "node:http";
+import { Worker } from "node:worker_threads";
+
+function compute(n) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL("./worker.js", import.meta.url), {
+      workerData: n,
+    });
+    worker.once("message", resolve);
+    worker.once("error", reject);
+  });
+}
+
+createServer(async (_request, response) => {
+  response.end(`${await compute(42)}\n`);
+}).listen(3000);
+```
+
+Run this one and the heartbeat keeps ticking through the request. Now the
+`await` is real: there genuinely is another thread to wait on.
+
+Two costs come with it, and neither is hypothetical. Spawning a worker per
+request is its own mistake, because thread creation is cheap relative to a
+process and expensive relative to a function call; anything under sustained load
+wants a pool of workers fed by a queue. And every value crossing the boundary is
+structured-cloned unless it is a `SharedArrayBuffer` or a transferable, so moving
+a large array in and out can cost more than the computation saved.
+
+## Telling which one a problem wants
+
+Three questions settle it more reliably than instinct.
+
+**Is the work waiting, or working?** Waiting on a socket, a file, or a database
+is I/O, and the event loop already handles it concurrently on one thread.
+Reaching for threads there adds overhead and solves nothing.
+
+**Do I trust the code?** Untrusted or crash-prone work wants a process, because
+the fault boundary is the entire product being bought. A segfault in a worker
+thread takes the process with it.
+
+**How much data crosses the boundary?** Threads win when the work is
+CPU-bound and the data is either small or genuinely shared. Once every call
+serializes a large structure both ways, the copy can cost more than the
+parallelism returns, and the honest answer may be to make the single-threaded
+version faster instead.
 
 The browser-side analogue of the same trade-off is a Web Worker: process-like
 isolation, no shared memory, message-passing only, versus keeping work on the
