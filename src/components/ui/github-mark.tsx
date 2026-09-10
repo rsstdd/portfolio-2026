@@ -1,13 +1,13 @@
 /**
  * The GitHub mark, for links that point at source.
  *
- * This is the only icon on the site, by decision rather than by accident, and
- * `DESIGN_SYSTEM.md` §6 records it as the single sanctioned exception to the
- * iconography rule. It is a filled brand mark in a system that otherwise
- * specifies outlined stroke glyphs, so it earns its place by being the one
- * symbol a reader recognizes faster than the word next to it. Adding a second
- * icon would turn a deliberate exception into an inconsistent icon set, which
- * is the state the rule exists to prevent.
+ * This is the only *filled* mark on the site, and `DESIGN_SYSTEM.md` §6 records
+ * why it stays outside the outlined set in `theme-icons.tsx` rather than
+ * joining it: a brand mark redrawn as a stroke outline stops being
+ * recognizable, and being recognized faster than the word beside it is the
+ * whole reason it is here. That is the distinction §6's never-mix rule is
+ * drawing, so adding a filled icon remains a different and harder question
+ * than adding an outlined one. Filled marks are closed at one.
  *
  * Inline SVG rather than an icon font or a sprite sheet, because one icon does
  * not justify either, and inline markup costs no extra request and no runtime.
