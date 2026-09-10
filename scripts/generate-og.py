@@ -79,7 +79,7 @@ CARDS = [
      "rsstdd.com/about"),
     ("cv", "Curriculum vitae · Ross Todd",
      "Senior full-stack software engineer",
-     "rsstdd.com/cv · Munich · EU Blue Card"),
+     "rsstdd.com/cv · Munich · No sponsorship required"),
     ("projects", "Selected work",
      "Eight projects, each with its Limitations.",
      "rsstdd.com/projects"),
