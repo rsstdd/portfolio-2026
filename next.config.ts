@@ -17,11 +17,14 @@ import type { NextConfig } from "next";
  *
  * THE WEAK DIRECTIVE, NAMED RATHER THAN HIDDEN
  *
- * `script-src` carries 'unsafe-inline' and cannot avoid it here. Next emits
- * inline flight-data scripts, and the alternative, a per-request nonce, needs
- * dynamic rendering. Every route is statically generated and CLAUDE.md makes
- * that a rule, so buying a strict script-src would cost the property the whole
- * site is built on. The directives that do real work for a static document site
+ * `script-src` carries 'unsafe-inline' and cannot avoid it here, for two
+ * reasons rather than one. Next emits inline flight-data scripts, and the theme
+ * control's own inline script restores a stored choice before first paint,
+ * which is the whole point of it being inline. The alternative, a per-request
+ * nonce, needs dynamic rendering. Every route is statically generated and
+ * CLAUDE.md makes that a rule, so buying a strict script-src would cost the
+ * property the whole site is built on, and would also cost a theme that does
+ * not flash on load. The directives that do real work for a static document site
  * are frame-ancestors, object-src, base-uri and form-action, and those are
  * strict.
  *
