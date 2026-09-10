@@ -5,7 +5,7 @@ role: Sole author
 stack: ["Rust", "Axum", "SQLx", "PostgreSQL", "Tokio", "Just"]
 repo: https://github.com/rsstdd/aircraft-api-r
 featured: true
-featuredRank: 6
+featuredRank: 1
 date: 2026-09-03
 verified: true
 complete: false
@@ -21,6 +21,8 @@ A Rust 2024 and PostgreSQL backend for storing, curating, searching, and compari
 The governing idea is that parsing successfully is not the same as being true. Provenance, source assertions, measurement conditions, and curation status are stored as first-class data, and an imported measurement stays pending and outside the canonical read model until a curator accepts it.
 
 What exists today is one complete vertical slice through that design: a PlanePHD ingestion CLI, twenty-five ordered migrations with a checksum-locked history, and an HTTP server that serves health, readiness, and version behind a real perimeter. Search, comparison, and the authenticated product API are not built.
+
+This is the middle stage of a three-part aircraft system built since January 2026. The [plane scraper](/projects/plane-scraper) collects the source data this engine ingests, and the [catalog](/projects/aircraft) planned on top of it is a design rather than a running system.
 
 ## System design
 

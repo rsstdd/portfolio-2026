@@ -5,7 +5,7 @@ role: Sole author
 stack: ["Rust", "tokio", "reqwest", "clap"]
 repo: https://github.com/rsstdd/plane-scraper
 featured: true
-featuredRank: 2
+featuredRank: 3
 date: 2026-01-15
 verified: true
 ogImage: /images/og/plane-scraper.png
@@ -14,6 +14,8 @@ ogImage: /images/og/plane-scraper.png
 ## Context and scope
 
 A three-pass scraper that collects aircraft data in stages, manufacturers, then models, then full specifications, writing each stage into its own JSON store. The primary design concern is running many concurrent requests against a single origin without overwhelming it, losing work on shutdown, or producing partial output.
+
+This is the collection stage of a three-part aircraft system built since January 2026. The [aircraft management engine](/projects/aircraft-management-engine) ingests and curates what this produces, and the [catalog](/projects/aircraft) planned on top of it is a design rather than a running system.
 
 ## System design
 
