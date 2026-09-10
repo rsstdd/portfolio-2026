@@ -320,3 +320,36 @@ test("a post offers somewhere to go next, labelled honestly", async ({ page }) =
   // Never links to itself.
   await expect(page.locator('a[href="/blog/cors"]')).toHaveCount(0);
 });
+
+/*
+ * The home page's notes section.
+ *
+ * The writing is the second thing this site is for, and the home page did not
+ * mention it at all until now: a visitor learned the blog existed from the nav
+ * or not at all. Ordering is the part worth asserting rather than mere
+ * presence. The loader sorts featured first, so whichever post carries
+ * `featured` leads here and on /blog, and the two agreeing is the whole reason
+ * the ordering lives in the loader.
+ */
+test("the home page leads with the featured note, in the same order as /blog", async ({ page }) => {
+  await page.goto("/");
+
+  const section = page.locator("section", {
+    has: page.getByRole("heading", { name: "Engineering notes" }),
+  });
+  await expect(section).toHaveCount(1);
+
+  const homeSlugs = await section
+    .locator('a[href^="/blog/"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  expect(homeSlugs.length).toBeGreaterThan(0);
+  await expect(section.locator('a[href="/blog"]')).toHaveCount(1);
+
+  await page.goto("/blog");
+  const indexSlugs = await page
+    .locator('main ul a[href^="/blog/"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+
+  // The home page is the first N of the index, not a separately sorted list.
+  expect(indexSlugs.slice(0, homeSlugs.length)).toEqual(homeSlugs);
+});

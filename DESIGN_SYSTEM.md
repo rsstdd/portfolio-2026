@@ -22,7 +22,7 @@ Principles, in order of priority:
 
 1. **Warm paper, dark ink.** Cream, not white, because white is a default and cream is a decision.
 2. **Borders before shadows.** Hairlines carry structure; shadows are reserved for the few things that float.
-3. **One accent moment per view.** Orange is an instrument marking, and instrument markings mean something. If everything is marked, nothing is.
+3. **One unearned accent per view.** Orange is an instrument marking, and instrument markings mean something. If everything is marked, nothing is. The datum tick is the exception that proves it: it repeats because it is structural, marking where a section begins the way a scale mark repeats along a rule, and a page with four sections carries four. What the budget governs is everything else, the marks that draw attention rather than describe structure. Spend that once.
 4. **Data reads as data.** Numbers are tabular, zeros are slashed, dates are ISO 8601, specifications and EXIF are set in mono. Always.
 5. **Verified, not vibed.** Every foreground/background pair below carries a computed WCAG ratio, re-run on 29 July 2026 for the revised palette.
 
@@ -199,7 +199,7 @@ Unchanged: `cubic-bezier(0.2, 0, 0, 1)`, 120/200/320ms, underlines slide, cards 
 
 ## 6. Guidelines & Standards
 
-**Color usage.** Semantic tokens only in components; primitives only in the token file. The orange rule from 1.2 always applies. One accent moment per view, and the datum tick counts as the moment when present. Feedback colors appear only as feedback.
+**Color usage.** Semantic tokens only in components; primitives only in the token file. The orange rule from 1.2 always applies. Structural accents repeat, per principle 3: datum ticks on section rules and the leading bar on a standalone link mark where things begin, and a page with several sections wears several. Non-structural accent is the thing rationed to one per view. Feedback colors appear only as feedback.
 
 **Typography.** No serif below 1.25rem. Overlines are mono, always. Numbers in UI are tabular. Dates in metadata are ISO 8601.
 

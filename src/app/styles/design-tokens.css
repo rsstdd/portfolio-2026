@@ -26,9 +26,9 @@
    *
    * The resting underline is ink, per the Link entry in DESIGN_SYSTEM.md 5:
    * "In prose: ink, 1px underline offset 3px; hover thickens to 2px orange."
-   * It used to be --accent-text, which spent the one accent moment principle 3
-   * allows per view on every link in a paragraph, and left hover with only a
-   * thickness change to communicate with.
+   * It used to be --accent-text, which spent the non-structural accent that
+   * principle 3 rations per view, on every link in a paragraph, and left hover
+   * with only a thickness change to communicate with.
    */
   --link: var(--text);
   --link-visited: var(--text);
