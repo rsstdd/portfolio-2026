@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PostList } from "@/components/content/post-list";
 import { getBlogPosts, type LoadedBlogPost } from "@/lib/content";
 
 /**
@@ -59,21 +59,9 @@ export function RelatedPosts({ current, limit = 3 }: { current: LoadedBlogPost; 
         {related ? "Related notes" : "Recent notes"}
       </h2>
 
-      <ul className="mt-6 max-w-prose">
-        {posts.map((post) => (
-          <li key={post.slug} className="border-b border-line py-4">
-            <h3 className="h3">
-              <Link
-                href={`/blog/${post.slug}`}
-                className="transition-colors duration-(--duration-fast) hover:text-accent-text"
-              >
-                {post.title}
-              </Link>
-            </h3>
-            <p className="mt-1 small text-muted">{post.summary}</p>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-6">
+        <PostList posts={posts} />
+      </div>
     </section>
   );
 }
