@@ -1,8 +1,8 @@
 {
   "measuredAt": "2026-09-10",
   "routes": 31,
-  "homeScriptTransferKb": 134,
-  "homeScriptParsedKb": 453,
+  "homeScriptTransferKb": 139,
+  "homeScriptParsedKb": 467,
   "largestRoute": "/blog/interview-question-bank",
-  "largestRouteTransferKb": 308
+  "largestRouteTransferKb": 313
 }

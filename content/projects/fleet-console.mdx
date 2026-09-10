@@ -31,6 +31,19 @@ The derivation is split across two packages on purpose. The pure function, takin
 
 The shipped policy is two seconds to leave `live`, ten to leave `stale`, swept every five hundred milliseconds. The sweep interval sits beside the thresholds in configuration but is deliberately excluded from the policy type, because it describes how often the function is called rather than how the answer is computed. A robot nobody has heard from reads `unknown` rather than a guess, which is why a cold start with dropped robots leaves them `unknown` instead of degrading them.
 
+<Figure
+  src="/images/screens/fleet-console-table.png"
+  alt="The fleet console table. A summary strip reads 24 robots, 20 live, 0 stale, 0 unreachable, 4 unknown. Rows R-003 and R-009 show the status Unknown (last known) with em dashes in the battery, position and freshness columns, rather than a stale reading held over from before."
+  caption="fleet-console · 24 robots, 4 never reporting · seed 1 · 2026-09-10"
+  width={1280}
+  height={820}
+  priority
+/>
+
+The four robots above were told not to report at all. They read `unknown` rather
+than inheriting a neighbour's freshness or showing a last-known battery, which is
+the same refusal the paragraph above describes, rendered.
+
 When the stream itself drops, per-robot freshness is suppressed rather than frozen. The console cannot vouch for any reading once it stops receiving, so a banner says so, the rows retain their last-known values, and the summary heading becomes qualified. Connection state fails closed to disconnected. This is a different claim from a row that has independently gone stale, and telling those two apart is what deriving freshness server-side buys.
 
 ### Capabilities rather than vendor conditionals
@@ -38,6 +51,17 @@ When the stream itself drops, per-robot freshness is suppressed rather than froz
 Every vendor maps onto one canonical core of identity, battery, position, status, and health. What genuinely differs travels as a declared capability, and the UI renders panels from the declarations. A vendor conditional inside a feature is treated as a defect rather than a style preference, and the fleet table renders all three dialects with no vendor branch. Vendor still appears as displayed data and as a filter value; what it does not do is select code paths.
 
 Capabilities carry a kind alongside their payload, splitting operator-facing readings from diagnostic ones, and the console keys its panel registry off the operator set. Vendor A declares dock and lidar health, vendor B declares dock alone, and vendor C declares dock and water level. Absence is the interface: there are no disabled placeholders, so the console cannot offer an action the robot does not support.
+
+<Figure
+  src="/images/screens/fleet-console-robot.png"
+  alt="A robot detail page for R-001, vendor A, model AX-240. Below the identity strip sit exactly two capability panels, Dock and Lidar, rendered from the robot's declarations rather than from a vendor branch."
+  caption="fleet-console · R-001 · vendor A declares dock and lidar · 2026-09-10"
+  width={1280}
+  height={660}
+/>
+
+R-001 is a vendor A robot, so it shows two panels. A vendor B robot shows one,
+and nothing renders a disabled placeholder for the panel it does not have.
 
 Vendor B's absences are load-bearing in both directions. It sends no sequence counter, and its timestamp is not one, because ordering by timestamp cannot separate a duplicate delivery from two events in the same millisecond. The adapter refuses to synthesize a counter from the timestamp, on the grounds that doing so would delete the exact ambiguity vendor B exists to demonstrate, so its continuity reads as not evaluated rather than as zero gaps. Reporting zero would be a false statement to an operator.
 

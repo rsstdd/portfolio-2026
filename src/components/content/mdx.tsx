@@ -8,6 +8,7 @@ import {
   DataDemo,
   DataPlate,
   ElevationDemo,
+  Figure,
   Section,
   SectionRule,
   SwatchGrid,
@@ -22,6 +23,7 @@ const registry = {
   ControlsDemo,
   ElevationDemo,
   DataDemo,
+  Figure,
   SectionRule,
   Term,
 };
