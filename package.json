@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "cv:pdf": "node scripts/render-cv.mjs",
+    "measure": "node scripts/measure-payload.mjs",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
   },
   "dependencies": {

@@ -82,3 +82,10 @@ jobs:
       # which otherwise ships a stale CV to anyone who clicks download.
       - name: CV PDF is current
         run: node scripts/render-cv.mjs --check
+
+      # A performance budget rather than a snapshot: this fails when the payload
+      # grows past the committed number by more than five per cent, and never
+      # when it shrinks. The site publishes these figures on /colophon, so a
+      # regression here is a public page becoming wrong as well as a slower one.
+      - name: Payload is within budget
+        run: node scripts/measure-payload.mjs --check
