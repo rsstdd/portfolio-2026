@@ -1,0 +1,197 @@
+---
+title: "What made a component platform survive five host frameworks"
+summary: "Borealis was adopted by four to five product teams across Next.js, Svelte, React, Vue, and .NET. The portability came from versioning the contract, not from the technology choice."
+tags: ["platform-engineering", "architecture", "web", "typescript"]
+date: 2026-09-10
+featured: true
+---
+
+{/*
+DRAFT NOTES — delete this block before publishing.
+
+Written from what /cv and /about already state publicly. No figure or system
+appears here that is not already on those pages, deliberately: this is
+proprietary work at a named employer, so the post is about the pattern rather
+than about internal architecture.
+
+Places where I reasoned from a summary rather than knew, and which need your
+correction:
+
+1. "the reason nobody forked it" — I do not know that anybody was close to
+   forking. Strike it if that overstates the case.
+2. "five host applications on five different release cadences" — the CV names
+   five frameworks, not five separately-cadenced applications. Check the count.
+3. The claim that upgrade pain is mostly scheduling rather than code. My
+   generalisation, not something the CV states.
+4. The concrete deprecation examples: a renamed attribute kept working, an old
+   event emitted alongside a new one, a removed slot left empty. These are
+   plausible and general. I do not know which the policy actually specified.
+5. "a component that accepts a CMS response has that CMS in its public surface"
+   is my framing of why the mapping was extracted, not a stated reason.
+6. The hydration-mismatch description. The CV says the utilities were
+   deterministic and SSR-safe; it does not say what went wrong without them, and
+   I have inferred the failure mode.
+7. "one was partway through" as the explanation for "four to five teams". I
+   inferred that from the range. It may be wrong.
+8. Everything under "What I would do differently" is my opinion, written in my
+   voice rather than yours. Cut it or rewrite it.
+*/}
+
+A component library that four teams use is a different object from a component
+library that one team uses, and the difference is not size. It is that you no
+longer control when anybody upgrades.
+
+Borealis was a Lit and Web Components platform for alaskaair.com, adopted by
+four to five product teams across Next.js, Svelte, React, Vue, and .NET host
+applications. The interesting part is not that Web Components render in all
+five, which is the advertised feature and the easy half. It is that the platform
+kept working while five host applications on five different release cadences
+upgraded whenever it suited them.
+
+That property did not come from the technology. It came from treating props and
+events as a versioned contract, and from a deprecation policy that made the
+version number mean something.
+
+## The problem with a shared library nobody controls
+
+Inside one application, a shared component is a refactor away from any shape you
+want. Change the prop, update the call sites, ship it together. The component and
+its consumers share a repository, a build, and a deploy.
+
+Across five host applications owned by different teams, none of that holds. A
+change to a component reaches a consumer only when that consumer chooses to take
+it, and consumers choose on their own schedule for reasons that have nothing to
+do with you: a freeze, a release train, a migration already in flight, a team
+that is down two people this quarter.
+
+There are two ways to handle that. The first is to coordinate: agree an upgrade
+window, chase everyone through it, and accept that the slowest consumer sets the
+pace for the platform. This is what most shared libraries do, and it is why most
+shared libraries eventually get forked. The second is to make upgrades
+independent, so that a consumer three versions behind is a supported state
+rather than a problem to be managed.
+
+The second is only possible if the boundary is small enough to version.
+
+## Props in, events out, and nothing else
+
+A Web Component's public surface is narrower than a React component's by
+construction. It takes attributes and properties, it emits events, and it
+accepts slotted content. It cannot take a render prop, a context value, a hook,
+or a callback that closes over the consumer's state. Everything that crosses the
+boundary is serialisable data or a DOM event.
+
+That constraint is usually described as a limitation, and inside one application
+it is one. Across five frameworks it is the entire point: a surface that narrow
+is small enough to write down, and something you can write down is something you
+can version.
+
+So the contract was props and events, defined first and treated as the artifact.
+Not the implementation, which could change freely, but the shape of what went in
+and what came out.
+
+The practical test of whether a boundary is really that narrow is whether a
+consumer can be written without reading the component's source. If the answer is
+no, something is leaking: a required call order, an assumed parent, a class name
+the consumer has to style around. Each of those is a dependency that no version
+number describes, and each will break somebody at a moment you cannot predict.
+
+## Semver only means something with a deprecation policy
+
+Versioning a contract under semver is the easy part to say and the part most
+platforms get wrong, because semver on its own only communicates that a change
+will hurt. It does not say when, or for how long, or what the consumer is
+supposed to do about it.
+
+The deprecation policy is what makes the number actionable. A consumer needs to
+know three things at the moment a change lands: that the old shape still works,
+how long it will keep working, and what to replace it with. Given those, an
+upgrade becomes something a team can schedule. Without them, an upgrade is an
+interrupt, and interrupts get deferred until they become emergencies.
+
+The concrete shape this takes for a Web Component is unglamorous. A renamed
+attribute keeps the old name working and warns. A changed event keeps emitting
+the old event alongside the new one. A removed slot stays rendered but empty.
+Each of those costs code in the component and buys a consumer the right to
+upgrade on a Tuesday of their choosing rather than yours.
+
+That cost is the product. Borealis held across five frameworks because its props
+and events carried semver and a deprecation policy, so consuming teams could
+upgrade on their own schedule instead of on mine. Every one of those
+compatibility shims was a small ugliness in the component, and collectively they
+were the reason nobody forked it.
+
+## Keep the content model out of the component
+
+The second thing that made the contract hold was pulling the CMS-to-props
+mapping out of the components entirely.
+
+A component that accepts a CMS response has that CMS in its public surface,
+whether or not anybody says so. Its props are shaped by somebody else's content
+model, which means a schema change in the CMS is a breaking change in the
+component, arriving without a version bump and reaching every consumer at once.
+
+Extracting the mapping put a layer between them: the CMS produced its shape, a
+mapper produced the component's props, and the component knew about neither. A
+Contentstack schema change then broke one mapper rather than every consumer
+simultaneously, and the blast radius of a content model edit stopped being the
+whole platform.
+
+The same separation is what made the dual-CMS abstraction possible at all. The
+Next.js application behind the homepage and content pages normalised two content
+systems onto one set of render models: Sitecore through GraphQL queries and a
+library of page-layout models, Contentstack through SDK helpers with field
+mappers. Either could serve a page without the rendering layer knowing which,
+which is what let the Sitecore-to-Contentstack migration run page by page
+instead of as a rewrite.
+
+That is the same idea applied one level up. A migration is survivable when the
+thing being migrated is behind a boundary somebody deliberately drew.
+
+## Server rendering is where the abstraction leaks
+
+The part that resisted all of this was rendering.
+
+Web Components are a browser primitive, and server rendering them is neither
+uniform across frameworks nor uniformly supported. The platform ran mixed-mode
+through the transition: true Lit server rendering on some surfaces, client-only
+mounts inside server-rendered pages on others. Both modes had to produce the same
+component with the same contract, and the registration and hydration utilities
+that made that work had to be deterministic, because anything that varies between
+the server pass and the client pass surfaces as a hydration mismatch rather than
+as an error anybody can read.
+
+This is the honest limit of the portability claim. The props-and-events contract
+is genuinely framework-agnostic. Getting the component onto the page is not, and
+each host framework needed its own answer. What the platform could do was make
+that answer a shared utility rather than five independent solutions, so a
+consumer integrating Borealis inherited a registration path somebody had already
+debugged.
+
+## What is not claimed
+
+The adoption figure is four to five product teams, and the imprecision is real
+rather than modesty: teams adopted incrementally and one was partway through.
+
+The Component Personalization Service, including consent gating for GDPR and
+CCPA against a stated 99.9 percent monthly availability target, reached
+architecture and proposal stage. It did not ship, and nothing here should be
+read as though it did.
+
+There is no benchmark in this post. The performance work at Alaska Airlines was
+measured, and the numbers are on [my CV](/cv), but they measured third-party
+script cost rather than anything about this platform. I have no before-and-after
+for the contract discipline itself, because the counterfactual, five teams
+sharing components without a versioned boundary, was never run.
+
+## What I would do differently
+
+Write the deprecation policy before the first component, not after the first
+painful upgrade. It reads like process overhead when there is one consumer, and
+by the time it is obviously necessary you are retrofitting it onto components
+that already made promises they cannot keep.
+
+And measure upgrade lag deliberately. A platform where every consumer sits three
+versions behind and ships happily is working exactly as designed. A platform
+where they sit three versions behind because upgrading hurts looks identical
+from the outside, and the difference is the only thing worth knowing.
