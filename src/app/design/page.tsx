@@ -10,20 +10,35 @@ import {
   SwatchGrid,
 } from "@/components/ui";
 import { getDesignSystem } from "@/lib/content";
+import { getPalette } from "@/lib/contrast";
 import { pageMetadata } from "@/lib/metadata";
 
-const palette = [
-  { name: "paper", token: "var(--paper, #f5f2ec)" },
-  { name: "paper-raised", token: "var(--paper-raised, #fbf9f5)" },
-  { name: "paper-sunken", token: "var(--paper-sunken, #ebe6da)" },
-  { name: "line", token: "var(--line, #d9d2c2)" },
-  { name: "ink", token: "var(--ink, #221f1a)" },
-  { name: "ink-soft", token: "var(--ink-soft, #38342c)" },
-  { name: "ink-muted", token: "var(--ink-muted, #6b655a)" },
-  { name: "orange", token: "var(--orange, #dd4e12)" },
-  { name: "orange-body", token: "var(--orange-text, #b13f0d)" },
-  { name: "success", token: "var(--success, #3e6b3a)" },
-  { name: "error", token: "var(--error, #a02c2c)" },
+/**
+ * The primitives this page displays, and the label each one wears.
+ *
+ * Only names here. The values are read from design-tokens.css at build time by
+ * `getPalette`, because this list used to carry its own copy of every hex as a
+ * `var(--paper, #f5f2ec)` fallback. A fallback on a token that is always defined
+ * never resolves, so those eleven values were unreachable: they could have gone
+ * stale without a single pixel on the page changing, which is the worst version
+ * of the drift the colophon's contrast table had.
+ *
+ * These are primitives rather than semantic tokens, so they are the same in both
+ * themes. `--bg` and `--text` do change, and belong to the theme documentation
+ * rather than to a palette wall.
+ */
+const SWATCHES = [
+  { name: "paper", token: "paper" },
+  { name: "paper-raised", token: "paper-raised" },
+  { name: "paper-sunken", token: "paper-sunken" },
+  { name: "line", token: "line" },
+  { name: "ink", token: "ink" },
+  { name: "ink-soft", token: "ink-soft" },
+  { name: "ink-muted", token: "ink-muted" },
+  { name: "orange", token: "orange" },
+  { name: "orange-body", token: "orange-text" },
+  { name: "success", token: "success" },
+  { name: "error", token: "error" },
 ];
 
 const aircrafts = [
@@ -43,6 +58,25 @@ export function generateMetadata(): Metadata {
 
 export default function DesignSystemPage() {
   const { title, overline, updated, body, description } = getDesignSystem();
+
+  /*
+   * Resolved from the token file, and it throws rather than rendering a blank
+   * chip: a design system page showing an empty swatch for a colour it claims
+   * to define is worse than a build that stops, which is the same hard-stop
+   * rule the content schemas follow.
+   */
+  const tokens = getPalette();
+  const palette = SWATCHES.map(({ name, token }) => {
+    const value = tokens.get(token);
+    if (!value) {
+      throw new Error(
+        `/design lists the swatch "${name}", but --${token} is not a literal hex primitive in ` +
+          "design-tokens.css. Renaming a primitive means updating SWATCHES in " +
+          "src/app/design/page.tsx.",
+      );
+    }
+    return { name, token: `var(--${token})`, value };
+  });
 
   // Create local wrappers that inject the data
   const pageComponents = {

@@ -83,6 +83,18 @@ export function parsePalette(css: string): Map<string, string> {
   return palette;
 }
 
+/**
+ * The primitives, read once per render.
+ *
+ * Exported because /design was carrying a second copy of the same eleven
+ * colours as `var(--paper, #f5f2ec)` fallbacks. Those fallbacks never resolve,
+ * since the tokens are always defined, so the hex halves were unreachable and
+ * could have drifted forever without any page changing. One parser, one source.
+ */
+export const getPalette = cache(
+  (): Map<string, string> => parsePalette(readFileSync(TOKENS, "utf8")),
+);
+
 export interface ContrastRow {
   label: string;
   ratio: string;
