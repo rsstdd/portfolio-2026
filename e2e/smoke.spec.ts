@@ -112,6 +112,70 @@ test("each theme glyph still names itself for a screen reader", async ({ page })
   await expect(page.getByRole("group", { name: "Theme" })).toBeVisible();
 });
 
+test("an explicit theme survives navigation and refresh", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('label[for="theme-dark"]').click();
+
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe("dark");
+
+  await page.getByRole("link", { name: "Projects", exact: true }).click();
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
+});
+
+test("a stored light theme overrides a dark system preference on load", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.addInitScript(() => localStorage.setItem("theme", "light"));
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.getByRole("radio", { name: "Light" })).toBeChecked();
+  expect(
+    await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(),
+    ),
+  ).toBe("#f5f2ec");
+});
+
+test("system clears the stored override and follows operating-system changes", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await page.locator('label[for="theme-dark"]').click();
+  await page.locator('label[for="theme-system"]').click();
+
+  expect(await page.locator("html").getAttribute("data-theme")).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
+  await expect(page.getByRole("radio", { name: "System" })).toBeChecked();
+
+  const lightBackground = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(),
+  );
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(),
+      ),
+    )
+    .not.toBe(lightBackground);
+});
+
+test("an invalid stored theme falls back to system", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("theme", "sepia"));
+  await page.goto("/");
+
+  expect(await page.locator("html").getAttribute("data-theme")).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
+  await expect(page.getByRole("radio", { name: "System" })).toBeChecked();
+});
+
 /*
  * The closing block is markup with no behaviour, which is exactly the kind of
  * thing that disappears in a refactor without anything failing. It exists so a
@@ -119,7 +183,20 @@ test("each theme glyph still names itself for a screen reader", async ({ page })
  * silent regression in the only part of this site with a commercial job.
  */
 test("every page that argues for the work ends with a way to reach me", async ({ page }) => {
-  for (const path of ["/projects", "/about", "/projects/fleet-console"]) {
+  /*
+   * The blog paths are here because the first version of this test omitted
+   * them, and so did the commit it was guarding: the closing block shipped to
+   * /projects, /about and the project pages while blog posts, the only pages
+   * strangers reach from search, kept having no exit. A guard is only as good
+   * as its list.
+   */
+  for (const path of [
+    "/projects",
+    "/about",
+    "/projects/fleet-console",
+    "/blog/cors",
+    "/blog/interview-question-bank",
+  ]) {
     await page.goto(path);
     const contact = page.getByRole("navigation", { name: "Contact" });
     await expect(contact, `no contact block on ${path}`).toBeVisible();
@@ -216,4 +293,30 @@ test("every response carries the security headers", async ({ request }) => {
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("default-src 'self'");
   }
+});
+
+/*
+ * Related posts.
+ *
+ * The heading is the assertion. Relatedness is shared tags, and when a post
+ * shares none the block falls back to recent posts rather than rendering a dead
+ * end. Presenting those as "related" would be a small lie told automatically,
+ * which is the kind this site exists to avoid, so the heading has to move with
+ * the content.
+ */
+test("a post offers somewhere to go next, labelled honestly", async ({ page }) => {
+  await page.goto("/blog/cors");
+
+  const section = page.locator("section", { has: page.getByRole("heading", { level: 2 }) });
+  const heading = page.getByRole("heading", { name: /Related notes|Recent notes/ });
+  await expect(heading).toHaveCount(1);
+
+  // cors carries security, web, http and browsers, which other posts share, so
+  // this one must be the related case rather than the fallback.
+  await expect(page.getByRole("heading", { name: "Related notes" })).toHaveCount(1);
+
+  const links = section.locator('a[href^="/blog/"]');
+  expect(await links.count()).toBeGreaterThan(0);
+  // Never links to itself.
+  await expect(page.locator('a[href="/blog/cors"]')).toHaveCount(0);
 });
