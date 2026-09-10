@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ContactCta } from "@/components/layout/contact-cta";
 import { getProjects } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 
@@ -77,6 +78,8 @@ export default function ProjectsPage() {
         Not everything I have written is included. Some repositories are private, and some are
         practice.
       </p>
+
+      <ContactCta />
     </main>
   );
 }

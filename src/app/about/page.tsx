@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { cache } from "react";
 import { Mdx } from "@/components/content/mdx";
+import { ContactCta } from "@/components/layout/contact-cta";
 import { SectionRule } from "@/components/ui/section-rule";
 import { getAbout } from "@/lib/content";
 import { JsonLd, personJsonLd } from "@/lib/json-ld";
@@ -49,22 +49,11 @@ export default function AboutPage() {
             <article className="max-w-prose text-muted">
               <Mdx source={about.body} />
             </article>
-
-            <nav
-              aria-label="Profile links"
-              className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-line pt-6"
-            >
-              <Link href="/cv" className="link-standalone">
-                View CV
-              </Link>
-
-              <a href={site.github} className="link-standalone">
-                GitHub
-              </a>
-            </nav>
           </div>
         </div>
       </section>
+
+      <ContactCta />
     </main>
   );
 }

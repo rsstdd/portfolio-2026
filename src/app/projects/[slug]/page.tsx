@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mdx } from "@/components/content/mdx";
+import { ContactCta } from "@/components/layout/contact-cta";
 import { GitHubMark } from "@/components/ui";
 import { getProject, getProjectSlugs } from "@/lib/content";
 import { breadcrumbJsonLd, JsonLd, projectJsonLd } from "@/lib/json-ld";
@@ -129,6 +130,8 @@ export default async function ProjectPage({ params }: Params) {
       <article className="prose-datum mt-16">
         <Mdx source={project.body} />
       </article>
+
+      <ContactCta />
     </main>
   );
 }
