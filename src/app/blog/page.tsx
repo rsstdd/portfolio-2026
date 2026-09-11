@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/metadata";
 export const metadata = pageMetadata({
   title: "Notes",
   description:
-    "Notes on web security, databases, concurrency, and agentic engineering practice — each one written to be checked, not taken on faith.",
+    "Notes on web security, databases, concurrency, and agentic engineering practice.",
   path: "/blog",
 });
 
