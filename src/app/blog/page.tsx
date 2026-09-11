@@ -25,17 +25,18 @@ export default function BlogPage() {
     <main id="main" className="mx-auto max-w-content px-5 pt-12 md:px-8 md:pt-16 lg:px-10">
       <JsonLd data={blogJsonLd(posts)} />
 
+      {/*
+        Category overline, descriptive title, supporting line: the same shape as
+        /projects ("Projects" over "Selected work") and /about ("About" over the
+        name). The name of this page is "Notes" and it lives in the overline, so
+        the heading has to say something else or the two print one word twice at
+        two sizes.
+      */}
       <header>
-        {/*
-          No overline here, unlike /projects and /about. Those pair a category
-          overline with a descriptive title: "Projects" over "Selected work".
-          This page's title is now the category, so an overline would print the
-          same word twice at two sizes.
-        */}
-        <h1 className="display">Notes</h1>
+        <p className="text-overline uppercase text-muted">Notes</p>
+        <h1 className="mt-3 display">Written to be checked</h1>
         <p className="mt-4 max-w-prose body-lg text-muted">
-          Working notes on security, systems, and the practice of engineering with AI, written to be
-          checked, not taken on faith.
+          Working notes on security, systems, and the practice of engineering with AI.
         </p>
       </header>
 
