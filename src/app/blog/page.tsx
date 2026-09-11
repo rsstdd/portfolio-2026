@@ -5,8 +5,7 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
   title: "Notes",
-  description:
-    "Notes on web security, databases, concurrency, and agentic engineering practice.",
+  description: "Notes on web security, databases, concurrency, and agentic engineering practice.",
   path: "/blog",
 });
 
@@ -34,7 +33,7 @@ export default function BlogPage() {
       */}
       <header>
         <p className="text-overline uppercase text-muted">Notes</p>
-        <h1 className="mt-3 display">Written to be checked</h1>
+        <h1 className="mt-3 display">Because I looked it up</h1>
         <p className="mt-4 max-w-prose body-lg text-muted">
           Working notes on security, systems, and the practice of engineering with AI.
         </p>
