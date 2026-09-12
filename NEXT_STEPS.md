@@ -37,3 +37,32 @@ one of the original steps would have introduced a bug.
 Point `content/projects/*.mdx` at the real repositories. Do not restate anything
 Portfolio_Deep_Dive_Report.md flagged as unverifiable. Specifically: do not claim
 working auth on rusti_aircraft_api, because that code is commented out.
+
+## Standing tasks that need a Google login
+
+These cannot be automated from this repository. Search Console has no
+unauthenticated API, the sitemap ping endpoint was removed in June 2023, and
+there are no credentials on the build machine. They are written down here
+because the alternative is what already happened: the verification token sat in
+`layout.tsx` for weeks while nobody submitted anything.
+
+**Submit the sitemap.** Property `https://rsstdd.com/`, already verified by the
+`google-site-verification` meta tag in `src/app/layout.tsx`.
+
+    https://search.google.com/search-console/sitemaps?resource_id=https%3A%2F%2Frsstdd.com%2F
+
+Enter `sitemap.xml` and submit. Note that `robots.txt` already declares the
+sitemap, which Google accepts as a submission method and which its own
+ping-deprecation notice recommends, so this is a reporting convenience rather
+than a prerequisite for being crawled.
+
+**Read Performance.** Queries, impressions and clicks. The useful signal is a
+page with impressions and no clicks: it ranks and nobody chooses it, which is a
+title or description problem rather than a content one.
+
+**Read Pages.** Anything Google declined to index, and the reason it gives.
+
+What the repository does guarantee, so that none of the above finds a defect:
+`e2e/smoke.spec.ts` walks every URL in the sitemap and fails on a wrong `h1`
+count, a canonical pointing elsewhere, a stray `noindex`, or a description past
+the schema's 200-character cap.
