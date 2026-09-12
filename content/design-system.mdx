@@ -2,7 +2,7 @@
 overline: "Datum · design system · 2026-07-29"
 title: "Precision, with warmth."
 updated: 2026-07-29
-description: "Monochrome chrome on warm paper, one instrument color, one typographic superfamily. The orange tick at the start of each Section is the datum mark, and it is usually the only accent a view needs. Toggle dark for the photography theme."
+description: "Monochrome chrome on warm paper, one instrument color, one typographic superfamily. The orange datum tick is usually the only accent a view needs."
 ---
 
 <Section overline="01 — Color" title="Ink, paper, international orange">
@@ -13,9 +13,15 @@ description: "Monochrome chrome on warm paper, one instrument color, one typogra
 </Section>
 
 <Section overline="02 — Typography" title="One superfamily, three voices">
-  <h1 className="h1 mt-3">Heading one, Plex Serif 600</h1>
-  <h2 className="h2 mt-2">Heading two, Plex Serif 600</h2>
-  <h3 className="h3 mt-2">Heading three, Plex Sans 600</h3>
+  {/*
+    Paragraphs wearing the heading classes, not headings. These are specimens of
+    type, and the Section above already supplies this block's real heading. As
+    actual tags the first one gave /design a second `h1`, which tells a crawler
+    and a screen reader that the page has two titles.
+  */}
+  <p className="h1 mt-3">Heading one, Plex Serif 600</p>
+  <p className="h2 mt-2">Heading two, Plex Serif 600</p>
+  <p className="h3 mt-2">Heading three, Plex Sans 600</p>
 
   <div className="measure mt-4">
     Body is Plex Sans at 1rem, 1.65 line height, 65ch measure. The serif and the sans share

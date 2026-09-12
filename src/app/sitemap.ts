@@ -80,6 +80,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/colophon`,
+      /*
+       * No `lastModified`, deliberately. The colophon has no content file to
+       * take a date from, and `lastmod` is optional in the sitemap protocol.
+       * Filling it with the build clock is the exact failure the comment above
+       * describes: a date that moves on every deploy, telling a crawler the
+       * page changed when nothing on it did.
+       */
       changeFrequency: "yearly",
       priority: 0.5,
     },

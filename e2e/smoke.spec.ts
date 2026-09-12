@@ -353,3 +353,54 @@ test("the home page leads with the featured note, in the same order as /blog", a
   // The home page is the first N of the index, not a separately sorted list.
   expect(indexSlugs.slice(0, homeSlugs.length)).toEqual(homeSlugs);
 });
+
+/*
+ * Every page the sitemap offers Google.
+ *
+ * This is the set of URLs the site actively asks to have crawled, so a defect
+ * on any of them is a defect on the thing the sitemap is for. None of it is
+ * visible: a page with two `h1` tags, a canonical pointing somewhere else, or a
+ * stray noindex all render perfectly.
+ *
+ * /design shipped with two `h1` tags because a type specimen used real heading
+ * tags to demonstrate what headings look like, which told crawlers and screen
+ * readers the page had two titles. Nothing on the page looked wrong.
+ *
+ * Fetched rather than rendered. Thirty-five page loads in a browser would be
+ * slow enough to get this deleted; thirty-five requests take a moment, and
+ * every assertion here is about markup rather than behaviour.
+ */
+test("every page in the sitemap is indexable and well formed", async ({ request }) => {
+  const xml = await (await request.get("/sitemap.xml")).text();
+  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1] ?? "").pathname);
+  expect(locs.length).toBeGreaterThan(10);
+
+  const problems: string[] = [];
+
+  for (const path of locs) {
+    const res = await request.get(path);
+    if (res.status() !== 200) {
+      problems.push(`${path}: status ${res.status()}`);
+      continue;
+    }
+    const html = await res.text();
+
+    const h1s = (html.match(/<h1[\s>]/g) ?? []).length;
+    if (h1s !== 1) problems.push(`${path}: ${h1s} h1 tags`);
+
+    if (/<meta[^>]+name="robots"[^>]*noindex/i.test(html)) problems.push(`${path}: noindex`);
+
+    const canonical = /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1];
+    if (!canonical) problems.push(`${path}: no canonical`);
+    else if (new URL(canonical).pathname.replace(/\/$/, "") !== path.replace(/\/$/, ""))
+      problems.push(`${path}: canonical points at ${canonical}`);
+
+    const description = /<meta name="description" content="([^"]*)"/.exec(html)?.[1];
+    if (!description) problems.push(`${path}: no description`);
+    // The content schema caps summaries at 200. Pages whose description is not
+    // a summary have no schema to cap them, and /design reached 234.
+    else if (description.length > 200) problems.push(`${path}: description ${description.length}`);
+  }
+
+  expect(problems, `\n${problems.join("\n")}\n`).toEqual([]);
+});
