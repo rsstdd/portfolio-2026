@@ -57,18 +57,41 @@ export function Figure({
   src: string;
   alt: string;
   caption: string;
-  width: number;
-  height: number;
+  /*
+   * String or number, because MDX can only reliably deliver a string.
+   *
+   * `<Figure width={1280} />` works in a production build and silently arrives
+   * as `undefined` under `next dev`: next-mdx-remote drops JSX expression
+   * attributes there, while plain string attributes come through intact. The
+   * result was a route that prerendered perfectly and returned 500 in
+   * development, because next/image refused an image with no width. CI caught
+   * it, because playwright.config.ts runs the suite against `next dev` and
+   * every local run had been against `next start`.
+   *
+   * So the content files pass `width="1280"` and this coerces. Prose should not
+   * be carrying JavaScript expressions anyway.
+   */
+  width: string | number;
+  height: string | number;
   /** Set on the first figure above the fold, and nowhere else. */
   priority?: boolean;
 }) {
+  const [w, h] = [Number(width), Number(height)];
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
+    throw new Error(
+      `<Figure src="${src}"> needs positive numeric width and height, got ${JSON.stringify(width)} ` +
+        `and ${JSON.stringify(height)}. Without them next/image cannot reserve space and the ` +
+        "page shifts as the image loads. Check the attributes in the MDX file.",
+    );
+  }
+
   return (
     <figure className="mt-8 max-w-prose">
       <Image
         src={src}
         alt={alt}
-        width={width}
-        height={height}
+        width={w}
+        height={h}
         priority={priority}
         sizes="(max-width: 768px) 100vw, 65ch"
         className="w-full rounded-none border border-line"
