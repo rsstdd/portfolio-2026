@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     template: "%s · Ross Todd",
   },
   description:
-    "Senior software engineer in Munich. Nine years across sensors, full-stack product work, and shared frontend platforms.",
+    "Senior software engineer in Munich. A decade across sensors, full-stack product work, and shared frontend platforms.",
   verification: {
     google: "QQ3UlnWLxNEAIybs29R4Du5k1AF-Vo7RRd2Uwsx_eOc",
   },

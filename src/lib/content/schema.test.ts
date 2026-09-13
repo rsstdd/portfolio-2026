@@ -33,9 +33,14 @@ describe("projectSchema", () => {
     expect(() => projectSchema.parse(rest)).toThrow();
   });
 
-  it("rejects a summary over 200 characters, so a card cannot overflow", () => {
-    expect(() => projectSchema.parse({ ...validProject, summary: "x".repeat(201) })).toThrow();
-    expect(() => projectSchema.parse({ ...validProject, summary: "x".repeat(200) })).not.toThrow();
+  /*
+   * 160 rather than 200, because the summary is the page's meta description and
+   * Google truncates around 155 to 160. The old cap was a limit on the field;
+   * this one is a limit on the medium it is published into.
+   */
+  it("rejects a summary over 160 characters, because search truncates it there", () => {
+    expect(() => projectSchema.parse({ ...validProject, summary: "x".repeat(161) })).toThrow();
+    expect(() => projectSchema.parse({ ...validProject, summary: "x".repeat(160) })).not.toThrow();
   });
 
   it("rejects an empty stack", () => {

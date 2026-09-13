@@ -12,7 +12,19 @@ import { z } from "zod";
 /** One entry in content/projects/*.mdx */
 export const projectSchema = z.object({
   title: z.string(),
-  summary: z.string().max(200),
+  /*
+   * 160, not 200, because the limit belongs to the medium rather than to the
+   * field. This string is the page's meta description, and Google truncates
+   * around 155 to 160 characters, so everything past that is invisible in the
+   * only place it was written to be read. Eleven summaries were running 166 to
+   * 192 and losing their last clause in every search result.
+   *
+   * A cap rather than a lint: CLAUDE.md makes schema violations a build-time
+   * hard stop, and this turns an SEO limit somebody has to remember into one
+   * the build enforces. It is also the on-page card and row text, so the
+   * constraint improves both surfaces or neither.
+   */
+  summary: z.string().max(160),
   role: z.string(),
   stack: z.array(z.string()).min(1),
   repo: z.url().optional(),
@@ -56,7 +68,19 @@ export const projectSchema = z.object({
 /** One entry in content/blog/*.mdx */
 export const blogPostSchema = z.object({
   title: z.string(),
-  summary: z.string().max(200),
+  /*
+   * 160, not 200, because the limit belongs to the medium rather than to the
+   * field. This string is the page's meta description, and Google truncates
+   * around 155 to 160 characters, so everything past that is invisible in the
+   * only place it was written to be read. Eleven summaries were running 166 to
+   * 192 and losing their last clause in every search result.
+   *
+   * A cap rather than a lint: CLAUDE.md makes schema violations a build-time
+   * hard stop, and this turns an SEO limit somebody has to remember into one
+   * the build enforces. It is also the on-page card and row text, so the
+   * constraint improves both surfaces or neither.
+   */
+  summary: z.string().max(160),
   tags: z.array(z.string()).min(1),
   date: z.coerce.date(),
   /** Set only when a post is revised after its original publish date. */

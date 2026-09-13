@@ -397,9 +397,10 @@ test("every page in the sitemap is indexable and well formed", async ({ request 
 
     const description = /<meta name="description" content="([^"]*)"/.exec(html)?.[1];
     if (!description) problems.push(`${path}: no description`);
-    // The content schema caps summaries at 200. Pages whose description is not
-    // a summary have no schema to cap them, and /design reached 234.
-    else if (description.length > 200) problems.push(`${path}: description ${description.length}`);
+    // Matches the schema's cap so the two cannot disagree. Pages whose
+    // description is not a summary have no schema to cap them, and /design
+    // reached 234 before anything was checking.
+    else if (description.length > 160) problems.push(`${path}: description ${description.length}`);
   }
 
   expect(problems, `\n${problems.join("\n")}\n`).toEqual([]);
